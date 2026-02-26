@@ -2,12 +2,12 @@
 
 ## Test Credentials (local development)
 
-Store your test org credentials here for convenience (this file is gitignored in production):
+Add your test credentials below for quick reference:
 
 ```
-Email: [your test user email]
-Password: [your test user password]
-Test org: [org name - e.g. "Test Org"]
+Email: [add your test user email]
+Password: [add your test user password]
+Test org: [org name]
 ```
 
 Display URL (after login, get from App → Display Settings):
@@ -19,6 +19,12 @@ Quick links:
 - App: http://localhost:3000/app
 - Display (need token): http://localhost:3000/display/[token]
 - Dev token API: http://localhost:3000/api/dev/display-token (dev only)
+
+---
+
+## GitHub
+
+Repo: https://github.com/fdesrochersperso-ship-it/celebboard
 
 ---
 
