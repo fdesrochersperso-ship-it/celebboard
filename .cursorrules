@@ -1,0 +1,45 @@
+# CelebBoard — Multi-Tenant Celebration Dashboard SaaS
+
+## Project Overview
+CelebBoard is a multi-tenant SaaS platform where businesses connect their CRM, Slack, GA4, 
+and other systems to display real-time celebrations and KPIs on office TV dashboards.
+
+## Tech Stack
+- Next.js 15 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
+- Supabase (Postgres + Realtime + Auth + Storage)
+- Zustand for client state, TanStack Query for server state
+- Deployed on Vercel (frontend) + Supabase Cloud (backend)
+
+## Architecture Principles
+- Multi-tenant: every table has org_id, all queries must be org-scoped
+- NEVER write a query without filtering by org_id
+- Display pages (/display/[token]) are public, token-authenticated, TV-optimized
+- Admin pages (/app/*) require Supabase auth + org membership
+- Webhook endpoints (/api/webhooks/[orgId]/[type]) are the ingestion layer
+- Integration connectors follow a standard interface pattern (see lib/connectors/)
+
+## Key Patterns
+- Celebrations flow: Webhook → Trigger evaluation → Template rendering → Realtime → Display
+- KPI data is fetched via connector-specific queries, cached in kpi_definitions.cached_value
+- Team members are matched via external_ids jsonb field (hubspot_owner_id, slack_user_id, etc.)
+- Display token is a long random string that maps to an org (no login needed on TVs)
+
+## File Organization
+- src/app/(marketing)/ — Public pages
+- src/app/(auth)/ — Login/signup
+- src/app/app/ — Admin pages (authed)
+- src/app/display/[token]/ — TV dashboard (public, token-auth)
+- src/app/api/webhooks/ — Webhook ingestion
+- src/lib/connectors/ — Integration connectors (hubspot, slack, ga4, generic)
+- src/lib/db/ — Supabase client, typed queries
+- src/lib/celebrations/ — Template rendering, queue logic
+- src/components/admin/ — Admin UI components
+- src/components/display/ — Dashboard display components
+
+## Coding Conventions
+- Use server components by default, 'use client' only when needed
+- Use Zod for all API input validation
+- Use TypeScript strict mode, no 'any' types
+- Prefer named exports over default exports
+- Use Supabase RLS for data isolation, don't rely solely on application-level filtering
+- Error handling: always handle errors explicitly, show user-friendly messages
