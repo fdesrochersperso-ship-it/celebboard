@@ -63,7 +63,7 @@ export default function IntegrationsPage() {
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
 
-    if (!error) setIntegrations((data as Integration[]) ?? [])
+    if (!error) setIntegrations((data as unknown as Integration[]) ?? [])
     setIntegrationsLoading(false)
   }, [orgId])
 

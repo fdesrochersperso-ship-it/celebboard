@@ -5,6 +5,7 @@ import {
   applyFieldMapping,
   renderTemplate,
   resolveTeamMembers,
+  type Condition,
 } from '@/lib/webhooks/process-webhook'
 
 type RouteContext = {
@@ -91,30 +92,32 @@ export async function POST(request: Request, { params }: RouteContext) {
 
       for (const trigger of triggers) {
         const conditions = (trigger.conditions as unknown[]) ?? []
-        if (!evaluateConditions(conditions as { field: string; op: string; value: unknown }[], payload)) {
+        if (!evaluateConditions(conditions as Condition[], payload)) {
           continue
         }
 
         const mapping = (trigger.field_mapping as Record<string, string>) ?? {}
         const extracted = applyFieldMapping(mapping, payload)
-        const template = trigger.celebration_templates as {
+        const rawTemplate = trigger.celebration_templates
+        const template = Array.isArray(rawTemplate) ? rawTemplate[0] : rawTemplate
+        const templateTyped = template as {
           title_pattern: string
           subtitle_pattern: string | null
           photo_fields: string[] | null
         } | null
 
-        if (!template) continue
+        if (!templateTyped) continue
 
-        const title = renderTemplate(template.title_pattern, extracted)
-        const subtitle = template.subtitle_pattern
-          ? renderTemplate(template.subtitle_pattern, extracted)
+        const title = renderTemplate(templateTyped.title_pattern, extracted)
+        const subtitle = templateTyped.subtitle_pattern
+          ? renderTemplate(templateTyped.subtitle_pattern, extracted)
           : null
 
         const amountRaw = extracted.amount ?? extracted.value
         const amount =
           typeof amountRaw === 'number' ? amountRaw : typeof amountRaw === 'string' ? parseFloat(amountRaw) : null
 
-        const photoFields = (template.photo_fields as string[]) ?? []
+        const photoFields = (templateTyped.photo_fields as string[]) ?? []
         const externalIds: Record<string, string> = {}
         for (const field of photoFields) {
           const path = mapping[field] ?? field

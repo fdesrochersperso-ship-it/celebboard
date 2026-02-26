@@ -75,7 +75,7 @@ export function TriggerDialog({ open, onOpenChange, orgId, templateId, trigger, 
         .select('id, name, type')
         .eq('org_id', orgId)
         .eq('status', 'active')
-        .then(({ data }) => setIntegrations((data as Integration[]) ?? []))
+        .then(({ data }) => setIntegrations((data as unknown as Integration[]) ?? []))
     }
   }, [open, orgId])
 

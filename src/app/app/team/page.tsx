@@ -80,7 +80,7 @@ export default function TeamPage() {
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
 
-    setMembers((data as Member[]) ?? [])
+    setMembers((data as unknown as Member[]) ?? [])
     setLoading(false)
   }, [orgId])
 
@@ -91,7 +91,7 @@ export default function TeamPage() {
       .from('integrations')
       .select('id, type')
       .eq('org_id', orgId)
-    setIntegrations((data as Integration[]) ?? [])
+    setIntegrations((data as unknown as Integration[]) ?? [])
   }, [orgId])
 
   useEffect(() => {

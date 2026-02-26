@@ -101,7 +101,7 @@ export default function HistoryPage() {
       const { data, error, count } = await query
 
       if (!error) {
-        const rows = (data as Celebration[]) ?? []
+        const rows = (data as unknown as Celebration[]) ?? []
         setCelebrations((prev) => (offset === 0 ? rows : [...prev, ...rows]))
         setHasMore(rows.length === PAGE_SIZE && (count ?? 0) > offset + rows.length)
       }

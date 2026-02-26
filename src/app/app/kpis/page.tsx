@@ -68,7 +68,7 @@ export default function KPIsPage() {
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
 
-    setKpis((data as Kpi[]) ?? [])
+    setKpis((data as unknown as Kpi[]) ?? [])
     setLoading(false)
   }, [orgId])
 

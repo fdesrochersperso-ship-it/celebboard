@@ -40,9 +40,19 @@ export async function GET(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: 'Failed to fetch celebrations' }, { status: 500 })
     }
 
-    const celebrationsList = idParam
-      ? celebrationsData ? [celebrationsData] : []
-      : (celebrationsData ?? [])
+    type CelebrationRow = {
+      id: string
+      title: string
+      subtitle: string | null
+      amount: unknown
+      created_at: string
+      team_member_ids: string[] | null
+      celebration_templates: { visual_style?: string; sound?: string; duration_seconds?: number } | { visual_style?: string; sound?: string; duration_seconds?: number }[] | null
+    }
+
+    const celebrationsList: CelebrationRow[] = idParam
+      ? celebrationsData ? [celebrationsData as CelebrationRow] : []
+      : Array.isArray(celebrationsData) ? (celebrationsData as CelebrationRow[]) : []
 
     if (idParam && celebrationsList.length === 0) {
       return NextResponse.json({ error: 'Celebration not found' }, { status: 404 })
@@ -50,7 +60,7 @@ export async function GET(request: Request, { params }: RouteContext) {
 
     const memberIds = new Set<string>()
     for (const c of celebrationsList) {
-      for (const id of (c.team_member_ids as string[]) ?? []) {
+      for (const id of c.team_member_ids ?? []) {
         if (id) memberIds.add(id)
       }
     }
@@ -72,11 +82,8 @@ export async function GET(request: Request, { params }: RouteContext) {
         const team_members = memberIdsList
           .map((id) => membersMap[id])
           .filter(Boolean)
-        const template = c.celebration_templates as {
-          visual_style?: string
-          sound?: string
-          duration_seconds?: number
-        } | null
+        const raw = c.celebration_templates
+        const template = Array.isArray(raw) ? raw[0] : raw
         return {
           id: c.id,
           title: c.title,

@@ -33,7 +33,7 @@ export function KpiChart({
   isLoading = false,
 }: Props) {
   const chartData = (data && data.length > 0 ? data : MOCK_DATA)
-  const total = chartData.reduce((sum, item) => sum + (item[dataKey] as number) ?? 0, 0)
+  const total = chartData.reduce((sum, item) => sum + (Number(item[dataKey]) || 0), 0)
 
   if (isLoading) {
     return (

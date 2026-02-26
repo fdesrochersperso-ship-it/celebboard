@@ -56,7 +56,7 @@ export default function CelebrationsPage() {
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
 
-    setTemplates((data as Template[]) ?? [])
+    setTemplates((data as unknown as Template[]) ?? [])
     setLoading(false)
   }, [orgId])
 

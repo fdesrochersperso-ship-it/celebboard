@@ -91,8 +91,9 @@ export default function DisplayDashboard({ org }: { org: OrgData }) {
       channelRef.current = null
     }
     setConnectionStatus('connecting')
-    const channel = supabase
-      .channel(`display-${org.id}-${Date.now()}`)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ch = supabase.channel(`display-${org.id}-${Date.now()}`) as any
+    const channel = ch
       .on(
         'postgres_changes',
         {
@@ -138,7 +139,7 @@ export default function DisplayDashboard({ org }: { org: OrgData }) {
           setFeedItems(items)
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           setConnectionStatus('connected')
           reconnectAttempts.current = 0
@@ -151,7 +152,7 @@ export default function DisplayDashboard({ org }: { org: OrgData }) {
           setConnectionStatus('disconnected')
         }
       })
-    channelRef.current = channel
+    channelRef.current = ch
   }, [org.id, token])
 
   useEffect(() => {

@@ -129,12 +129,12 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
         .select('id, name, type')
         .eq('org_id', orgId)
         .eq('status', 'active')
-        .then(({ data }) => setIntegrations((data as Integration[]) ?? []))
+        .then(({ data }) => setIntegrations((data as unknown as Integration[]) ?? []))
       supabase
         .from('celebration_templates')
         .select('id, name')
         .eq('org_id', orgId)
-        .then(({ data }) => setTemplates((data as Template[]) ?? []))
+        .then(({ data }) => setTemplates((data as unknown as Template[]) ?? []))
     }
   }, [open, orgId])
 

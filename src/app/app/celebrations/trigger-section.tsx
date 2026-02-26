@@ -47,7 +47,7 @@ export function TriggerSection({ templateId, orgId, onUpdate }: Props) {
       .eq('template_id', templateId)
       .order('created_at', { ascending: true })
 
-    setTriggers((data as Trigger[]) ?? [])
+    setTriggers((data as unknown as Trigger[]) ?? [])
     setLoading(false)
   }, [templateId])
 

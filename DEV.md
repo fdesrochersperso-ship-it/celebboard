@@ -5,9 +5,9 @@
 Add your test credentials below for quick reference:
 
 ```
-Email: [add your test user email]
-Password: [add your test user password]
-Test org: [org name]
+Email: fdesrochers.perso@gmail.com
+Password: celebboard
+Test org: hellodarwin
 ```
 
 Display URL (after login, get from App → Display Settings):
