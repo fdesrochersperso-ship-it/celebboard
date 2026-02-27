@@ -7,57 +7,47 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border bg-muted/30">
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-4">
+    <footer className="border-t border-white/[0.06] bg-[#0A0A0A] px-6 py-16 lg:px-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-12 md:grid-cols-4">
           <div>
-            <Link href="/" className="text-xl font-bold tracking-tight">
+            <Link
+              href="/"
+              className="text-base font-bold tracking-[0.15em] uppercase text-mkt-text-on-dark"
+            >
               CelebBoard
             </Link>
-            <p className="mt-2 text-sm text-muted-foreground">{t("tagline")}</p>
-            <h3 className="mb-3 mt-6 font-semibold">{t("product")}</h3>
+            <p className="mt-3 text-sm text-[#888]">{t("tagline")}</p>
+            <h3 className="mb-3 mt-8 font-semibold text-[#FAFAFA]">
+              {t("product")}
+            </h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/features"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {t("productLinks.features")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {t("productLinks.pricing")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/features"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {t("productLinks.integrations")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {t("productLinks.changelog")}
-                </Link>
-              </li>
+              {[
+                { href: "/features", key: "productLinks.features" },
+                { href: "/pricing", key: "productLinks.pricing" },
+                { href: "/features", key: "productLinks.integrations" },
+                { href: "/blog", key: "productLinks.changelog" },
+              ].map(({ href, key }) => (
+                <li key={key}>
+                  <Link
+                    href={href}
+                    className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
+                  >
+                    {t(key)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
-            <h3 className="mb-3 font-semibold">{t("company")}</h3>
+            <h3 className="mb-3 font-semibold text-[#FAFAFA]">
+              {t("company")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("companyLinks.about")}
                 </Link>
@@ -65,7 +55,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("companyLinks.blog")}
                 </Link>
@@ -73,7 +63,7 @@ export function Footer() {
               <li>
                 <a
                   href="mailto:hello@celebboard.com"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("companyLinks.contact")}
                 </a>
@@ -81,7 +71,7 @@ export function Footer() {
               <li>
                 <a
                   href="mailto:careers@celebboard.com"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("companyLinks.careers")}
                 </a>
@@ -89,12 +79,14 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="mb-3 font-semibold">{t("legal")}</h3>
+            <h3 className="mb-3 font-semibold text-[#FAFAFA]">
+              {t("legal")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/legal/terms"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("legalLinks.terms")}
                 </Link>
@@ -102,7 +94,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/legal/privacy"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("legalLinks.privacy")}
                 </Link>
@@ -110,14 +102,16 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="mb-3 font-semibold">{t("connect")}</h3>
+            <h3 className="mb-3 font-semibold text-[#FAFAFA]">
+              {t("connect")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <a
                   href="https://twitter.com/celebboard"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("connectLinks.twitter")}
                 </a>
@@ -127,7 +121,7 @@ export function Footer() {
                   href="https://linkedin.com/company/celebboard"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("connectLinks.linkedin")}
                 </a>
@@ -135,18 +129,18 @@ export function Footer() {
               <li>
                 <a
                   href="mailto:hello@celebboard.com"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-sm text-[#888] transition-colors hover:text-mkt-text-on-dark"
                 >
                   {t("connectLinks.email")}
                 </a>
               </li>
             </ul>
-            <div className="mt-4">
+            <div className="mt-6">
               <LanguageSwitcher />
             </div>
           </div>
         </div>
-        <p className="mt-8 text-center text-sm text-muted-foreground">
+        <p className="mt-12 text-center text-sm text-[#888]">
           {t("copyright", { year })} · {t("builtIn")}
         </p>
       </div>

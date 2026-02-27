@@ -10,19 +10,35 @@ export function HowItWorks() {
   }>;
 
   return (
-    <section className="px-4 py-24">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="text-center text-3xl font-bold">{t("title")}</h2>
-        <div className="mt-12 flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
-          {steps.map((step, i) => (
-            <div key={i} className="flex flex-1 flex-col items-center text-center">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
-                {step.number}
+    <section className="bg-[#FAF9F7] px-6 py-20 lg:px-12 lg:py-24" aria-labelledby="how-heading">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-5 lg:gap-0">
+        {/* Image placeholder — 60% */}
+        <div className="flex items-center justify-center bg-[#F5F5F4] lg:col-span-3">
+          <div className="h-64 w-full max-w-xl border border-[#E7E5E4] bg-white p-8 lg:h-80">
+            <p className="text-center text-sm text-[#A8A29E]">Dashboard view</p>
+          </div>
+        </div>
+        {/* Text — 40% */}
+        <div className="flex flex-col justify-center border-t border-[#E7E5E4] pl-0 lg:col-span-2 lg:border-l lg:border-t-0 lg:pl-12">
+          <p className="text-overline mb-4 font-bold uppercase tracking-[0.2em] text-[#F59E0B]">
+            How it works
+          </p>
+          <h2 id="how-heading" className="text-h2 text-[#111]">
+            {t("title")}
+          </h2>
+          <div className="mt-8 space-y-8">
+            {steps.map((step, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#FEF3C7] text-sm font-bold text-[#B45309]">
+                  {step.number}
+                </div>
+                <div>
+                  <h3 className="text-h3 text-[#111]">{step.title}</h3>
+                  <p className="mt-1 text-sm text-[#666]">{step.description}</p>
+                </div>
               </div>
-              <h3 className="mt-4 font-semibold">{step.title}</h3>
-              <p className="mt-2 max-w-xs text-muted-foreground">{step.description}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

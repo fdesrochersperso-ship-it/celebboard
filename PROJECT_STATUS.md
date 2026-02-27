@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2025-02-26 (marketing copy rewrite from reference)
+**Last updated:** 2025-02-26 (marketing design system — Cinematic Split)
 
 ## What's Built (Current Capabilities)
 
@@ -43,8 +43,9 @@
 - **Slack connector**: `syncTeamMembers` — sync users from Slack API
 - No GA4 connector logic
 
-### Marketing Site (i18n)
+### Marketing Site (i18n + Design System)
 
+- **Cinematic Split** design system per `docs/design-system-website`: true black (#0A0A0A) dark sections, warm cream (#FAF9F7) light sections, amber (#F59E0B) accents, 0px border radius, Sora font, overline pattern, asymmetric splits
 - Bilingual marketing pages (EN/FR) with next-intl; all copy from `docs/marketing-copy-reference.md` and `src/messages/{en,fr}.json`
 - Routes: `/`, `/features`, `/pricing`, `/about`, `/blog`, `/legal/terms`, `/legal/privacy` — French at `/fr/*`
 - Navbar (cta, menu labels), Footer (4-column: product, company, legal, connect), LanguageSwitcher (aria-label)

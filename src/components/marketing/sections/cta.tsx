@@ -18,28 +18,46 @@ export function Cta({ namespace = "home.cta" }: CtaProps) {
   const showNoCard = namespace === "home.cta";
 
   return (
-    <section className="px-4 py-24">
-      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-muted/30 px-8 py-16 text-center">
-        <h2 className="text-3xl font-bold">{t("title")}</h2>
-        <p className="mt-4 text-muted-foreground">{t("subtitle")}</p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+    <section
+      className="relative overflow-hidden bg-[#0A0A0A] px-6 py-24 lg:px-12 lg:py-32"
+      aria-labelledby="cta-heading"
+    >
+      {/* Ambient amber glow */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-[30%] h-[60%] w-full -translate-x-1/2"
+        style={{
+          background: "radial-gradient(ellipse at 50% 30%, rgba(245,158,11,0.08), transparent 60%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-3xl text-center">
+        <p className="text-overline mb-4 font-bold uppercase tracking-[0.2em] text-[#F59E0B]">
+          Your team&apos;s next win
+        </p>
+        <h2 id="cta-heading" className="text-h2 text-[#FAFAFA]">
+          {t("title")}
+        </h2>
+        <div className="mkt-heading-rule mx-auto mt-6" />
+        <p className="mt-6 text-sm text-[#888]">
+          {t("subtitle")}
+        </p>
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href="/signup"
-            className="rounded-full bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90"
+            className="inline-flex h-14 w-fit items-center justify-center bg-[#F59E0B] px-8 py-4 text-base font-bold text-[#0F172A] shadow-[0_4px_16px_rgba(245,158,11,0.2)] transition-all hover:translate-y-[-1px] hover:bg-[#D97706]"
           >
             {t("cta")}
           </Link>
           {showSecondary && (
             <Link
               href="/features"
-              className="rounded-full border border-border px-8 py-3 font-medium transition-colors hover:bg-muted"
+              className="inline-flex h-14 w-fit items-center justify-center border border-white/[0.15] px-8 py-4 text-base font-medium text-[#FAFAFA] transition-colors hover:border-white/30"
             >
-              {t("ctaSecondary")}
+              {t("ctaSecondary")} →
             </Link>
           )}
         </div>
         {showNoCard && (
-          <p className="mt-6 text-sm text-muted-foreground">{t("noCard")}</p>
+          <p className="mt-6 text-sm text-[#555]">{t("noCard")}</p>
         )}
       </div>
     </section>

@@ -18,14 +18,19 @@ export async function generateMetadata({
 function BlogContent() {
   const t = useTranslations("blog");
   return (
-    <section className="px-4 py-24">
+    <section className="bg-[#FAF9F7] px-6 py-24 lg:px-12" aria-labelledby="blog-heading">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-bold">{t("hero.title")}</h1>
-        <p className="mt-4 text-muted-foreground">{t("hero.subtitle")}</p>
-        <p className="mt-8 text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-overline mb-4 font-bold uppercase tracking-[0.2em] text-[#F59E0B]">
+          Blog
+        </p>
+        <h1 id="blog-heading" className="text-h1 text-[#111]">
+          {t("hero.title")}
+        </h1>
+        <p className="mt-6 text-base text-[#666]">{t("hero.subtitle")}</p>
+        <p className="mt-8 text-base text-[#666]">{t("comingSoon")}</p>
         <Link
           href="/signup"
-          className="mt-8 inline-block rounded-full bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90"
+          className="mt-8 inline-flex h-12 items-center justify-center bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-[#FAFAFA] transition-all hover:translate-y-[-1px] hover:bg-[#222]"
         >
           {t("cta")}
         </Link>

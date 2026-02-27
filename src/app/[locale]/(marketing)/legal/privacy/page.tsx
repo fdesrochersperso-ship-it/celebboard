@@ -17,13 +17,15 @@ export async function generateMetadata({
 function PrivacyContent() {
   const t = useTranslations("legal.privacy");
   return (
-    <section className="px-4 py-24">
+    <section className="bg-[#FAF9F7] px-6 py-24 lg:px-12" aria-labelledby="privacy-heading">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-4xl font-bold">{t("title")}</h1>
-        <p className="mt-4 text-sm text-muted-foreground">
+        <h1 id="privacy-heading" className="text-h1 text-[#111]">
+          {t("title")}
+        </h1>
+        <p className="mt-4 text-sm text-[#666]">
           {t("lastUpdated", { date: "2025-01-01" })}
         </p>
-        <p className="mt-8 text-muted-foreground">{t("content")}</p>
+        <p className="mt-8 text-base leading-relaxed text-[#666]">{t("content")}</p>
       </div>
     </section>
   );

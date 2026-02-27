@@ -1,0 +1,1096 @@
+# CelebBoard — Marketing Site Design System
+# Direction: Cinematic Split
+
+> The complete visual and technical reference for building CelebBoard's marketing website.
+> A brand-film aesthetic: full-bleed imagery, sharp edges, asymmetric grids, editorial storytelling.
+
+---
+
+## 1. Design Philosophy
+
+### Core Principle: "The Big Screen Moment"
+
+CelebBoard exists to put wins on a screen. The marketing site should feel like that moment — cinematic, full-bleed, dramatic. Not a software brochure. A story about what it feels like when the whole office looks up and cheers.
+
+Three design pillars:
+
+1. **Cinematic framing.** Every section is a "shot" in a visual story. Full-bleed backgrounds, split-screen layouts, asymmetric image-text pairings. The page flows like a brand film, not a feature list. Sections bleed into each other with purpose.
+
+2. **Sharp confidence.** Zero border radius anywhere. Every element has crisp, editorial edges — buttons, cards, images, containers. This is a deliberate choice that says "we know exactly what we are." It creates visual tension that soft-cornered SaaS sites lack. The exception: team member photo circles and small badges.
+
+3. **Imagery as architecture.** Photos, product screenshots, and ambient textures aren't decorative — they're structural. The hero IS a photo. Feature sections alternate between full-bleed visuals and tight text columns. The product dashboard is shown in context, not floating in space.
+
+### Aesthetic Direction
+
+**Cinematic editorial.** Think: a sports documentary meets a design agency portfolio. Dark, moody hero with warm amber light leaks. Asymmetric grids that break the 3-column monotony. Sora font brings geometric sharpness with just enough warmth. Cream-tinted light sections avoid the sterile white of typical SaaS. Sharp 0px radius everywhere creates a magazine-quality editorial feel.
+
+### What Makes This Different
+
+| Typical SaaS Site | CelebBoard Cinematic Split |
+|---|---|
+| Centered hero text with rounded screenshot below | Full-bleed photo hero, text overlaid left, TV mockup floating right |
+| 3-column feature grid, all same size | Asymmetric 60/40 and 70/30 image-text splits |
+| 12-16px border radius on everything | 0px radius everywhere — sharp, editorial, confident |
+| White backgrounds with colored accents | Warm cream (#FAF9F7) and stone (#F5F5F4) light sections |
+| Decorative illustrations | Real product screenshots in context, ambient photography textures |
+| Uniform spacing between sections | Sections that bleed into each other, some with zero gap |
+
+---
+
+## 2. Color System
+
+### Brand Palette
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PRIMARY ACCENT: AMBER / GOLD                                   │
+│  The celebration color. Used for CTAs, accents, highlights.     │
+│                                                                 │
+│  amber-50   #FFFBEB  ░░  Subtle tint backgrounds              │
+│  amber-100  #FEF3C7  ░░  Check/badge backgrounds, hover tint  │
+│  amber-200  #FDE68A  ░░  Borders, icon containers              │
+│  amber-300  #FCD34D  ░░  Badge fills, star icons               │
+│  amber-400  #FBBF24  ██  Primary buttons, links                │
+│  amber-500  #F59E0B  ██  KEY ACCENT — buttons, highlights      │
+│  amber-600  #D97706  ██  Button hover, active states           │
+│  amber-700  #B45309  ██  Text accent on light backgrounds      │
+│  amber-800  #92400E  ██  Dark amber text                       │
+│  amber-900  #78350F  ██  Deepest amber                         │
+│                                                                 │
+│  FOUNDATION: NEUTRAL / STONE                                    │
+│  NOT blue-tinted slate. Warm, true neutral with stone tint.    │
+│                                                                 │
+│  stone-50   #FAFAF9  ░░  Light section background (warm)       │
+│  stone-100  #F5F5F4  ░░  Card backgrounds, alternating bg      │
+│  stone-200  #E7E5E4  ░░  Borders, dividers                     │
+│  stone-300  #D6D3D1  ░░  Muted elements, placeholders          │
+│  stone-400  #A8A29E  ░░  Tertiary text                         │
+│  stone-500  #78716C  ██  Body text on light                    │
+│  stone-600  #57534E  ██  Subheadings                           │
+│  stone-700  #44403C  ██  Dark text                             │
+│  stone-800  #292524  ██  Near-black, headings                  │
+│                                                                 │
+│  DARK: TRUE BLACK                                               │
+│  NOT slate/navy. True near-black with zero color cast.         │
+│                                                                 │
+│  black-900  #0A0A0A  ██  Hero, dark sections, navbar           │
+│  black-800  #161616  ██  Elevated surfaces on dark             │
+│  black-700  #222222  ██  Card backgrounds on dark              │
+│  black-600  #333333  ██  Borders on dark (subtle)              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Stone, Not Slate?
+
+Slate (blue-tinted gray) is the default in Tailwind and every SaaS site. Stone (warm neutral gray) gives CelebBoard's light sections a gallery/editorial warmth — like high-end paper stock. The amber accent pops harder against warm neutrals than cold ones.
+
+### Semantic Color Tokens
+
+```css
+:root {
+  /* === Surfaces === */
+  --surface-dark:          #0A0A0A;   /* true near-black hero, CTA, footer */
+  --surface-dark-elevated: #161616;   /* cards/panels on dark background */
+  --surface-dark-card:     #222222;   /* secondary cards on dark */
+  --surface-light:         #FFFFFF;   /* white — used sparingly for high contrast */
+  --surface-light-warm:    #FAF9F7;   /* warm off-white — PRIMARY light bg */
+  --surface-light-muted:   #F5F5F4;   /* stone-100 — alternating sections, cards */
+  --surface-photo-overlay: rgba(0, 0, 0, 0.65); /* overlay on full-bleed photos */
+
+  /* === Text === */
+  --text-on-dark:          #FAFAFA;   /* primary text on dark — not pure white */
+  --text-on-dark-muted:    #888888;   /* secondary text on dark */
+  --text-on-dark-subtle:   #555555;   /* tertiary text, captions on dark */
+  --text-on-light:         #111111;   /* near-black — primary text on light */
+  --text-on-light-muted:   #666666;   /* secondary text on light */
+  --text-on-light-subtle:  #999999;   /* tertiary text, captions on light */
+
+  /* === Accent === */
+  --accent:                #F59E0B;   /* amber-500 — primary accent */
+  --accent-hover:          #D97706;   /* amber-600 — hover/active */
+  --accent-light:          #FEF3C7;   /* amber-100 — light accent bg */
+  --accent-glow:           rgba(245, 158, 11, 0.15); /* warm glow for photo highlights */
+
+  /* === Functional === */
+  --success:               #22C55E;   /* green-500 — trend up, checks */
+  --info:                  #3B82F6;   /* blue-500 — links, info */
+  --border-dark:           rgba(255, 255, 255, 0.06); /* borders on dark sections */
+  --border-light:          #E7E5E4;   /* stone-200 — borders on light sections */
+}
+```
+
+### Tailwind Config Extension
+
+```ts
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:  '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
+        },
+        dark: {
+          900: '#0A0A0A',
+          800: '#161616',
+          700: '#222222',
+          600: '#333333',
+        },
+        warm: {
+          50:  '#FAF9F7',
+          100: '#F5F5F4',
+          200: '#E7E5E4',
+          300: '#D6D3D1',
+        },
+      },
+      borderRadius: {
+        // Cinematic Split: 0px radius as the default
+        // Override shadcn defaults
+        DEFAULT: '0px',
+        sm: '0px',
+        md: '0px',
+        lg: '0px',
+        xl: '0px',
+        '2xl': '0px',
+        full: '9999px', // keep full for avatar circles
+      },
+    },
+  },
+};
+```
+
+### Color Usage Rules
+
+1. **0px border radius on EVERYTHING.** Buttons, cards, inputs, images, containers. The only exceptions: team member photo circles (rounded-full), pill badges (rounded-full), and the favicon/logo mark.
+2. **Never use pure white (#FFFFFF) as a section background.** Use --surface-light-warm (#FAF9F7) as the default light background. White is reserved for contrast elements inside warm sections (e.g., a card on a warm-100 bg).
+3. **Dark sections use true black (#0A0A0A), not blue-tinted slate.** This creates maximum drama and makes amber accents sear.
+4. **Amber is surgical.** Never use amber for large fills. Use it for: overline text, CTA buttons, accent borders, step numbers, decorative rules, and photo warm-glow overlays.
+5. **Photo overlays always use `rgba(0,0,0,0.65)`.** This ensures text readability on any background image.
+
+### Gradient Definitions
+
+```css
+/* Hero: dramatic dark falloff for text overlay on photos */
+--gradient-photo-overlay: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,0,0,0.4));
+
+/* Warm light leak effect behind product screenshots */
+--gradient-warm-glow: radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.15), transparent 70%);
+
+/* Section transition: dark to warm */
+--gradient-dark-fade: linear-gradient(180deg, #0A0A0A, #161616);
+
+/* CTA ambient: very subtle amber tint on dark */
+--gradient-cta-ambient: radial-gradient(ellipse at 50% 30%, rgba(245,158,11,0.08), transparent 60%);
+```
+
+---
+
+## 3. Typography
+
+### Font Stack
+
+```
+PRIMARY: Sora
+Geometric sans-serif with optical weight distribution.
+Slightly wider letterforms than Inter/Manrope.
+Sharp and modern without being cold.
+
+BODY ALTERNATIVE: Inter (fallback)
+For body text at small sizes where Sora's width feels heavy.
+
+MONOSPACE: JetBrains Mono
+For code snippets, technical labels, URL displays.
+```
+
+### Google Fonts Import
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+```
+
+### Type Scale
+
+| Token | Size | Weight | Line Height | Letter Spacing | Usage |
+|-------|------|--------|-------------|----------------|-------|
+| `hero` | clamp(2.5rem, 5vw + 1rem, 4.5rem) | 700 | 1.02 | -0.04em | Homepage hero headline |
+| `h1` | clamp(2rem, 3vw + 0.5rem, 3.5rem) | 700 | 1.05 | -0.03em | Page titles |
+| `h2` | clamp(1.5rem, 2vw + 0.5rem, 2.5rem) | 700 | 1.1 | -0.025em | Section headings |
+| `h3` | clamp(1.125rem, 1.5vw + 0.25rem, 1.5rem) | 600 | 1.2 | -0.02em | Card titles, sub-sections |
+| `h4` | 1.125rem (18px) | 600 | 1.3 | -0.01em | Small headings |
+| `body` | 1rem (16px) | 400 | 1.65 | 0 | Paragraphs, descriptions |
+| `body-sm` | 0.875rem (14px) | 400 | 1.6 | 0 | Captions, secondary text |
+| `body-xs` | 0.75rem (12px) | 400 | 1.5 | 0 | Labels, meta info |
+| `overline` | 0.6875rem (11px) | 700 | 1 | 0.2em | Section labels, categories — UPPERCASE |
+| `display-num` | clamp(2rem, 3vw, 3.5rem) | 800 | 1 | -0.03em | Metric values, prices |
+
+### Typography Rules
+
+1. **Headlines are tight.** Letter-spacing goes negative on anything h3 and above. Headings should feel compressed, punchy — not airy.
+2. **Body text breathes.** Line-height 1.65 for body, max-width 600px. Comfortable reading.
+3. **Overline precedes EVERY section heading.** Always amber (#F59E0B), 11px, weight 700, uppercase, tracking 0.2em. This is the #1 visual rhythm device.
+4. **Max two lines for hero headlines.** If it needs three lines, the copy is too long.
+5. **No italics on headings.** The Cinematic Split direction uses straight geometry, not editorial serif curves.
+
+### Font Size CSS
+
+```css
+.text-hero {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.text-h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2rem, 3vw + 0.5rem, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.text-h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.text-h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(1.125rem, 1.5vw + 0.25rem, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.text-overline {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.text-body {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.65;
+}
+```
+
+---
+
+## 4. Spacing & Layout
+
+### Spacing Scale
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `xs` | 4px | Tight gaps, inline spacing |
+| `sm` | 8px | Icon-text gaps, list item spacing |
+| `md` | 16px | Card padding (small), grid gaps |
+| `lg` | 24px | Card padding (standard), section inner gaps |
+| `xl` | 32px | Between content groups |
+| `2xl` | 48px | Section padding (mobile) |
+| `3xl` | 64px | Section padding (tablet) |
+| `4xl` | 80px | Section padding (desktop) |
+| `5xl` | 120px | Hero padding-top |
+| `6xl` | 160px | Maximum hero vertical space |
+
+### Grid System
+
+**Cinematic Split uses an asymmetric grid, NOT a uniform 12-column system.**
+
+```
+FULL-BLEED SECTIONS (hero, photo backgrounds):
+├─────────────────────────────────────────────────────────┤
+│                    100vw, no container                   │
+│    Content overlay uses max-w-7xl (1280px) + px-6       │
+└─────────────────────────────────────────────────────────┘
+
+CONTAINED SECTIONS:
+├─────────────────────────────────────────────────────────┤
+│  px-6 (mobile) │ max-w-7xl (1280px) centered │ px-6    │
+└─────────────────────────────────────────────────────────┘
+
+ASYMMETRIC SPLIT — the signature layout:
+├────────────────────────┬──────────────────┤
+│    60% (image/visual)  │   40% (text)     │  ← Default
+├────────────────────────┴──────────────────┤
+├──────────────────┬────────────────────────┤
+│   40% (text)     │   60% (image/visual)   │  ← Reversed
+├──────────────────┴────────────────────────┤
+
+In CSS grid: grid-cols-5 → image: col-span-3, text: col-span-2
+Or reversed: text: col-span-2, image: col-span-3
+
+EDGE-TO-EDGE FEATURES (no gap between items):
+├─────────┬─────────┬─────────┤
+│  Card 1 │  Card 2 │  Card 3 │  ← gap-0, border between items
+├─────────┴─────────┴─────────┤
+```
+
+### Container
+
+```css
+.container-marketing {
+  max-width: 1280px; /* max-w-7xl */
+  margin: 0 auto;
+  padding-left: 1.5rem;   /* px-6 */
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .container-marketing {
+    padding-left: 3rem;    /* px-12 */
+    padding-right: 3rem;
+  }
+}
+```
+
+### Section Spacing
+
+```css
+/* Standard section */
+.section {
+  padding-top: 3rem;     /* py-12 mobile */
+  padding-bottom: 3rem;
+}
+@media (min-width: 1024px) {
+  .section {
+    padding-top: 5rem;   /* py-20 desktop */
+    padding-bottom: 5rem;
+  }
+}
+
+/* Hero section: extra top padding */
+.section-hero {
+  padding-top: 7rem;     /* pt-28 mobile */
+  padding-bottom: 5rem;
+}
+@media (min-width: 1024px) {
+  .section-hero {
+    padding-top: 10rem;  /* pt-40 desktop */
+    padding-bottom: 6rem;
+  }
+}
+
+/* Full-bleed: zero padding on sides */
+.section-bleed {
+  padding-left: 0;
+  padding-right: 0;
+}
+```
+
+---
+
+## 5. Component Library
+
+### Buttons
+
+**0px border radius. Always.** Cinematic Split buttons are sharp rectangles.
+
+```
+PRIMARY (on dark):
+┌─────────────────────┐
+│  Start free trial    │  bg: amber-500, text: #0F172A
+└─────────────────────┘  hover: amber-600, translate-y: -1px
+                         shadow: 0 4px 16px rgba(245,158,11,0.2)
+
+PRIMARY (on light):
+┌─────────────────────┐
+│  Start free trial    │  bg: #111, text: #FAFAFA
+└─────────────────────┘  hover: #222, translate-y: -1px
+
+SECONDARY (on dark):
+┌─────────────────────┐
+│  See it live →       │  bg: transparent, border: 1px solid rgba(255,255,255,0.15)
+└─────────────────────┘  text: #FAFAFA, hover: border rgba(255,255,255,0.3)
+
+SECONDARY (on light):
+┌─────────────────────┐
+│  Learn more →        │  bg: transparent, border: 1px solid #E7E5E4
+└─────────────────────┘  text: #111, hover: border #D6D3D1
+
+GHOST (text link):
+  Learn more →           text: #111 (light) or #FAFAFA (dark)
+                         hover: translate-x: 4px on arrow
+                         No border, no background
+```
+
+**Button Sizes:**
+
+| Size | Padding | Font Size | Usage |
+|------|---------|-----------|-------|
+| `sm` | px-3 py-1.5 | 12px, 600wt | Navbar CTA, inline actions |
+| `md` | px-5 py-2.5 | 14px, 600wt | Default, most buttons |
+| `lg` | px-7 py-3.5 | 15px, 600wt | Hero CTAs, section CTAs |
+| `xl` | px-8 py-4 | 16px, 700wt | Standalone CTA blocks |
+
+### Cards
+
+**0px border radius. Borders are structural, not decorative.**
+
+```
+FEATURE CARD (on light bg):
+┌─────────────────────────────────────┐
+│                                     │
+│  [amber icon/number]                │
+│                                     │
+│  Feature Title                      │  bg: stone-100 (#F5F5F4)
+│  Description text here that         │  border: none (bg contrast is enough)
+│  explains the feature.              │  padding: 2rem
+│                                     │  border-radius: 0
+└─────────────────────────────────────┘
+
+FEATURE CARD (on dark bg):
+┌─────────────────────────────────────┐
+│                                     │
+│  [amber icon/number]                │  bg: #161616
+│                                     │  border: 1px solid rgba(255,255,255,0.06)
+│  Feature Title                      │  padding: 2rem
+│  Description text.                  │  border-radius: 0
+│                                     │
+└─────────────────────────────────────┘
+
+EDGE-TO-EDGE FEATURE (no outer border, dividers between):
+┌────────────┬────────────┬────────────┐
+│            │            │            │
+│  ✦ Title   │  ⟡ Title   │  ◈ Title   │  bg: inherit from parent
+│  Desc      │  Desc      │  Desc      │  border-right: 1px solid border-color
+│            │            │            │  Last child: no right border
+└────────────┴────────────┴────────────┘
+
+TESTIMONIAL CARD:
+┌─────────────────────────────────────┐
+│  "                                  │  Opening quote mark: amber, large
+│  Quote text goes here. This is      │
+│  what the customer said about       │  bg: surface-light-warm
+│  CelebBoard and how it changed      │  border-left: 3px solid amber-500
+│  their team's energy.               │  border-radius: 0
+│                                     │
+│  ●  Name                            │  Avatar: rounded-full (only exception)
+│     Title, Company                  │
+└─────────────────────────────────────┘
+
+PRICING CARD (featured):
+┌─────────────────────────────────────┐
+│  ┌─MOST POPULAR────────────────┐    │  Outer: bg: white, no radius
+│  │  Growth                     │    │  Featured: border-top: 3px solid amber-500
+│  │  $149/mo                    │    │  Non-featured: border-top: 3px solid stone-200
+│  │                             │    │
+│  │  ✓ Up to 50 members         │    │  Check: amber circle, white check
+│  │  ✓ Unlimited TVs            │    │
+│  │  ✓ Unlimited integrations   │    │
+│  │                             │    │
+│  │  [Start free trial]         │    │  CTA: full-width amber button
+│  └─────────────────────────────┘    │
+└─────────────────────────────────────┘
+```
+
+### Navigation
+
+```
+NAVBAR (dark, always):
+┌─────────────────────────────────────────────────────────────┐
+│  CELEBBOARD           Features  Pricing  About    [CTA]    │
+│  ^^^^^^^^^^                                                 │
+│  Logo in caps,        Links: 13px, wt 500         Btn: sm  │
+│  tracking 0.15em      color: #888                          │
+│  wt 700               hover: #FFF                          │
+└─────────────────────────────────────────────────────────────┘
+
+Position: sticky top-0, z-50
+Background: rgba(10,10,10,0.9) + backdrop-blur-md
+Border-bottom: 1px solid rgba(255,255,255,0.06)
+Height: 56px
+```
+
+### Overline Pattern
+
+The #1 visual rhythm device. Precedes every section heading.
+
+```
+REAL WINS. REAL ENERGY.                    ← overline
+Make every win feel                        ← heading
+like it matters.                           ← heading cont.
+───────── (40px amber rule)                ← decorative rule (optional)
+Subtitle text goes here describing         ← body text
+what this section covers.
+```
+
+```css
+.overline {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.6875rem;    /* 11px */
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #F59E0B;
+  margin-bottom: 1rem;
+}
+
+/* Optional amber decorative rule after heading */
+.heading-rule {
+  width: 40px;
+  height: 2px;
+  background: #F59E0B;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+```
+
+### Step Numbers
+
+Used in "How it Works" and numbered feature lists.
+
+```
+┌──────┐
+│  01  │   w-10 h-10 (40px)
+└──────┘   bg: amber-100 (#FEF3C7)
+           text: amber-700 (#B45309)
+           font: Sora, 14px, weight 700
+           border-radius: 0 (sharp square)
+           display: flex, center
+```
+
+### Metric Display
+
+For social proof metrics bar and pricing numbers.
+
+```
+ 2,400+                    ← display-num: clamp(2rem,3vw,3.5rem), wt 800
+ Celebrations displayed    ← body-xs: 12px, text-on-light-muted
+
+ Layout: centered in column, 4-col grid with vertical dividers
+ Divider: 1px solid border-light between each metric
+```
+
+---
+
+## 6. Section Blueprints
+
+### Homepage Section Flow
+
+```
+┌─────────────────────────────────────────────────┐
+│  NAVBAR                              #0A0A0A    │  Dark
+├─────────────────────────────────────────────────┤
+│  HERO — Full-bleed photo bg                     │
+│  ┌──────────────────┬──────────────────────┐    │
+│  │  Text overlay     │  Floating TV mockup  │    │  Dark (photo + overlay)
+│  │  60%              │  40%                 │    │
+│  └──────────────────┴──────────────────────┘    │
+├─────────────────────────────────────────────────┤
+│  ASYMMETRIC SPLIT — How It Works                │
+│  ┌──────────────────────┬──────────────────┐    │
+│  │  Product screenshot   │  3-step text     │    │  Light warm (#FAF9F7)
+│  │  60%                  │  40%             │    │
+│  └──────────────────────┴──────────────────┘    │
+├─────────────────────────────────────────────────┤
+│  LOGO BAR                            #F5F5F4    │  Light muted
+├─────────────────────────────────────────────────┤
+│  FEATURES — Edge-to-edge 3-column               │
+│  ┌────────────┬────────────┬────────────┐       │
+│  │  Feature 1 │  Feature 2 │  Feature 3 │       │  Light warm (#FAF9F7)
+│  └────────────┴────────────┴────────────┘       │
+├─────────────────────────────────────────────────┤
+│  PRODUCT SHOWCASE — Reversed asymmetric split   │
+│  ┌──────────────────┬──────────────────────┐    │
+│  │  Text + metrics   │  Dashboard screenshot│    │  Dark (#0A0A0A)
+│  │  40%              │  60%                 │    │
+│  └──────────────────┴──────────────────────┘    │
+├─────────────────────────────────────────────────┤
+│  SOCIAL PROOF — Metrics bar + testimonial       │  Light warm (#FAF9F7)
+├─────────────────────────────────────────────────┤
+│  VERTICALS — "Built for any activity team"      │  Light muted (#F5F5F4)
+├─────────────────────────────────────────────────┤
+│  PRICING — 3-column cards                       │  White (#FFF)
+├─────────────────────────────────────────────────┤
+│  FAQ                                            │  Light warm (#FAF9F7)
+├─────────────────────────────────────────────────┤
+│  FINAL CTA — Full-bleed dark with amber glow    │  Dark (#0A0A0A)
+├─────────────────────────────────────────────────┤
+│  FOOTER                              #0A0A0A    │  Dark
+└─────────────────────────────────────────────────┘
+```
+
+### Hero Section (Full-Bleed Cinematic)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    FULL-BLEED BACKGROUND                         │
+│  (simulated office photo: textured dark overlay on ambient       │
+│   office-like background, warm amber light leak from right)      │
+│                                                                  │
+│  ┌────────────────────────────────┬────────────────────────┐     │
+│  │                                │                        │     │
+│  │  REAL WINS. REAL ENERGY.       │    ┌──────────────┐    │     │
+│  │  ^^^ overline (amber, 11px)   │    │              │    │     │
+│  │                                │    │  TV DASHBOARD │    │     │
+│  │  Make every                    │    │  SCREENSHOT   │    │     │
+│  │  win feel like                 │    │  (floating,   │    │     │
+│  │  it matters.                   │    │  with subtle  │    │     │
+│  │  ^^^ hero headline            │    │  shadow)      │    │     │
+│  │                                │    │              │    │     │
+│  │  subtitle text (14px, muted)   │    └──────────────┘    │     │
+│  │                                │                        │     │
+│  │  [Start free trial]            │                        │     │
+│  │  [See it live →]               │                        │     │
+│  │                                │                        │     │
+│  └────────────────────────────────┴────────────────────────┘     │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+Left column (60%): Text aligned left, vertically centered
+Right column (40%): TV mockup, vertically centered, slight shadow
+
+Background layers:
+1. Base: #0A0A0A
+2. Texture: subtle CSS noise/grid pattern at 3-5% opacity
+3. Gradient overlay: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,0,0,0.4))
+4. Warm light leak: radial-gradient at 80% 40%, rgba(245,158,11,0.15)
+```
+
+### Asymmetric Split Section (How It Works)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  ┌──────────────────────────────┬──────────────────────────┐     │
+│  │                              │                          │     │
+│  │   PRODUCT SCREENSHOT         │  HOW IT WORKS            │     │
+│  │   in context                 │  ^^^ overline            │     │
+│  │                              │                          │     │
+│  │   Full-height dashboard      │  Three steps to          │     │
+│  │   mockup, bg: stone-100      │  team energy.            │     │
+│  │   with subtle border         │  ^^^ h2                  │     │
+│  │                              │                          │     │
+│  │   Caption at bottom:         │  ① Connect your tools    │     │
+│  │   "Dashboard view"           │  ② Define celebrations   │     │
+│  │   text-xs, stone-400         │  ③ Put it on any TV      │     │
+│  │                              │                          │     │
+│  │   60% width (col-span-3)     │  40% width (col-span-2)  │     │
+│  └──────────────────────────────┴──────────────────────────┘     │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+Layout: grid grid-cols-5, no gap
+Left: col-span-3, bg: stone-100, contains screenshot
+Right: col-span-2, bg: warm-50, contains text, border-left: 1px
+```
+
+### Edge-to-Edge Features
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  WHAT CELEBBOARD DOES                                            │
+│  ^^^ overline, centered                                         │
+│                                                                  │
+│  ┌──────────────────┬──────────────────┬──────────────────┐      │
+│  │                  │                  │                  │      │
+│  │  ✦               │  ⟡               │  ◈               │      │
+│  │  Automated       │  Live KPIs &     │  Zero            │      │
+│  │  Celebrations    │  Leaderboards    │  Maintenance     │      │
+│  │                  │                  │                  │      │
+│  │  Confetti,       │  Revenue, deals, │  Set up once.    │      │
+│  │  sounds, team    │  pipeline —      │  Runs 24/7 on    │      │
+│  │  photos.         │  always current. │  any browser.    │      │
+│  │                  │                  │                  │      │
+│  │  border-right ─  │  border-right ─  │  (no right bdr)  │      │
+│  └──────────────────┴──────────────────┴──────────────────┘      │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+Layout: grid grid-cols-3, gap-0
+Dividers: border-right: 1px solid stone-200 (on light) or rgba(255,255,255,0.06) (on dark)
+Each cell: padding 2rem
+Icon: amber text, 14-18px
+```
+
+### Social Proof Section
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  ┌────────────┬────────────┬────────────┬────────────┐           │
+│  │  2,400+    │  50+       │  < 5 min   │  4.9★      │           │
+│  │  Celebra-  │  Teams     │  Average   │  Average   │  Metrics  │
+│  │  tions     │  using CB  │  setup     │  rating    │  bar      │
+│  └────────────┴────────────┴────────────┴────────────┘           │
+│                                                                  │
+│  ────────────────────────────────────────────────                 │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────┐        │
+│  │  │  "We used to ring a bell. Now the TV explodes     │        │
+│  │  │  with confetti and the whole office cheers."       │        │
+│  │  │                                                    │        │
+│  │  │  ● Sarah L. — VP Sales, TechCorp                  │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  Logo bar: [Acme] [TechFlow] [NovaStar] [CloudPeak] [DataVault] │
+│  grayscale, opacity 30%, horizontal                              │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+Testimonial card: border-left: 3px solid amber-500
+Metrics: display-num weight, text-on-light, with dividers between
+```
+
+### Final CTA (Dark, Ambient)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    bg: #0A0A0A                                    │
+│         ambient glow: radial amber at 8% opacity                 │
+│                                                                  │
+│  YOUR TEAM'S NEXT WIN IS WAITING.                                │
+│  ^^^ overline                                                    │
+│                                                                  │
+│  The only thing missing                                          │
+│  is the confetti.                                                │
+│  ^^^ h2, text-on-dark                                            │
+│                                                                  │
+│  ─────── (amber rule, 40px)                                      │
+│                                                                  │
+│  Set up in minutes. Runs itself forever.                         │
+│  ^^^ body-sm, text-on-dark-muted                                 │
+│                                                                  │
+│  [Start free trial]                                              │
+│  ^^^ amber button, size xl                                       │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 7. Imagery & Photography Direction
+
+### Product Screenshots
+
+Product screenshots are STRUCTURAL, not decorative. They appear in:
+
+1. **Hero**: TV dashboard mockup floating on right side of split hero
+2. **How It Works split**: Full-height dashboard in left 60% column
+3. **Product Showcase split**: Dashboard in right 60% column (dark bg)
+
+**Treatment rules:**
+- Screenshots sit in a simple border frame: `2px solid rgba(255,255,255,0.08)` on dark, `1px solid #E7E5E4` on light
+- 0px border radius (sharp edges)
+- On dark backgrounds: subtle warm glow behind → `radial-gradient(ellipse, rgba(245,158,11,0.1), transparent 60%)`
+- On light backgrounds: subtle shadow → `shadow-lg shadow-stone-200/50`
+- Caption below in `text-xs` stone-400: "Dashboard view" or "Live celebration overlay"
+
+### Ambient Photography Textures
+
+The hero and CTA sections use ambient "office" textures — not stock photos, but abstract textures that suggest an office environment:
+
+```css
+/* Subtle grid/office texture overlay on dark sections */
+.texture-grid {
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%);
+  background-size: 20px 20px;
+}
+
+/* Noise texture overlay for depth */
+.texture-noise {
+  /* Apply via a pseudo-element at low opacity */
+  background-image: url("data:image/svg+xml,...");
+  opacity: 0.03;
+}
+```
+
+### Team Member Photos
+
+In product screenshots and testimonials, team member photos are the ONLY round elements:
+- Always `rounded-full` (the single exception to 0px radius)
+- Bordered: `border-2 border-dark-900` on dark, `border-2 border-white` on light
+- Sizes: 20px (in dashboard), 28px (in testimonials), 40px (standalone)
+
+---
+
+## 8. Motion & Animation
+
+### Principles
+
+Cinematic Split animation should feel like a **camera revealing a scene**, not elements bouncing in.
+
+1. **Reveal, don't enter.** Elements fade in from slight opacity/translate, as if the camera is panning to them — not flying in from offscreen.
+2. **Horizontal reveals for split layouts.** Left-side content reveals from left, right from right. This reinforces the asymmetric split.
+3. **No bounce. No wiggle.** Sharp easing curves. `cubic-bezier(0.16, 1, 0.3, 1)` — fast start, smooth settle.
+4. **Respect the grid.** Confetti particles in the product mockup can be playful. Marketing page animations are cinematic.
+
+### Scroll Animations
+
+```css
+/* Base: invisible, slightly translated */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-animate].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Horizontal reveal for split layouts */
+[data-animate="from-left"] {
+  transform: translateX(-30px);
+}
+[data-animate="from-left"].is-visible {
+  transform: translateX(0);
+}
+
+[data-animate="from-right"] {
+  transform: translateX(30px);
+}
+[data-animate="from-right"].is-visible {
+  transform: translateX(0);
+}
+
+/* Stagger children */
+[data-animate-children] > *:nth-child(1) { transition-delay: 0ms; }
+[data-animate-children] > *:nth-child(2) { transition-delay: 100ms; }
+[data-animate-children] > *:nth-child(3) { transition-delay: 200ms; }
+[data-animate-children] > *:nth-child(4) { transition-delay: 300ms; }
+```
+
+### Hover Interactions
+
+```css
+/* Buttons: sharp lift */
+button:hover {
+  transform: translateY(-1px);
+  transition: transform 0.15s ease;
+}
+
+/* Cards: subtle lift + border shift */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+}
+
+/* Ghost links: arrow slides right */
+.ghost-link:hover .arrow {
+  transform: translateX(4px);
+  transition: transform 0.15s ease;
+}
+
+/* Logo bar: opacity increase */
+.logo-bar img:hover {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+```
+
+### Ambient Motion
+
+```css
+/* Warm glow pulse on hero (very subtle) */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.18; }
+}
+
+.hero-glow {
+  animation: glow-pulse 6s ease-in-out infinite;
+}
+
+/* Logo bar marquee on mobile */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.logo-marquee {
+  animation: marquee 30s linear infinite;
+}
+```
+
+### Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  [data-animate],
+  [data-animate="from-left"],
+  [data-animate="from-right"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-glow { animation: none; }
+  .logo-marquee { animation: none; }
+}
+```
+
+---
+
+## 9. Accessibility
+
+### Contrast Ratios (WCAG AA)
+
+| Text | Background | Ratio | Pass |
+|------|-----------|-------|------|
+| #FAFAFA on #0A0A0A | Dark hero | 19.4:1 | ✅ AAA |
+| #888888 on #0A0A0A | Dark muted | 5.5:1 | ✅ AA |
+| #F59E0B on #0A0A0A | Amber on dark | 8.2:1 | ✅ AAA |
+| #111111 on #FAF9F7 | Light heading | 17.1:1 | ✅ AAA |
+| #666666 on #FAF9F7 | Light muted | 5.9:1 | ✅ AA |
+| #0F172A on #F59E0B | Button text | 8.5:1 | ✅ AAA |
+| #FFFFFF on #F59E0B | Alt button text | 3.1:1 | ⚠️ AA-large only |
+
+**Note:** CTA buttons use dark text (#0F172A) on amber — not white on amber (which fails AA for small text).
+
+### Focus States
+
+```css
+*:focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+}
+
+/* On dark backgrounds */
+[data-surface="dark"] *:focus-visible {
+  outline-color: #FBBF24;
+}
+```
+
+### Semantic HTML
+
+- Every section landmark uses `<section>` with `aria-labelledby`
+- Heading hierarchy: one `<h1>` per page, sections use `<h2>`, sub-sections `<h3>`
+- Navigation uses `<nav>` with `aria-label`
+- Images use descriptive `alt` text; decorative textures use `aria-hidden="true"`
+- Buttons have meaningful text (never "Click here")
+- Color is never the only indicator of state
+
+### Touch Targets
+
+- Minimum 44×44px for all interactive elements
+- Navbar links: 44px tall tap zone even if text is smaller
+- Mobile menu items: full-width, 48px tall minimum
+
+---
+
+## 10. Responsive Breakpoints
+
+| Name | Width | Key Changes |
+|------|-------|-------------|
+| `sm` | 640px | Logo bar wraps, features stack |
+| `md` | 768px | Split layouts become 50/50, features 2-col |
+| `lg` | 1024px | Primary target — full asymmetric splits, 3-col features |
+| `xl` | 1280px | Container max-width reached, extra breathing room |
+| `2xl` | 1536px | Generous padding, cinematic whitespace |
+
+### Mobile Adaptations
+
+```
+HERO (mobile):
+- Stacks vertically: text on top, TV mockup below (smaller)
+- Hero headline: clamp min kicks in (2.5rem)
+- Buttons stack vertically on very small screens
+
+ASYMMETRIC SPLITS (mobile):
+- Stack vertically: image on top, text below
+- Image becomes full-width, constrained height
+- Text gets full-width padding
+
+EDGE-TO-EDGE FEATURES (mobile):
+- Stack vertically, full-width
+- Dividers become border-bottom instead of border-right
+
+METRICS BAR (mobile):
+- 2×2 grid instead of 4-col
+- Dividers adjust accordingly
+
+PRICING CARDS (mobile):
+- Stack vertically, featured card first
+- Full-width cards
+```
+
+---
+
+## 11. Implementation Checklist
+
+### Tailwind Setup
+- [ ] Add Sora font to `layout.tsx` via Google Fonts
+- [ ] Extend Tailwind config with brand, dark, warm color scales
+- [ ] Override default border-radius to 0px in Tailwind config
+- [ ] Set up CSS custom properties in globals.css
+
+### Components to Build
+- [ ] `Navbar` — sticky dark, sharp, with language switcher
+- [ ] `Footer` — dark, multi-column, sharp edges
+- [ ] `SectionWrapper` — handles dark/light surface, padding, full-bleed
+- [ ] `Overline` — amber label component (reused in every section)
+- [ ] `HeadingRule` — optional amber decorative rule after headings
+- [ ] `AsymmetricSplit` — the signature 60/40 or 40/60 split component
+- [ ] `EdgeToEdgeGrid` — 3-column with dividers, no outer border
+- [ ] `MetricsBar` — 4-column metrics with dividers
+- [ ] `TestimonialCard` — left-border amber, quote + avatar
+- [ ] `PricingCard` — sharp, top-border accent, featured variant
+- [ ] `TVMockup` — product dashboard screenshot wrapper
+- [ ] `HeroSection` — full-bleed with photo texture overlay
+- [ ] `CTASection` — dark with ambient amber glow
+- [ ] `LogoBar` — grayscale logos, horizontal scroll
+
+### Section Pages
+- [ ] Homepage — full section flow per blueprint
+- [ ] Features — expanded feature details with alternating splits
+- [ ] Pricing — 3-tier cards + FAQ + comparison table
+- [ ] About — origin story with photo + values grid
+
+### Animation
+- [ ] Scroll reveal observer (IntersectionObserver wrapper)
+- [ ] Horizontal reveal variants for split sections
+- [ ] Stagger children utility
+- [ ] Reduced motion media query
+
+---
+
+## 12. Quick Reference — Design Decisions
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Border radius | 0px everywhere | Editorial confidence, visual tension, uniqueness |
+| Dark base | True black (#0A0A0A) | Maximum drama, amber pops harder than on blue-gray |
+| Light base | Warm stone (#FAF9F7) | Gallery warmth, not sterile SaaS white |
+| Font | Sora | Geometric + warm, wider letterforms than Inter, distinctive |
+| Layout | Asymmetric 60/40 splits | Cinematic, storytelling, breaks SaaS monotony |
+| Feature layout | Edge-to-edge with dividers | Feels like a magazine, not a card grid |
+| Hero | Full-bleed photo + text overlay | Dramatic, cinematic, memorable |
+| CTA | Dark + amber ambient glow | Warm ending, callback to hero mood |
+| Accent usage | Surgical — overlines, buttons, rules, step numbers | Amber means something every time it appears |
+| Photos | Always in context (TV mockup, office scene) | Product sells when shown as it's used |
+| Team photos | Only rounded elements on the page | Humanizes, creates visual contrast with sharp edges |
+| Gradient use | Photo overlays + warm glows only | No decorative gradients — this is photography-driven |
+
+---
+
+*This design system is the single source of truth for CelebBoard's marketing site. Every component, page, and section should reference this document. When in doubt: sharp edges, warm surfaces, cinematic framing, amber accents.*

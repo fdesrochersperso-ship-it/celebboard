@@ -1,0 +1,127 @@
+/**
+ * CelebBoard Marketing Site — Cinematic Split Design System
+ * @see docs/design-system-website
+ */
+
+/* Tailwind theme extension for marketing */
+@theme {
+  --color-brand-50: #FFFBEB;
+  --color-brand-100: #FEF3C7;
+  --color-brand-200: #FDE68A;
+  --color-brand-300: #FCD34D;
+  --color-brand-400: #FBBF24;
+  --color-brand-500: #F59E0B;
+  --color-brand-600: #D97706;
+  --color-brand-700: #B45309;
+  --color-brand-800: #92400E;
+  --color-brand-900: #78350F;
+  --color-dark-900: #0A0A0A;
+  --color-dark-800: #161616;
+  --color-dark-700: #222222;
+  --color-dark-600: #333333;
+  --color-warm-50: #FAF9F7;
+  --color-warm-100: #F5F5F4;
+  --color-warm-200: #E7E5E4;
+  --color-warm-300: #D6D3D1;
+  --color-mkt-text-on-dark: #FAFAFA;
+  --color-mkt-text-on-dark-muted: #888888;
+  --radius-none: 0px;
+}
+
+/* Design tokens for marketing scope */
+.marketing-site {
+  /* Surfaces */
+  --mkt-surface-dark: #0A0A0A;
+  --mkt-surface-dark-elevated: #161616;
+  --mkt-surface-dark-card: #222222;
+  --mkt-surface-light-warm: #FAF9F7;
+  --mkt-surface-light-muted: #F5F5F4;
+  --mkt-surface-photo-overlay: rgba(0, 0, 0, 0.65);
+
+  /* Text */
+  --mkt-text-on-dark: #FAFAFA;
+  --mkt-text-on-dark-muted: #888888;
+  --mkt-text-on-dark-subtle: #555555;
+  --mkt-text-on-light: #111111;
+  --mkt-text-on-light-muted: #666666;
+  --mkt-text-on-light-subtle: #999999;
+
+  /* Accent */
+  --mkt-accent: #F59E0B;
+  --mkt-accent-hover: #D97706;
+  --mkt-accent-light: #FEF3C7;
+  --mkt-accent-glow: rgba(245, 158, 11, 0.15);
+
+  /* Borders */
+  --mkt-border-dark: rgba(255, 255, 255, 0.06);
+  --mkt-border-light: #E7E5E4;
+
+  /* Gradients */
+  --mkt-gradient-photo-overlay: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,0,0,0.4));
+  --mkt-gradient-warm-glow: radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.15), transparent 70%);
+  --mkt-gradient-cta-ambient: radial-gradient(ellipse at 50% 30%, rgba(245,158,11,0.08), transparent 60%);
+}
+
+/* Typography — Sora font */
+.marketing-site {
+  font-family: var(--font-sora), 'Sora', system-ui, sans-serif;
+}
+
+.marketing-site .text-hero {
+  font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.marketing-site .text-h1 {
+  font-size: clamp(2rem, 3vw + 0.5rem, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.marketing-site .text-h2 {
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.marketing-site .text-h3 {
+  font-size: clamp(1.125rem, 1.5vw + 0.25rem, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.marketing-site .text-overline {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mkt-accent);
+}
+
+.marketing-site .text-display-num {
+  font-size: clamp(2rem, 3vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* Overline + rule pattern */
+.marketing-site .mkt-heading-rule {
+  width: 40px;
+  height: 2px;
+  background: var(--mkt-accent);
+}
+
+/* Grid texture overlay */
+.mkt-texture-grid {
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%);
+  background-size: 20px 20px;
+}
