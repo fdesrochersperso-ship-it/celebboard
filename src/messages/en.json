@@ -1,0 +1,604 @@
+{
+  "metadata": {
+    "home": {
+      "title": "CelebBoard — Wins happen. Make sure your team sees them.",
+      "description": "CelebBoard is the celebration engine for activity-driven teams. Connect your CRM, celebrate wins on office TVs with confetti, sounds, team photos, and live leaderboards. Set up in minutes."
+    },
+    "features": {
+      "title": "Features — Everything your team screen should be | CelebBoard",
+      "description": "Automated celebrations, live leaderboards, KPI cards, team photos, content feeds, and themes. CelebBoard turns any screen into a celebration engine."
+    },
+    "pricing": {
+      "title": "Pricing — Simple pricing. Unlimited celebrations. | CelebBoard",
+      "description": "Flat-rate pricing with unlimited TVs. No per-user fees. No per-screen charges. Start at $49/mo for up to 15 team members."
+    },
+    "about": {
+      "title": "About — Built in Montréal for teams everywhere | CelebBoard",
+      "description": "CelebBoard was born from a simple observation: teams that see their wins together, win more together. Learn about our mission to make every win visible."
+    },
+    "blog": {
+      "title": "Blog — Insights on team celebration & motivation | CelebBoard",
+      "description": "Articles on team recognition, office culture, TV dashboards, and how to build a celebration-first workplace."
+    },
+    "terms": {
+      "title": "Terms of Service | CelebBoard",
+      "description": "CelebBoard terms of service and usage agreement."
+    },
+    "privacy": {
+      "title": "Privacy Policy | CelebBoard",
+      "description": "CelebBoard privacy policy. How we handle your data."
+    }
+  },
+
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "blog": "Blog",
+    "login": "Log in",
+    "cta": "Get started free",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu"
+  },
+
+  "footer": {
+    "tagline": "Every win deserves a moment.",
+    "product": "Product",
+    "productLinks": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "integrations": "Integrations",
+      "changelog": "Changelog"
+    },
+    "company": "Company",
+    "companyLinks": {
+      "about": "About",
+      "blog": "Blog",
+      "contact": "Contact us",
+      "careers": "Careers"
+    },
+    "legal": "Legal",
+    "legalLinks": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    },
+    "connect": "Connect",
+    "connectLinks": {
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "email": "Email us"
+    },
+    "copyright": "© {year} CelebBoard. All rights reserved.",
+    "builtIn": "Built in Montréal 🇨🇦"
+  },
+
+  "languageSwitcher": {
+    "en": "EN",
+    "fr": "FR",
+    "switchTo": "Passer en français"
+  },
+
+  "home": {
+    "hero": {
+      "title": "Wins happen. Make sure your team sees them.",
+      "subtitle": "Connect your CRM or business tools. When milestones hit, your office TV celebrates automatically — confetti, sounds, team photos, live leaderboards. Set up in minutes.",
+      "cta": "Get started free",
+      "ctaSecondary": "See it in action",
+      "noCard": "Free 14-day trial · No credit card required"
+    },
+
+    "logoBar": {
+      "title": "Trusted by activity-driven teams"
+    },
+
+    "problem": {
+      "title": "Your team's best work is invisible.",
+      "subtitle": "Right now, wins happen and nobody notices — unless someone remembers to post in Slack. CelebBoard changes that.",
+      "before": {
+        "label": "Before CelebBoard",
+        "items": [
+          "Wins announced hours late — if at all",
+          "Only managers see the real numbers",
+          "Office TV shows a screensaver or the news",
+          "Recognition depends on who's loudest",
+          "Remote and in-office feel disconnected"
+        ]
+      },
+      "after": {
+        "label": "With CelebBoard",
+        "items": [
+          "Wins celebrated the instant they happen",
+          "Everyone sees the team's momentum",
+          "Office TV is the most-watched screen in the room",
+          "Every contributor gets their moment",
+          "Same energy, every location"
+        ]
+      }
+    },
+
+    "featuresGrid": {
+      "title": "Get to know CelebBoard",
+      "subtitle": "Three promises. One platform.",
+      "cards": [
+        {
+          "title": "Wins that announce themselves",
+          "description": "When a deal closes, a milestone hits, or a target falls — your office TV lights up. Confetti, sounds, team photos. No manual posting."
+        },
+        {
+          "title": "The scoreboard everyone watches",
+          "description": "Live metrics from your CRM, production system, or any data source. Individual and team leaderboards that update in real time."
+        },
+        {
+          "title": "Set it up once. It runs forever.",
+          "description": "Connect your tools, pick your celebration style, put it on any TV. No IT department needed. No daily management."
+        },
+        {
+          "title": "Your team, front and center",
+          "description": "Every celebration features the person behind it. Photos synced from your CRM or uploaded in bulk. Faces make wins personal."
+        },
+        {
+          "title": "Works on any screen",
+          "description": "Smart TV, Chromecast, break room monitor, tablet on the wall. If it has a browser, it runs CelebBoard. No special hardware."
+        },
+        {
+          "title": "Your brand, your vibe",
+          "description": "Dark mode, light mode, your colors, your logo, your sounds. Make it yours — or use our defaults and look great instantly."
+        }
+      ]
+    },
+
+    "howItWorks": {
+      "title": "Three steps. Five minutes. Celebrations forever.",
+      "steps": [
+        {
+          "number": "1",
+          "title": "Connect your tools",
+          "description": "HubSpot, Slack, Salesforce, or any system with a webhook. Two clicks to connect, no developer needed."
+        },
+        {
+          "number": "2",
+          "title": "Define what's worth celebrating",
+          "description": "Deal closed? Production target hit? New client signed? Pick from templates or create your own celebration style."
+        },
+        {
+          "number": "3",
+          "title": "Put it on any TV",
+          "description": "Open a URL on any screen. That's it. CelebBoard handles everything else — 24/7, zero maintenance."
+        }
+      ]
+    },
+
+    "testimonials": {
+      "title": "Teams that celebrate together, win together.",
+      "items": [
+        {
+          "quote": "The energy shift was immediate. The first time confetti hit the office TV with a rep's face on it, the whole floor erupted. Now people look up every time the screen lights up.",
+          "author": "VP Sales",
+          "company": "SaaS company, 45 employees",
+          "role": "VP Sales"
+        },
+        {
+          "quote": "We tried Geckoboard for a year. Nobody looked at it after the first week. CelebBoard is the opposite — people stop what they're doing when a celebration fires.",
+          "author": "Operations Manager",
+          "company": "Manufacturing firm, 120 employees",
+          "role": "Operations Manager"
+        },
+        {
+          "quote": "Setup took less time than our morning standup. We were live before lunch. That never happens with SaaS tools.",
+          "author": "Revenue Operations Lead",
+          "company": "Advisory firm, 30 employees",
+          "role": "Revenue Operations Lead"
+        }
+      ]
+    },
+
+    "verticals": {
+      "title": "If your team tracks it, CelebBoard celebrates it.",
+      "subtitle": "Built for any team where individual performance drives collective results.",
+      "cards": [
+        {
+          "title": "Sales Teams",
+          "description": "Deals closed, revenue milestones, pipeline goals. Turn your CRM activity into instant team energy.",
+          "link": "See how →"
+        },
+        {
+          "title": "Production & Manufacturing",
+          "description": "Units produced, quality targets, shift milestones. Make the factory floor as visible as the front office.",
+          "link": "See how →"
+        },
+        {
+          "title": "Advisory & Services",
+          "description": "Projects delivered, clients onboarded, billable milestones. Celebrate the work that's easy to overlook.",
+          "link": "See how →"
+        },
+        {
+          "title": "Any Metric-Driven Team",
+          "description": "GMV, signups, tickets resolved, campaigns launched. If there's a number and a person behind it, CelebBoard makes it a moment.",
+          "link": "See how →"
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "Your team's next win is waiting.",
+      "subtitle": "Start celebrating in minutes. Free for 14 days.",
+      "cta": "Get started free",
+      "ctaSecondary": "Book a demo",
+      "noCard": "No credit card required"
+    }
+  },
+
+  "features": {
+    "hero": {
+      "title": "Everything your team screen should be.",
+      "subtitle": "Automated celebrations. Live leaderboards. KPI cards. Team photos. Content feeds. Themes. All in one screen your team actually wants to watch."
+    },
+
+    "celebrationEngine": {
+      "title": "The celebration engine",
+      "subtitle": "Your team closes a deal at 3:47 PM. At 3:47 PM, every screen in the office explodes with confetti, the closer's photo, and the deal details. No one posted it. No one scheduled it. It just happened.",
+      "features": [
+        {
+          "title": "Instant full-screen celebrations",
+          "description": "Confetti, fireworks, or champagne animations take over the screen the moment a win is detected. Impossible to miss."
+        },
+        {
+          "title": "Custom sounds",
+          "description": "Victory fanfare, cash register, applause, or upload your own. Every celebration type gets its own sound."
+        },
+        {
+          "title": "Team member photos",
+          "description": "The closer's face, front and center. Auto-synced from your CRM or uploaded in bulk. Wins are personal — they should look personal."
+        },
+        {
+          "title": "Template builder",
+          "description": "Start with presets (Deal Won, New Client, Target Hit) or build your own. Dynamic fields pull data straight from the webhook."
+        },
+        {
+          "title": "Smart triggers",
+          "description": "Fire celebrations based on any combination of event type, field values, and conditions. \"Deal over $10K from the Enterprise pipeline\" — that specific."
+        },
+        {
+          "title": "Running totals",
+          "description": "Show cumulative metrics alongside each celebration. \"This quarter: $312K across 18 deals.\" Context makes the moment bigger."
+        }
+      ]
+    },
+
+    "integrations": {
+      "title": "Connects to the tools you already use",
+      "subtitle": "CelebBoard listens to your existing systems. No migration, no data entry, no extra work.",
+      "cards": [
+        {
+          "name": "HubSpot",
+          "description": "Deal stage changes, owner data, company info, custom properties. Native connector with team sync."
+        },
+        {
+          "name": "Salesforce",
+          "description": "Opportunities, accounts, custom objects. Deep CRM integration for enterprise sales teams."
+        },
+        {
+          "name": "Slack",
+          "description": "Channel messages, emoji reactions, team photos. Celebrate across screens and conversations."
+        },
+        {
+          "name": "Google Analytics",
+          "description": "Real-time active users, live session counts. Show your marketing pulse alongside sales wins."
+        },
+        {
+          "name": "Webhooks",
+          "description": "Any system that sends JSON. Production software, project tools, custom APIs — if it can send a webhook, CelebBoard can celebrate it."
+        },
+        {
+          "name": "More coming",
+          "description": "Pipedrive, Zoho, Monday.com, and more on the roadmap. Need something specific? Let us know."
+        }
+      ]
+    },
+
+    "dashboard": {
+      "title": "A TV dashboard built for TVs. Not laptops.",
+      "subtitle": "Most \"TV dashboards\" are laptop dashboards stretched to a bigger screen. CelebBoard is designed from pixel one for a screen across the room.",
+      "features": [
+        {
+          "title": "Live KPI cards",
+          "description": "Revenue, units, clients, pipeline — your north star metrics, always current. Big numbers, trend indicators, formatted for distance."
+        },
+        {
+          "title": "Individual & team leaderboards",
+          "description": "Rankings that update in real time. Not to create pressure — to create visibility. With photos, so everyone knows who's climbing."
+        },
+        {
+          "title": "Content feed",
+          "description": "Team photos, Slack shoutouts, custom announcements — rotating between celebrations. Your office TV becomes the team's living wall."
+        },
+        {
+          "title": "QR code submissions",
+          "description": "Team members scan a QR code to submit photos and shoutouts directly to the feed. Zero app installs, works from any phone."
+        },
+        {
+          "title": "Charts & trends",
+          "description": "Progress bars, line charts, historical comparisons. Visual momentum your team can track at a glance."
+        },
+        {
+          "title": "Runs 24/7 autonomously",
+          "description": "Auto-reconnects after network drops. Recovers from sleep/wake cycles. Handles TV power-offs gracefully. Set it and forget it — truly."
+        }
+      ]
+    },
+
+    "admin": {
+      "title": "Simple admin. Zero overhead.",
+      "subtitle": "Configure once, adjust when you want. No daily management required.",
+      "features": [
+        {
+          "title": "Visual template builder",
+          "description": "Drag, drop, preview. See exactly how your celebration will look before it goes live."
+        },
+        {
+          "title": "Field mapping",
+          "description": "Map any data from your webhook to any display field. Deal name, amount, owner, custom fields — point and click."
+        },
+        {
+          "title": "Team management",
+          "description": "Sync from your CRM automatically, bulk upload from CSV, or add manually. Photos included."
+        },
+        {
+          "title": "Theme picker",
+          "description": "Dark, light, vibrant — or set your own brand colors. Logo upload. Custom CSS for the bold."
+        },
+        {
+          "title": "Live preview",
+          "description": "Preview your dashboard exactly as it appears on TV. Test celebrations before they go live."
+        },
+        {
+          "title": "Celebration history",
+          "description": "Full log of every celebration fired. Replay any moment. Export data for reporting."
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "See it on your screen in 10 minutes.",
+      "subtitle": "Connect your tools. Pick a celebration style. Go live.",
+      "cta": "Start for free"
+    }
+  },
+
+  "pricing": {
+    "hero": {
+      "title": "Simple pricing. Unlimited celebrations.",
+      "subtitle": "No per-TV fees. No per-screen charges. No surprise costs. Just pick your plan and celebrate."
+    },
+
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "$49",
+        "period": "/mo",
+        "annualPrice": "$39/mo billed annually",
+        "description": "For small teams getting started with celebrations.",
+        "cta": "Start free trial",
+        "features": [
+          "Up to 15 tracked team members",
+          "Unlimited TVs & screens",
+          "2 integrations",
+          "5 celebration templates",
+          "1 leaderboard",
+          "4 KPI cards",
+          "Manual team photo upload",
+          "Email support",
+          "Logo on display"
+        ]
+      },
+      "growth": {
+        "name": "Growth",
+        "price": "$149",
+        "period": "/mo",
+        "annualPrice": "$119/mo billed annually",
+        "description": "For scaling teams that want the full experience.",
+        "badge": "Most popular",
+        "cta": "Start free trial",
+        "features": [
+          "Up to 50 tracked team members",
+          "Unlimited TVs & screens",
+          "Unlimited integrations",
+          "Unlimited celebration templates",
+          "Unlimited leaderboards",
+          "Unlimited KPI cards",
+          "Auto-sync photos from CRM",
+          "Priority email + chat support",
+          "Full theme customization"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "period": "",
+        "annualPrice": "Tailored to your organization",
+        "description": "For large teams with advanced needs.",
+        "cta": "Book a demo",
+        "features": [
+          "Unlimited team members",
+          "Unlimited TVs & screens",
+          "Unlimited everything",
+          "Custom integrations",
+          "White-label branding",
+          "SSO / SAML authentication",
+          "Dedicated CSM",
+          "SLA & uptime guarantee",
+          "Multi-location support"
+        ]
+      }
+    },
+
+    "comparison": {
+      "title": "How CelebBoard compares",
+      "subtitle": "For a 20-person team:",
+      "headers": ["", "CelebBoard", "SalesScreen", "Spinify", "Geckoboard + 3 TVs"],
+      "rows": [
+        {
+          "label": "Monthly cost",
+          "values": ["$149", "~$700", "~$500", "~$250"]
+        },
+        {
+          "label": "Unlimited TVs",
+          "values": ["Yes", "Yes", "Yes", "No ($25/TV)"]
+        },
+        {
+          "label": "Setup time",
+          "values": ["~10 min", "Weeks", "Weeks", "~30 min"]
+        },
+        {
+          "label": "Gamification overhead",
+          "values": ["None", "High", "High", "None"]
+        },
+        {
+          "label": "Celebrations",
+          "values": ["Full", "Full", "Partial", "None"]
+        }
+      ]
+    },
+
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "question": "Can I really put this on as many TVs as I want?",
+          "answer": "Yes. Every plan includes unlimited screens. One office or twenty — same price."
+        },
+        {
+          "question": "What counts as a \"tracked member\"?",
+          "answer": "Anyone who shows up on leaderboards, celebrations, or team photos. Admins who only configure the system don't count toward your limit."
+        },
+        {
+          "question": "Do you offer annual billing?",
+          "answer": "Yes — save 20% when you pay annually. You can switch between monthly and annual at any time."
+        },
+        {
+          "question": "What if we outgrow our plan?",
+          "answer": "Upgrade anytime, instantly. No migration, no downtime. Your celebrations don't skip a beat."
+        },
+        {
+          "question": "Is there a free trial?",
+          "answer": "Yes — 14 days, full access, no credit card required. If you're not celebrating by day 3, we'll personally help you set up."
+        },
+        {
+          "question": "What hardware do I need?",
+          "answer": "Any screen with a web browser. Smart TV, Chromecast, Fire Stick, old laptop connected to a monitor — whatever you've got. No app to install."
+        },
+        {
+          "question": "Can I cancel anytime?",
+          "answer": "Yes. Month-to-month, no contracts, no cancellation fees. We'd rather earn your business every month than lock you in."
+        },
+        {
+          "question": "Do you support custom integrations?",
+          "answer": "Our generic webhook connector works with any system that can send JSON. For deeper custom integrations, talk to us on the Enterprise plan."
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "Start celebrating today.",
+      "subtitle": "14-day free trial. No credit card. Set up in minutes.",
+      "cta": "Get started free"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "We believe every win — big or small — deserves to be seen.",
+      "subtitle": "CelebBoard exists because we saw what happens when a team's work becomes visible. Energy goes up. Momentum builds. People push harder — not because they have to, but because they want to."
+    },
+
+    "story": {
+      "title": "How it started",
+      "paragraphs": [
+        "CelebBoard started as an internal project. We built a TV dashboard for our own office — a screen that showed live metrics, celebrated closed deals, and put team members' faces on screen when they hit milestones.",
+        "The effect was immediate. People stopped what they were doing when confetti hit the screen. Reps who'd been quiet about their wins got a standing ovation from the whole office. The numbers on the leaderboard became a conversation starter, not a pressure tool.",
+        "We realized this wasn't just a nice-to-have. It was a missing piece of office culture — the visual, shared, joyful recognition of work well done. So we turned it into a product that any activity-driven team can set up in minutes.",
+        "Today, CelebBoard is the celebration engine for teams that track individual performance — in sales, production, advisory, and beyond. If there's a number and a person behind it, we make it a moment."
+      ]
+    },
+
+    "values": {
+      "title": "What we stand for",
+      "items": [
+        {
+          "title": "Celebration over competition",
+          "description": "We don't build gamification. We build recognition. There's a difference — and your team feels it."
+        },
+        {
+          "title": "Simplicity is a feature",
+          "description": "If it takes more than 10 minutes to set up, we've failed. Complexity is the enemy of adoption."
+        },
+        {
+          "title": "People, not just data",
+          "description": "Charts are useful. But a face on screen with confetti? That's a moment your team remembers."
+        },
+        {
+          "title": "Visibility drives momentum",
+          "description": "When the whole team sees every win, small wins feel bigger and big wins feel electric."
+        },
+        {
+          "title": "Zero maintenance, forever",
+          "description": "Set it up once. It runs itself. Your team's celebrations shouldn't be another thing to manage."
+        },
+        {
+          "title": "Every team deserves this",
+          "description": "Not just enterprise sales floors. Factory teams, advisory firms, startups — if you have a screen and a metric, you're in."
+        }
+      ]
+    },
+
+    "location": {
+      "title": "Built in Montréal",
+      "description": "CelebBoard is designed and built in Montréal, Québec. A bilingual product from a bilingual city — proudly serving teams worldwide in English and French.",
+      "cta": "Voir en français"
+    },
+
+    "cta": {
+      "title": "Ready to make your team's wins visible?",
+      "subtitle": "Set up in minutes. Celebrate forever.",
+      "cta": "Get started free"
+    }
+  },
+
+  "blog": {
+    "hero": {
+      "title": "The CelebBoard Blog",
+      "subtitle": "Insights on team celebration, office culture, and making wins visible."
+    },
+    "comingSoon": "New posts coming soon. In the meantime, start your free trial and celebrate something.",
+    "cta": "Get started free"
+  },
+
+  "legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: {date}",
+      "content": "Terms of service content will be added here."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: {date}",
+      "content": "Privacy policy content will be added here."
+    }
+  },
+
+  "common": {
+    "getStarted": "Get started free",
+    "bookDemo": "Book a demo",
+    "learnMore": "Learn more",
+    "seeItInAction": "See it in action",
+    "backToHome": "Back to home",
+    "readMore": "Read more",
+    "comingSoon": "Coming soon",
+    "unlimited": "Unlimited",
+    "included": "Included",
+    "perMonth": "/mo",
+    "annually": "billed annually",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

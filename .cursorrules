@@ -24,8 +24,16 @@ and other systems to display real-time celebrations and KPIs on office TV dashbo
 - Team members are matched via external_ids jsonb field (hubspot_owner_id, slack_user_id, etc.)
 - Display token is a long random string that maps to an org (no login needed on TVs)
 
+## Marketing Site (i18n)
+- Marketing pages live in `src/app/[locale]/(marketing)/` (and root `/` at `src/app/page.tsx` for default locale)
+- Always use `import { Link } from "@/i18n/navigation"` — NEVER `next/link` in marketing
+- Translations in `src/messages/{en,fr}.json` — add keys to BOTH files
+- Use `useTranslations("namespace")` in components
+- Use `getTranslations()` for `generateMetadata()` in page files
+- Middleware only touches marketing routes — `/app`, `/display`, `/api` are excluded
+
 ## File Organization
-- src/app/(marketing)/ — Public pages
+- src/app/page.tsx, src/app/[locale]/(marketing)/ — Public marketing pages (i18n)
 - src/app/(auth)/ — Login/signup
 - src/app/app/ — Admin pages (authed)
 - src/app/display/[token]/ — TV dashboard (public, token-auth)

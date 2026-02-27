@@ -1,0 +1,604 @@
+{
+  "metadata": {
+    "home": {
+      "title": "CelebBoard — Les victoires arrivent. Faites-les voir à votre équipe.",
+      "description": "CelebBoard est le moteur de célébration pour les équipes axées sur la performance. Connectez votre CRM, célébrez vos victoires sur les écrans du bureau avec des confettis, des sons, des photos d'équipe et des classements en direct. Prêt en quelques minutes."
+    },
+    "features": {
+      "title": "Fonctionnalités — Tout ce que l'écran de votre équipe devrait être | CelebBoard",
+      "description": "Célébrations automatisées, classements en direct, indicateurs clés, photos d'équipe, flux de contenu et thèmes. CelebBoard transforme n'importe quel écran en moteur de célébration."
+    },
+    "pricing": {
+      "title": "Tarifs — Tarification simple. Célébrations illimitées. | CelebBoard",
+      "description": "Tarif fixe avec écrans illimités. Pas de frais par utilisateur. Pas de frais par écran. À partir de 49 $/mois pour un maximum de 15 membres."
+    },
+    "about": {
+      "title": "À propos — Conçu à Montréal pour les équipes du monde entier | CelebBoard",
+      "description": "CelebBoard est né d'un constat simple : les équipes qui célèbrent ensemble performent ensemble. Découvrez notre mission de rendre chaque victoire visible."
+    },
+    "blog": {
+      "title": "Blogue — Réflexions sur la célébration et la motivation d'équipe | CelebBoard",
+      "description": "Articles sur la reconnaissance d'équipe, la culture de bureau, les tableaux de bord TV et comment bâtir un milieu de travail axé sur la célébration."
+    },
+    "terms": {
+      "title": "Conditions d'utilisation | CelebBoard",
+      "description": "Conditions d'utilisation et entente d'utilisation de CelebBoard."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité | CelebBoard",
+      "description": "Politique de confidentialité de CelebBoard. Comment nous traitons vos données."
+    }
+  },
+
+  "nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "about": "À propos",
+    "blog": "Blogue",
+    "login": "Connexion",
+    "cta": "Essayer gratuitement",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu"
+  },
+
+  "footer": {
+    "tagline": "Chaque victoire mérite son moment.",
+    "product": "Produit",
+    "productLinks": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "integrations": "Intégrations",
+      "changelog": "Nouveautés"
+    },
+    "company": "Entreprise",
+    "companyLinks": {
+      "about": "À propos",
+      "blog": "Blogue",
+      "contact": "Nous contacter",
+      "careers": "Carrières"
+    },
+    "legal": "Légal",
+    "legalLinks": {
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité"
+    },
+    "connect": "Suivez-nous",
+    "connectLinks": {
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "email": "Nous écrire"
+    },
+    "copyright": "© {year} CelebBoard. Tous droits réservés.",
+    "builtIn": "Conçu à Montréal 🇨🇦"
+  },
+
+  "languageSwitcher": {
+    "en": "EN",
+    "fr": "FR",
+    "switchTo": "Switch to English"
+  },
+
+  "home": {
+    "hero": {
+      "title": "Les victoires arrivent. Faites-les voir à votre équipe.",
+      "subtitle": "Connectez votre CRM ou vos outils de travail. Quand un objectif est atteint, votre écran de bureau célèbre automatiquement — confettis, sons, photos d'équipe, classements en direct. Prêt en quelques minutes.",
+      "cta": "Essayer gratuitement",
+      "ctaSecondary": "Voir en action",
+      "noCard": "Essai gratuit de 14 jours · Aucune carte de crédit requise"
+    },
+
+    "logoBar": {
+      "title": "Des équipes performantes nous font confiance"
+    },
+
+    "problem": {
+      "title": "Le meilleur travail de votre équipe est invisible.",
+      "subtitle": "En ce moment, les victoires passent inaperçues — sauf si quelqu'un pense à les afficher sur Slack. CelebBoard change la donne.",
+      "before": {
+        "label": "Avant CelebBoard",
+        "items": [
+          "Les victoires annoncées des heures plus tard — quand elles le sont",
+          "Seuls les gestionnaires voient les vrais chiffres",
+          "La télé du bureau affiche un écran de veille ou les nouvelles",
+          "La reconnaissance dépend de qui parle le plus fort",
+          "Le bureau et le télétravail vivent dans deux mondes"
+        ]
+      },
+      "after": {
+        "label": "Avec CelebBoard",
+        "items": [
+          "Les victoires célébrées à l'instant où elles arrivent",
+          "Tout le monde voit l'élan de l'équipe",
+          "L'écran du bureau est celui que tout le monde regarde",
+          "Chaque contributeur a son moment",
+          "La même énergie, partout"
+        ]
+      }
+    },
+
+    "featuresGrid": {
+      "title": "Découvrez CelebBoard",
+      "subtitle": "Trois promesses. Une seule plateforme.",
+      "cards": [
+        {
+          "title": "Des victoires qui s'annoncent toutes seules",
+          "description": "Quand une vente se conclut, qu'un objectif est atteint ou qu'une cible tombe — votre écran s'illumine. Confettis, sons, photos d'équipe. Zéro action manuelle."
+        },
+        {
+          "title": "Le tableau de bord que tout le monde regarde",
+          "description": "Métriques en direct depuis votre CRM, votre système de production ou n'importe quelle source. Classements individuels et d'équipe mis à jour en temps réel."
+        },
+        {
+          "title": "Configurez une fois. Ça roule pour toujours.",
+          "description": "Connectez vos outils, choisissez votre style de célébration, affichez sur n'importe quel écran. Pas besoin des TI. Aucune gestion quotidienne."
+        },
+        {
+          "title": "Votre équipe, en vedette",
+          "description": "Chaque célébration met en avant la personne derrière la victoire. Photos synchronisées depuis votre CRM ou importées en lot. Les visages rendent les victoires personnelles."
+        },
+        {
+          "title": "Fonctionne sur n'importe quel écran",
+          "description": "Télé intelligente, Chromecast, écran de la salle de pause, tablette au mur. Un navigateur suffit. Aucun équipement spécial."
+        },
+        {
+          "title": "Votre marque, votre style",
+          "description": "Mode sombre, mode clair, vos couleurs, votre logo, vos sons. Personnalisez tout — ou utilisez nos paramètres par défaut et c'est beau instantanément."
+        }
+      ]
+    },
+
+    "howItWorks": {
+      "title": "Trois étapes. Cinq minutes. Des célébrations pour toujours.",
+      "steps": [
+        {
+          "number": "1",
+          "title": "Connectez vos outils",
+          "description": "HubSpot, Slack, Salesforce ou n'importe quel système avec un webhook. Deux clics pour connecter, aucun développeur nécessaire."
+        },
+        {
+          "number": "2",
+          "title": "Définissez ce qui mérite d'être célébré",
+          "description": "Vente conclue? Cible de production atteinte? Nouveau client signé? Choisissez parmi les modèles ou créez le vôtre."
+        },
+        {
+          "number": "3",
+          "title": "Affichez sur n'importe quel écran",
+          "description": "Ouvrez une URL sur n'importe quel écran. C'est tout. CelebBoard s'occupe du reste — 24/7, zéro maintenance."
+        }
+      ]
+    },
+
+    "testimonials": {
+      "title": "Les équipes qui célèbrent ensemble performent ensemble.",
+      "items": [
+        {
+          "quote": "Le changement d'énergie a été immédiat. La première fois que des confettis sont apparus sur l'écran avec la photo d'un représentant, tout le plancher a explosé de joie. Maintenant, les gens lèvent les yeux chaque fois que l'écran s'allume.",
+          "author": "VP Ventes",
+          "company": "Entreprise SaaS, 45 employés",
+          "role": "VP Ventes"
+        },
+        {
+          "quote": "On a essayé Geckoboard pendant un an. Plus personne ne le regardait après la première semaine. CelebBoard, c'est l'inverse — les gens arrêtent ce qu'ils font quand une célébration se déclenche.",
+          "author": "Directeur des opérations",
+          "company": "Entreprise manufacturière, 120 employés",
+          "role": "Directeur des opérations"
+        },
+        {
+          "quote": "La configuration a pris moins de temps que notre standup du matin. On était en ligne avant le dîner. Ça n'arrive jamais avec les outils SaaS.",
+          "author": "Responsable RevOps",
+          "company": "Cabinet-conseil, 30 employés",
+          "role": "Responsable RevOps"
+        }
+      ]
+    },
+
+    "verticals": {
+      "title": "Si votre équipe le mesure, CelebBoard le célèbre.",
+      "subtitle": "Conçu pour toute équipe où la performance individuelle entraîne des résultats collectifs.",
+      "cards": [
+        {
+          "title": "Équipes de vente",
+          "description": "Ventes conclues, jalons de revenus, objectifs de pipeline. Transformez l'activité de votre CRM en énergie d'équipe instantanée.",
+          "link": "Voir comment →"
+        },
+        {
+          "title": "Production et fabrication",
+          "description": "Unités produites, cibles de qualité, jalons de quart. Rendez le plancher de production aussi visible que le bureau de direction.",
+          "link": "Voir comment →"
+        },
+        {
+          "title": "Services-conseils",
+          "description": "Projets livrés, clients intégrés, jalons facturables. Célébrez le travail qu'on oublie trop facilement.",
+          "link": "Voir comment →"
+        },
+        {
+          "title": "Toute équipe axée sur les métriques",
+          "description": "GMV, inscriptions, billets résolus, campagnes lancées. S'il y a un chiffre et une personne derrière, CelebBoard en fait un moment.",
+          "link": "Voir comment →"
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "La prochaine victoire de votre équipe n'attend que ça.",
+      "subtitle": "Commencez à célébrer en quelques minutes. Gratuit pendant 14 jours.",
+      "cta": "Essayer gratuitement",
+      "ctaSecondary": "Réserver une démo",
+      "noCard": "Aucune carte de crédit requise"
+    }
+  },
+
+  "features": {
+    "hero": {
+      "title": "Tout ce que l'écran de votre équipe devrait être.",
+      "subtitle": "Célébrations automatisées. Classements en direct. Indicateurs clés. Photos d'équipe. Flux de contenu. Thèmes. Le tout dans un seul écran que votre équipe veut vraiment regarder."
+    },
+
+    "celebrationEngine": {
+      "title": "Le moteur de célébration",
+      "subtitle": "Votre équipe conclut une vente à 15 h 47. À 15 h 47, chaque écran du bureau explose de confettis, avec la photo de la personne et les détails de la vente. Personne ne l'a publié. Personne ne l'a programmé. C'est juste arrivé.",
+      "features": [
+        {
+          "title": "Célébrations plein écran instantanées",
+          "description": "Des animations de confettis, de feux d'artifice ou de champagne prennent le contrôle de l'écran dès qu'une victoire est détectée. Impossible à manquer."
+        },
+        {
+          "title": "Sons personnalisés",
+          "description": "Fanfare de victoire, caisse enregistreuse, applaudissements, ou importez le vôtre. Chaque type de célébration a son propre son."
+        },
+        {
+          "title": "Photos des membres de l'équipe",
+          "description": "Le visage de la personne, en plein centre. Synchronisé automatiquement depuis votre CRM ou importé en lot. Les victoires sont personnelles — elles devraient en avoir l'air."
+        },
+        {
+          "title": "Constructeur de modèles",
+          "description": "Commencez avec les modèles prédéfinis (Vente conclue, Nouveau client, Cible atteinte) ou créez les vôtres. Les champs dynamiques tirent les données directement du webhook."
+        },
+        {
+          "title": "Déclencheurs intelligents",
+          "description": "Lancez des célébrations selon n'importe quelle combinaison de type d'événement, de valeurs et de conditions. « Vente de plus de 10 000 $ du pipeline Entreprise » — aussi précis que ça."
+        },
+        {
+          "title": "Totaux cumulatifs",
+          "description": "Affichez les métriques cumulatives avec chaque célébration. « Ce trimestre : 312 K$ sur 18 ventes. » Le contexte rend le moment encore plus grand."
+        }
+      ]
+    },
+
+    "integrations": {
+      "title": "Se connecte aux outils que vous utilisez déjà",
+      "subtitle": "CelebBoard écoute vos systèmes existants. Aucune migration, aucune saisie de données, aucun effort supplémentaire.",
+      "cards": [
+        {
+          "name": "HubSpot",
+          "description": "Changements d'étape de vente, données de propriétaire, informations d'entreprise, propriétés personnalisées. Connecteur natif avec synchronisation d'équipe."
+        },
+        {
+          "name": "Salesforce",
+          "description": "Opportunités, comptes, objets personnalisés. Intégration CRM approfondie pour les équipes de vente d'entreprise."
+        },
+        {
+          "name": "Slack",
+          "description": "Messages de canaux, réactions emoji, photos d'équipe. Célébrez à travers les écrans et les conversations."
+        },
+        {
+          "name": "Google Analytics",
+          "description": "Utilisateurs actifs en temps réel, sessions en direct. Montrez le pouls de votre marketing aux côtés de vos victoires de vente."
+        },
+        {
+          "name": "Webhooks",
+          "description": "N'importe quel système qui envoie du JSON. Logiciel de production, outils de projet, APIs personnalisées — si ça envoie un webhook, CelebBoard peut le célébrer."
+        },
+        {
+          "name": "Et plus encore",
+          "description": "Pipedrive, Zoho, Monday.com et d'autres sur notre feuille de route. Besoin de quelque chose de spécifique? Dites-le-nous."
+        }
+      ]
+    },
+
+    "dashboard": {
+      "title": "Un tableau de bord TV conçu pour les télés. Pas pour les portables.",
+      "subtitle": "La plupart des « tableaux de bord TV » sont des tableaux de bord d'ordinateur étirés sur un plus grand écran. CelebBoard est conçu dès le premier pixel pour un écran de l'autre côté de la pièce.",
+      "features": [
+        {
+          "title": "Indicateurs clés en direct",
+          "description": "Revenus, unités, clients, pipeline — vos métriques phares, toujours à jour. Gros chiffres, indicateurs de tendance, formatés pour la distance."
+        },
+        {
+          "title": "Classements individuels et d'équipe",
+          "description": "Des classements mis à jour en temps réel. Pas pour créer de la pression — pour créer de la visibilité. Avec photos, pour que tout le monde sache qui grimpe."
+        },
+        {
+          "title": "Flux de contenu",
+          "description": "Photos d'équipe, mentions Slack, annonces personnalisées — en rotation entre les célébrations. Votre écran de bureau devient le mur vivant de l'équipe."
+        },
+        {
+          "title": "Soumissions par code QR",
+          "description": "Les membres de l'équipe scannent un code QR pour soumettre des photos et des félicitations directement au flux. Aucune application à installer, fonctionne depuis n'importe quel téléphone."
+        },
+        {
+          "title": "Graphiques et tendances",
+          "description": "Barres de progression, graphiques linéaires, comparaisons historiques. L'élan visuel que votre équipe peut suivre d'un coup d'œil."
+        },
+        {
+          "title": "Fonctionne 24/7 de façon autonome",
+          "description": "Reconnexion automatique après les coupures réseau. Récupération des cycles veille/réveil. Gestion des coupures de courant. Configurez et oubliez — pour vrai."
+        }
+      ]
+    },
+
+    "admin": {
+      "title": "Administration simple. Zéro surcharge.",
+      "subtitle": "Configurez une fois, ajustez quand vous voulez. Aucune gestion quotidienne requise.",
+      "features": [
+        {
+          "title": "Constructeur de modèles visuel",
+          "description": "Glissez, déposez, prévisualisez. Voyez exactement à quoi ressemblera votre célébration avant sa mise en ligne."
+        },
+        {
+          "title": "Mappage des champs",
+          "description": "Associez n'importe quelle donnée de votre webhook à n'importe quel champ d'affichage. Nom de la vente, montant, propriétaire, champs personnalisés — pointer et cliquer."
+        },
+        {
+          "title": "Gestion d'équipe",
+          "description": "Synchronisation automatique depuis votre CRM, import en lot depuis un CSV, ou ajout manuel. Photos incluses."
+        },
+        {
+          "title": "Sélecteur de thème",
+          "description": "Sombre, clair, vibrant — ou définissez vos propres couleurs de marque. Import de logo. CSS personnalisé pour les audacieux."
+        },
+        {
+          "title": "Prévisualisation en direct",
+          "description": "Prévisualisez votre tableau de bord exactement tel qu'il apparaît sur la télé. Testez les célébrations avant leur mise en ligne."
+        },
+        {
+          "title": "Historique des célébrations",
+          "description": "Journal complet de chaque célébration déclenchée. Rejouez n'importe quel moment. Exportez les données pour vos rapports."
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "Voyez-le sur votre écran dans 10 minutes.",
+      "subtitle": "Connectez vos outils. Choisissez un style de célébration. Passez en direct.",
+      "cta": "Essayer gratuitement"
+    }
+  },
+
+  "pricing": {
+    "hero": {
+      "title": "Tarification simple. Célébrations illimitées.",
+      "subtitle": "Pas de frais par écran. Pas de frais par utilisateur. Pas de coûts surprises. Choisissez votre forfait et célébrez."
+    },
+
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "49 $",
+        "period": "/mois",
+        "annualPrice": "39 $/mois facturé annuellement",
+        "description": "Pour les petites équipes qui commencent avec les célébrations.",
+        "cta": "Commencer l'essai gratuit",
+        "features": [
+          "Jusqu'à 15 membres suivis",
+          "Écrans et télés illimités",
+          "2 intégrations",
+          "5 modèles de célébration",
+          "1 classement",
+          "4 indicateurs clés",
+          "Import manuel des photos d'équipe",
+          "Support par courriel",
+          "Logo sur l'affichage"
+        ]
+      },
+      "growth": {
+        "name": "Growth",
+        "price": "149 $",
+        "period": "/mois",
+        "annualPrice": "119 $/mois facturé annuellement",
+        "description": "Pour les équipes en croissance qui veulent l'expérience complète.",
+        "badge": "Le plus populaire",
+        "cta": "Commencer l'essai gratuit",
+        "features": [
+          "Jusqu'à 50 membres suivis",
+          "Écrans et télés illimités",
+          "Intégrations illimitées",
+          "Modèles de célébration illimités",
+          "Classements illimités",
+          "Indicateurs clés illimités",
+          "Sync auto des photos depuis le CRM",
+          "Support prioritaire par courriel et clavardage",
+          "Personnalisation complète du thème"
+        ]
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "price": "Sur mesure",
+        "period": "",
+        "annualPrice": "Adapté à votre organisation",
+        "description": "Pour les grandes équipes avec des besoins avancés.",
+        "cta": "Réserver une démo",
+        "features": [
+          "Membres d'équipe illimités",
+          "Écrans et télés illimités",
+          "Tout en illimité",
+          "Intégrations personnalisées",
+          "Marque blanche",
+          "Authentification SSO / SAML",
+          "Gestionnaire de compte dédié",
+          "SLA et garantie de disponibilité",
+          "Support multi-sites"
+        ]
+      }
+    },
+
+    "comparison": {
+      "title": "Comment CelebBoard se compare",
+      "subtitle": "Pour une équipe de 20 personnes :",
+      "headers": ["", "CelebBoard", "SalesScreen", "Spinify", "Geckoboard + 3 écrans"],
+      "rows": [
+        {
+          "label": "Coût mensuel",
+          "values": ["149 $", "~700 $", "~500 $", "~250 $"]
+        },
+        {
+          "label": "Écrans illimités",
+          "values": ["Oui", "Oui", "Oui", "Non (25 $/écran)"]
+        },
+        {
+          "label": "Temps de configuration",
+          "values": ["~10 min", "Semaines", "Semaines", "~30 min"]
+        },
+        {
+          "label": "Surcharge de gamification",
+          "values": ["Aucune", "Élevée", "Élevée", "Aucune"]
+        },
+        {
+          "label": "Célébrations",
+          "values": ["Complètes", "Complètes", "Partielles", "Aucune"]
+        }
+      ]
+    },
+
+    "faq": {
+      "title": "Questions fréquentes",
+      "items": [
+        {
+          "question": "Est-ce que je peux vraiment l'afficher sur autant d'écrans que je veux?",
+          "answer": "Oui. Chaque forfait inclut un nombre illimité d'écrans. Un bureau ou vingt — même prix."
+        },
+        {
+          "question": "Qu'est-ce qu'un « membre suivi »?",
+          "answer": "Toute personne qui apparaît dans les classements, les célébrations ou les photos d'équipe. Les administrateurs qui ne font que configurer le système ne comptent pas dans votre limite."
+        },
+        {
+          "question": "Offrez-vous la facturation annuelle?",
+          "answer": "Oui — économisez 20 % en payant annuellement. Vous pouvez basculer entre mensuel et annuel à tout moment."
+        },
+        {
+          "question": "Et si on dépasse notre forfait?",
+          "answer": "Passez au forfait supérieur à tout moment, instantanément. Aucune migration, aucune interruption. Vos célébrations ne manquent pas un battement."
+        },
+        {
+          "question": "Y a-t-il un essai gratuit?",
+          "answer": "Oui — 14 jours, accès complet, aucune carte de crédit requise. Si vous ne célébrez pas au jour 3, on vous aide personnellement à tout configurer."
+        },
+        {
+          "question": "De quel équipement ai-je besoin?",
+          "answer": "N'importe quel écran avec un navigateur web. Télé intelligente, Chromecast, Fire Stick, vieux portable branché à un moniteur — tout ce que vous avez. Aucune application à installer."
+        },
+        {
+          "question": "Puis-je annuler à tout moment?",
+          "answer": "Oui. Mois par mois, sans contrat, sans frais d'annulation. On préfère mériter votre confiance chaque mois plutôt que de vous enfermer."
+        },
+        {
+          "question": "Supportez-vous les intégrations personnalisées?",
+          "answer": "Notre connecteur webhook générique fonctionne avec n'importe quel système capable d'envoyer du JSON. Pour des intégrations personnalisées plus poussées, contactez-nous pour le forfait Entreprise."
+        }
+      ]
+    },
+
+    "cta": {
+      "title": "Commencez à célébrer aujourd'hui.",
+      "subtitle": "Essai gratuit de 14 jours. Sans carte de crédit. Configuration en quelques minutes.",
+      "cta": "Essayer gratuitement"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "On croit que chaque victoire — grande ou petite — mérite d'être vue.",
+      "subtitle": "CelebBoard existe parce qu'on a vu ce qui se passe quand le travail d'une équipe devient visible. L'énergie monte. L'élan se construit. Les gens poussent plus fort — pas parce qu'ils le doivent, mais parce qu'ils le veulent."
+    },
+
+    "story": {
+      "title": "Comment ça a commencé",
+      "paragraphs": [
+        "CelebBoard a débuté comme un projet interne. On a construit un tableau de bord TV pour notre propre bureau — un écran qui montrait les métriques en direct, célébrait les ventes conclues et affichait les visages des membres de l'équipe quand ils atteignaient des jalons.",
+        "L'effet a été immédiat. Les gens arrêtaient ce qu'ils faisaient quand les confettis apparaissaient à l'écran. Des représentants qui ne parlaient jamais de leurs victoires recevaient une ovation de tout le bureau. Les chiffres du classement devenaient un sujet de conversation, pas un outil de pression.",
+        "On a réalisé que ce n'était pas juste un bel ajout. C'était une pièce manquante de la culture de bureau — la reconnaissance visuelle, partagée et joyeuse du travail bien fait. Alors on en a fait un produit que n'importe quelle équipe axée sur la performance peut configurer en quelques minutes.",
+        "Aujourd'hui, CelebBoard est le moteur de célébration pour les équipes qui suivent la performance individuelle — en vente, en production, en services-conseils et au-delà. S'il y a un chiffre et une personne derrière, on en fait un moment."
+      ]
+    },
+
+    "values": {
+      "title": "Ce en quoi on croit",
+      "items": [
+        {
+          "title": "La célébration avant la compétition",
+          "description": "On ne construit pas de la gamification. On construit de la reconnaissance. Il y a une différence — et votre équipe la ressent."
+        },
+        {
+          "title": "La simplicité est une fonctionnalité",
+          "description": "Si ça prend plus de 10 minutes à configurer, on a échoué. La complexité est l'ennemie de l'adoption."
+        },
+        {
+          "title": "Les gens, pas juste les données",
+          "description": "Les graphiques sont utiles. Mais un visage à l'écran avec des confettis? C'est un moment dont votre équipe se souvient."
+        },
+        {
+          "title": "La visibilité crée l'élan",
+          "description": "Quand toute l'équipe voit chaque victoire, les petites victoires paraissent plus grandes et les grandes victoires deviennent électrisantes."
+        },
+        {
+          "title": "Zéro maintenance, pour toujours",
+          "description": "Configurez une fois. Ça roule tout seul. Les célébrations de votre équipe ne devraient pas être une tâche de plus à gérer."
+        },
+        {
+          "title": "Chaque équipe le mérite",
+          "description": "Pas juste les planchers de vente des grandes entreprises. Équipes de production, cabinets-conseils, startups — si vous avez un écran et une métrique, c'est pour vous."
+        }
+      ]
+    },
+
+    "location": {
+      "title": "Conçu à Montréal",
+      "description": "CelebBoard est conçu et développé à Montréal, au Québec. Un produit bilingue d'une ville bilingue — fièrement au service d'équipes partout dans le monde, en français et en anglais.",
+      "cta": "Switch to English"
+    },
+
+    "cta": {
+      "title": "Prêt à rendre les victoires de votre équipe visibles?",
+      "subtitle": "Configuration en quelques minutes. Célébrations pour toujours.",
+      "cta": "Essayer gratuitement"
+    }
+  },
+
+  "blog": {
+    "hero": {
+      "title": "Le blogue CelebBoard",
+      "subtitle": "Réflexions sur la célébration d'équipe, la culture de bureau et la visibilité des victoires."
+    },
+    "comingSoon": "De nouveaux articles arrivent bientôt. En attendant, lancez votre essai gratuit et célébrez quelque chose.",
+    "cta": "Essayer gratuitement"
+  },
+
+  "legal": {
+    "terms": {
+      "title": "Conditions d'utilisation",
+      "lastUpdated": "Dernière mise à jour : {date}",
+      "content": "Le contenu des conditions d'utilisation sera ajouté ici."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "lastUpdated": "Dernière mise à jour : {date}",
+      "content": "Le contenu de la politique de confidentialité sera ajouté ici."
+    }
+  },
+
+  "common": {
+    "getStarted": "Essayer gratuitement",
+    "bookDemo": "Réserver une démo",
+    "learnMore": "En savoir plus",
+    "seeItInAction": "Voir en action",
+    "backToHome": "Retour à l'accueil",
+    "readMore": "Lire la suite",
+    "comingSoon": "Bientôt disponible",
+    "unlimited": "Illimité",
+    "included": "Inclus",
+    "perMonth": "/mois",
+    "annually": "facturé annuellement",
+    "yes": "Oui",
+    "no": "Non"
+  }
+}
