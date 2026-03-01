@@ -4,11 +4,12 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import CelebrationOverlay from './celebration-overlay'
 import type { Celebration } from './celebration-overlay'
 import { DisplayHeader } from '@/components/display/display-header'
-import { KpiCard } from '@/components/display/kpi-card'
+import { KpiCarousel } from '@/components/display/kpi-carousel'
 import { FeedCarousel, type FeedItem } from '@/components/display/feed-carousel'
 import { QrCodeCard } from '@/components/display/qr-code-card'
 import { KpiChart } from '@/components/display/kpi-chart'
 import { RecentWins } from '@/components/display/recent-wins'
+import { Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase-clients'
 
 type OrgData = {
@@ -253,72 +254,52 @@ export default function DisplayDashboard({ org }: { org: OrgData }) {
 
       <CelebrationOverlay queue={queue} onDismiss={handleOverlayDismiss} />
 
-      <main
-        className="grid flex-1 gap-3 p-3"
-        style={{
-          gridTemplateRows: 'auto 1fr',
-          gridTemplateColumns: '35fr 35fr 30fr',
-          minHeight: 0,
-        }}
-      >
-        {/* KPI row */}
-        <div
-          className="grid gap-3"
-          style={{
-            gridColumn: '1 / -1',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-          }}
-        >
-          {kpis.length === 0 ? (
-            <div
-              className="flex min-h-[100px] flex-col items-center justify-center gap-1 rounded-lg border border-border bg-card/50 px-4"
-              style={{ gridColumn: '1 / -1' }}
-            >
-              <p className="text-muted-foreground">No KPIs configured</p>
-              <p className="text-sm text-muted-foreground/70">Add KPIs in settings to see metrics</p>
-            </div>
-          ) : (
-            kpis.slice(0, 4).map((kpi, i) => (
-              <KpiCard key={kpi.id} kpi={kpi} variantIndex={i} />
-            ))
-          )}
+      <main className="flex flex-1 flex-col gap-3 overflow-hidden p-3">
+        {/* KPI Carousel */}
+        <div className="shrink-0">
+          <KpiCarousel kpis={kpis} />
         </div>
 
-        {/* Left: Feed */}
-        <section className="flex min-h-0 flex-col" style={{ gridColumn: 1 }}>
-          <FeedCarousel
+        {/* Main content grid: 12 columns */}
+        <div
+          className="grid flex-1 gap-3"
+          style={{
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gridTemplateRows: 'repeat(4, 1fr)',
+            minHeight: 0,
+          }}
+        >
+          {/* Feed: col-span-4, row-span-4 */}
+          <section className="col-span-4 row-span-4 flex min-h-0 flex-col">
+            <FeedCarousel
             items={feedItems}
             connectionStatus={connectionStatus}
             rotationSeconds={feedRotationSeconds}
             onVisibilityChange={() => fetchFeed(token).then(setFeedItems)}
           />
-        </section>
+          </section>
 
-        {/* Center: Chart - larger section for X axis (time/weeks) visibility */}
-        <section className="flex min-h-0 flex-1 flex-col" style={{ gridColumn: 2, minHeight: 320 }}>
-          <KpiChart title="New Subscribers by Week" />
-        </section>
+          {/* Chart: col-span-5, row-span-4 */}
+          <section className="col-span-5 row-span-4 flex min-h-0 flex-col" style={{ minHeight: 320 }}>
+            <KpiChart title="New Subscribers by Week" />
+          </section>
 
-        {/* Right: Recent Wins + QR */}
-        <section
-          className="flex min-h-0 flex-col gap-3"
-          style={{ gridColumn: 3 }}
-        >
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card/50">
-            <h2
-              className="shrink-0 px-3 py-2 font-semibold uppercase tracking-wider text-muted-foreground"
-              style={{ fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}
-            >
+          {/* Recent Wins: col-span-3, row-span-2 */}
+          <section className="col-span-3 row-span-2 flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card/50 shadow-card">
+            <h2 className="flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-semibold text-foreground">
+              <Trophy className="size-4 text-accent" />
               Recent Wins
             </h2>
             <div className="min-h-0 flex-1 overflow-hidden p-2">
               <RecentWins celebrations={celebrations} />
             </div>
-          </div>
-          <div className="shrink-0">
+          </section>
+
+          {/* QR Code: col-span-3, row-span-2 */}
+          <section className="col-span-3 row-span-2 flex min-h-0 flex-col">
             <QrCodeCard orgId={org.id} compact />
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
     </div>
   )

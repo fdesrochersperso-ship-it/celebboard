@@ -95,8 +95,8 @@ export function FeedCarousel({
       <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center rounded-lg border border-border bg-card/50 p-6 text-center backdrop-blur">
         <div className="absolute right-2 top-2 z-10">
           {connectionStatus === 'connected' ? (
-            <div className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
-              <span className="size-1 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="flex items-center gap-1 rounded-full bg-green-500/20 px-1.5 py-0.5 text-[10px] font-medium text-green-500">
+              <span className="size-1 rounded-full bg-green-500 animate-pulse" />
               Live
             </div>
           ) : connectionStatus === 'connecting' ? (
@@ -115,7 +115,7 @@ export function FeedCarousel({
         <p className="text-muted-foreground" style={{ fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)' }}>
           No posts yet
         </p>
-        <p className="mt-1 text-sm text-muted-foreground/70">Scan QR to share</p>
+        <p className="mt-1 text-xs text-muted-foreground/70">Add :coal: to Slack or scan QR</p>
       </div>
     )
   }
@@ -125,11 +125,11 @@ export function FeedCarousel({
     ?.reactions ?? []
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card/50 backdrop-blur">
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card/50 shadow-card backdrop-blur">
       <div className="absolute right-2 top-2 z-10">
         {connectionStatus === 'connected' ? (
-          <div className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
-            <span className="size-1 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] font-medium text-green-500">
+            <span className="size-1 rounded-full bg-green-500 animate-pulse" />
             Live
           </div>
         ) : connectionStatus === 'connecting' ? (
@@ -149,7 +149,7 @@ export function FeedCarousel({
             <img
               src={current.image_url}
               alt=""
-              className="size-full object-cover"
+              className="size-full object-contain bg-black/20"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           </div>
@@ -172,8 +172,8 @@ export function FeedCarousel({
               <p
                 className={`font-medium leading-relaxed ${
                   current.image_url
-                    ? 'text-base text-white drop-shadow-lg md:text-lg'
-                    : 'text-xl text-foreground md:text-2xl'
+                    ? 'text-lg text-white drop-shadow-lg'
+                    : 'text-2xl text-foreground md:text-3xl lg:text-4xl'
                 }`}
               >
                 &ldquo;{current.text_content}&rdquo;
@@ -211,16 +211,16 @@ export function FeedCarousel({
       </div>
 
       {items.length > 1 && (
-        <div className="flex justify-center gap-1.5 border-t border-border bg-background/50 py-2 backdrop-blur-sm">
+        <div className="flex justify-center gap-1 border-t border-border bg-background/50 py-2 backdrop-blur-sm">
           {items.map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setCurrentIndex(i)}
-              className={`h-2 rounded-full transition-all ${
+              className={`rounded-full transition-all ${
                 i === currentIndex
-                  ? 'w-6 bg-primary'
-                  : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  ? 'h-2 w-6 bg-primary'
+                  : 'h-1.5 w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
               }`}
               aria-label={`Go to item ${i + 1}`}
             />

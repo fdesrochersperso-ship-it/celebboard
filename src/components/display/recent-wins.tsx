@@ -45,10 +45,8 @@ function timeAgo(iso: string): string {
 export function RecentWins({ celebrations }: Props) {
   if (celebrations.length === 0) {
     return (
-      <div className="flex h-full min-h-[120px] flex-col items-center justify-center border border-white/[0.06] bg-white/[0.02] p-6">
-        <p className="text-zinc-500" style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)' }}>
-          No celebrations yet
-        </p>
+      <div className="flex h-full min-h-[120px] flex-col items-center justify-center rounded-lg border border-border bg-secondary/30 p-6">
+        <p className="text-muted-foreground">No celebrations yet</p>
       </div>
     )
   }
@@ -56,11 +54,11 @@ export function RecentWins({ celebrations }: Props) {
   const visibleCelebrations = celebrations.slice(0, MAX_VISIBLE_ITEMS)
 
   return (
-    <div className="flex flex-col gap-2 overflow-hidden">
+    <div className="flex flex-col gap-1 overflow-hidden">
       {visibleCelebrations.map((c, i) => (
         <div
           key={c.id}
-          className="flex animate-slide-in items-center gap-3 border border-white/[0.06] bg-white/[0.03] p-3"
+          className="flex animate-slide-in items-center gap-3 rounded-lg border border-border bg-secondary/50 p-1.5"
           style={{
             animationDelay: `${i * 80}ms`,
             animationFillMode: 'backwards',
@@ -70,11 +68,7 @@ export function RecentWins({ celebrations }: Props) {
             {(c.team_members ?? []).slice(0, 3).map((m) => (
               <div
                 key={m.id}
-                className="relative size-10 shrink-0 overflow-hidden border-2 border-[#0a0a0f]"
-                style={{
-                  borderRadius: '50%',
-                  boxShadow: '0 0 12px rgba(234, 179, 8, 0.3)',
-                }}
+                className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-background"
               >
                 {m.photo_url ? (
                   <img
@@ -83,57 +77,32 @@ export function RecentWins({ celebrations }: Props) {
                     className="size-full object-cover"
                   />
                 ) : (
-                  <div className="flex size-full items-center justify-center bg-zinc-700 text-xs font-bold text-zinc-300">
+                  <div className="flex size-full items-center justify-center bg-primary/20 text-xs font-bold text-primary">
                     {getInitials(m.name)}
                   </div>
                 )}
               </div>
             ))}
             {(!c.team_members || c.team_members.length === 0) && (
-              <div
-                className="flex size-10 shrink-0 items-center justify-center border-2 border-[#0a0a0f] bg-zinc-700/50 text-xs text-zinc-400"
-                style={{ borderRadius: '50%' }}
-              >
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-background bg-muted text-xs text-muted-foreground">
                 —
               </div>
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p
-              className="truncate font-medium text-white"
-              style={{ fontSize: 'clamp(0.85rem, 1.4vw, 1rem)' }}
-            >
-              {c.title}
-            </p>
+            <p className="truncate font-semibold text-foreground">{c.title}</p>
             {c.subtitle && (
-              <p
-                className="truncate text-zinc-400"
-                style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.85rem)' }}
-              >
-                {c.subtitle}
-              </p>
+              <p className="truncate text-muted-foreground text-sm">{c.subtitle}</p>
             )}
           </div>
-          {c.amount != null && (
-            <p
-              className="shrink-0 font-bold tabular-nums"
-              style={{
-                fontSize: 'clamp(1rem, 1.8vw, 1.35rem)',
-                color: '#eab308',
-                textShadow: '0 0 20px rgba(234, 179, 8, 0.4)',
-              }}
-            >
-              ${c.amount.toLocaleString()}
-            </p>
-          )}
-          {c.created_at && (
-            <span
-              className="shrink-0 text-zinc-500"
-              style={{ fontSize: 'clamp(0.7rem, 1vw, 0.8rem)' }}
-            >
-              {timeAgo(c.created_at)}
-            </span>
-          )}
+          <div className="flex shrink-0 flex-col items-end">
+            {c.amount != null && (
+              <p className="font-bold tabular-nums text-accent">${c.amount.toLocaleString()}</p>
+            )}
+            {c.created_at && (
+              <span className="text-[9px] text-muted-foreground">{timeAgo(c.created_at)}</span>
+            )}
+          </div>
         </div>
       ))}
     </div>

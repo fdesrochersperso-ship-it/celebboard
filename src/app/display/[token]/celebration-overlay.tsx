@@ -128,54 +128,25 @@ export default function CelebrationOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
       style={{
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.5s ease-out',
       }}
     >
-      {/* GIF background */}
-      <div className="absolute inset-0">
-        <img
-          src={gifUrl}
-          alt=""
-          className="size-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-      </div>
-
       <Confetti isClosing={exiting} />
 
       <div
-        className={`relative z-10 flex flex-col items-center px-8 text-center ${
-          exiting ? 'animate-celebration-exit' : 'animate-celebration-enter'
+        className={`relative z-10 flex max-w-4xl flex-col items-center space-y-6 px-8 text-center ${
+          exiting ? 'animate-celebration-exit' : 'animate-celebration-entrance'
         }`}
       >
-        <h2
-          className="font-bold tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]"
-          style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-            textShadow: '0 0 40px rgba(255,255,255,0.3), 0 2px 10px rgba(0,0,0,0.8)',
-          }}
-        >
-          {current.title}
-        </h2>
-
         {members.length > 0 && (
-          <div
-            className="mt-8 flex flex-wrap justify-center gap-6"
-            style={{ gap: 'clamp(1rem, 2vw, 1.5rem)' }}
-          >
+          <div className="flex justify-center items-end gap-8">
             {members.map((m) => (
-              <div key={m.id} className="flex flex-col items-center gap-3">
-                <div
-                  className="overflow-hidden rounded-full border-4 border-amber-400/90 bg-zinc-800"
-                  style={{
-                    width: 'clamp(60px, 10vw, 80px)',
-                    height: 'clamp(60px, 10vw, 80px)',
-                    boxShadow: '0 0 24px rgba(251, 191, 36, 0.5), inset 0 0 16px rgba(255,255,255,0.1)',
-                  }}
-                >
+              <div key={m.id} className="relative flex flex-col items-center">
+                <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl animate-pulse" />
+                <div className="relative size-36 overflow-hidden rounded-full border-4 border-primary shadow-elevated ring-4 ring-primary/30">
                   {m.photo_url ? (
                     <img
                       src={m.photo_url}
@@ -183,50 +154,73 @@ export default function CelebrationOverlay({
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="flex size-full items-center justify-center text-xl font-bold text-zinc-400">
+                    <div className="flex size-full items-center justify-center bg-muted text-2xl font-bold text-muted-foreground">
                       {getInitials(m.name)}
                     </div>
                   )}
                 </div>
-                <p
-                  className="font-medium text-white drop-shadow-md"
-                  style={{ fontSize: 'clamp(0.85rem, 1.4vw, 1.1rem)' }}
-                >
+                <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground shadow-lg whitespace-nowrap">
                   {m.name}
-                </p>
+                </span>
               </div>
             ))}
           </div>
         )}
 
-        {current.amount != null && (
-          <p
-            className="mt-8 font-bold tabular-nums text-amber-400"
+        <div className="space-y-4 pt-4">
+          <h2
+            className="text-5xl font-black tracking-tight md:text-6xl animate-title-glow"
             style={{
-              fontSize: 'clamp(3rem, 8vw, 6rem)',
-              textShadow: '0 0 40px rgba(251, 191, 36, 0.5), 0 2px 10px rgba(0,0,0,0.8)',
+              background: 'linear-gradient(135deg, hsl(38, 95%, 55%), hsl(45, 100%, 60%), hsl(38, 95%, 65%))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}
           >
-            <AnimatedCounter
-              value={current.amount}
-              startFrom={0}
-              duration={2000}
-              formatAsCurrency
-              currency="CAD"
-              locale="en-CA"
-              abbreviate
+            {current.title}
+          </h2>
+
+          {current.amount != null && (
+            <p className="text-3xl font-black tabular-nums text-emerald-400 animate-pulse md:text-4xl">
+              <AnimatedCounter
+                value={current.amount}
+                startFrom={0}
+                duration={2000}
+                formatAsCurrency
+                currency="CAD"
+                locale="en-CA"
+                abbreviate
+              />
+            </p>
+          )}
+
+          {current.subtitle && (
+            <p className="text-xl font-medium text-white/90 md:text-2xl">{current.subtitle}</p>
+          )}
+        </div>
+
+        {gifUrl && (
+          <div className="flex justify-center animate-gif-entrance pt-2">
+            <img
+              src={gifUrl}
+              alt=""
+              className="max-w-[350px] w-full rounded-2xl border-4 border-primary/50 shadow-elevated"
             />
-          </p>
+          </div>
         )}
 
-        {current.subtitle && (
-          <p
-            className="mt-4 text-white/90 drop-shadow-md"
-            style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2rem)' }}
-          >
-            {current.subtitle}
-          </p>
-        )}
+        <div className="flex justify-center gap-3 pt-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="size-3 rounded-full bg-gradient-to-r from-primary to-accent animate-bounce"
+              style={{
+                animationDelay: `${i * 0.1}s`,
+                animationDuration: '0.8s',
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
+import { CheckCircle, TrendingUp } from 'lucide-react'
 
 export type ChartDataPoint = {
   week: string
@@ -29,7 +30,7 @@ export function KpiChart({
   title = 'New Subscribers by Week',
   data,
   dataKey = 'count',
-  color = 'hsl(var(--primary))',
+  color = 'var(--success)',
   isLoading = false,
 }: Props) {
   const chartData = (data && data.length > 0 ? data : MOCK_DATA)
@@ -47,16 +48,22 @@ export function KpiChart({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-lg border border-border bg-card p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <span className="text-sm font-medium text-muted-foreground">
-          Total: {total.toLocaleString()}
-        </span>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-card">
+      <div className="flex items-center gap-2 pb-2">
+        <div className="flex items-center justify-center rounded-lg bg-success/10 p-2">
+          <CheckCircle className="size-5 text-success" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold">{title}</h3>
+          <p className="flex items-center gap-1 text-sm text-muted-foreground">
+            Total: {total.toLocaleString()} since Dec 1
+            <TrendingUp className="size-4 text-success" />
+          </p>
+        </div>
       </div>
       <div className="min-h-0 flex-1" style={{ minHeight: 320 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 16, left: 16, bottom: 48 }}>
+          <BarChart data={chartData} margin={{ top: 25, right: 10, left: 10, bottom: 20 }}>
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={color} stopOpacity={0.9} />
@@ -72,9 +79,9 @@ export function KpiChart({
             <XAxis
               dataKey="week"
               stroke="hsl(var(--muted-foreground))"
-              fontSize={14}
+              fontSize={12}
               tickLine={false}
-              axisLine={true}
+              axisLine={false}
               interval={0}
             />
             <YAxis
@@ -95,7 +102,7 @@ export function KpiChart({
                 dataKey={dataKey}
                 position="top"
                 fill="hsl(var(--foreground))"
-                fontSize={12}
+                fontSize={13}
                 fontWeight={600}
               />
             </Bar>

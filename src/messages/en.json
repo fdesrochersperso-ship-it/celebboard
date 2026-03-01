@@ -1,24 +1,24 @@
 {
   "metadata": {
     "home": {
-      "title": "CelebBoard — Wins happen. Make sure your team sees them.",
-      "description": "CelebBoard is the celebration engine for activity-driven teams. Connect your CRM, celebrate wins on office TVs with confetti, sounds, team photos, and live leaderboards. Set up in minutes."
+      "title": "CelebBoard — Team Celebration Software for Office TVs",
+      "description": "Automatically celebrate team wins on your office TV. Confetti, sounds, team photos, live leaderboards. Connect HubSpot, Slack, or any tool. Set up in 10 minutes."
     },
     "features": {
-      "title": "Features — Everything your team screen should be | CelebBoard",
-      "description": "Automated celebrations, live leaderboards, KPI cards, team photos, content feeds, and themes. CelebBoard turns any screen into a celebration engine."
+      "title": "Features — Celebrations, Leaderboards, KPIs & More | CelebBoard",
+      "description": "Automated celebrations with confetti and sounds, real-time leaderboards, live KPI cards, team photo sync, content feed, and custom themes. Everything your office TV needs."
     },
     "pricing": {
-      "title": "Pricing — Simple pricing. Unlimited celebrations. | CelebBoard",
-      "description": "Flat-rate pricing with unlimited TVs. No per-user fees. No per-screen charges. Start at $49/mo for up to 15 team members."
+      "title": "Pricing — Simple Plans, Unlimited Celebrations | CelebBoard",
+      "description": "Flat-rate pricing from $49/mo. No per-user fees. Unlimited TVs on every plan. Compare vs SalesScreen, Spinify, and Geckoboard. 14-day free trial."
     },
     "about": {
-      "title": "About — Built in Montréal for teams everywhere | CelebBoard",
-      "description": "CelebBoard was born from a simple observation: teams that see their wins together, win more together. Learn about our mission to make every win visible."
+      "title": "About CelebBoard — Built in Montreal | CelebBoard",
+      "description": "CelebBoard was born from a simple observation: teams that see their wins together, win more together. Built in Montreal."
     },
     "blog": {
-      "title": "Blog — Insights on team celebration & motivation | CelebBoard",
-      "description": "Articles on team recognition, office culture, TV dashboards, and how to build a celebration-first workplace."
+      "title": "Blog — Team Celebration Insights & Guides | CelebBoard",
+      "description": "Articles on team celebration, sales motivation, office TV displays, and building a culture of recognition. Guides, comparisons, and best practices."
     },
     "terms": {
       "title": "Terms of Service | CelebBoard",
@@ -92,7 +92,7 @@
     },
 
     "problem": {
-      "title": "Your team's best work is invisible.",
+      "title": "The problem no one talks about",
       "subtitle": "Right now, wins happen and nobody notices — unless someone remembers to post in Slack. CelebBoard changes that.",
       "before": {
         "label": "Before CelebBoard",
@@ -148,7 +148,7 @@
     },
 
     "howItWorks": {
-      "title": "Three steps. Five minutes. Celebrations forever.",
+      "title": "How CelebBoard works",
       "steps": [
         {
           "number": "1",
@@ -193,7 +193,7 @@
     },
 
     "verticals": {
-      "title": "If your team tracks it, CelebBoard celebrates it.",
+      "title": "Built for any activity-driven team",
       "subtitle": "Built for any team where individual performance drives collective results.",
       "cards": [
         {
@@ -219,6 +219,12 @@
       ]
     },
 
+    "pricingTeaser": {
+      "title": "Simple pricing. Unlimited celebrations.",
+      "subtitle": "No per-TV fees. No per-screen charges. Flat-rate from $49/mo.",
+      "cta": "View pricing"
+    },
+
     "cta": {
       "title": "Your team's next win is waiting.",
       "subtitle": "Start celebrating in minutes. Free for 14 days.",
@@ -235,7 +241,7 @@
     },
 
     "celebrationEngine": {
-      "title": "The celebration engine",
+      "title": "Automated celebrations",
       "subtitle": "Your team closes a deal at 3:47 PM. At 3:47 PM, every screen in the office explodes with confetti, the closer's photo, and the deal details. No one posted it. No one scheduled it. It just happened.",
       "features": [
         {
@@ -507,7 +513,7 @@
 
   "about": {
     "hero": {
-      "title": "We believe every win — big or small — deserves to be seen.",
+      "title": "We believe every win deserves to be seen.",
       "subtitle": "CelebBoard exists because we saw what happens when a team's work becomes visible. Energy goes up. Momentum builds. People push harder — not because they have to, but because they want to."
     },
 

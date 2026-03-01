@@ -1,0 +1,15 @@
+---
+description: Update PROJECT_STATUS.md when building features or making significant changes
+alwaysApply: true
+---
+
+# Update Project Status
+
+When you complete a feature, fix, or significant change:
+
+1. Open [PROJECT_STATUS.md](PROJECT_STATUS.md)
+2. Update the "Last updated" date
+3. Add new capabilities under "What's Built" or move items from "What's Missing" to "What's Built"
+4. Remove completed items from "Pending Tasks" if that section exists
+5. If you introduced new debt or resolved debt, update "Technical Debt and Liabilities" and "Debt Level"
+6. Be concise; one-line entries are fine

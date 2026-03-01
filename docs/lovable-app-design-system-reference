@@ -1,0 +1,3310 @@
+# 10 — Design System: Exhaustive Visual Specification
+
+> **Purpose**: This document is a complete, pixel-level specification of every visual element in the helloDarwin Celebration Dashboard. Another Lovable project can use this document alone to replicate the exact look, feel, animations, spacing, and interaction patterns of this application.
+
+---
+
+## Table of Contents
+
+1. [Global Foundation](#1-global-foundation)
+2. [Theme System](#2-theme-system)
+3. [Gradient System](#3-gradient-system)
+4. [Shadow System](#4-shadow-system)
+5. [Utility Classes](#5-utility-classes)
+6. [Core UI Components](#6-core-ui-components)
+7. [Dashboard Layout](#7-dashboard-layout)
+8. [Header Component](#8-header-component)
+9. [KPI Card Variants](#9-kpi-card-variants)
+10. [KPI Carousel](#10-kpi-carousel)
+11. [Dashboard Feed](#11-dashboard-feed)
+12. [Chart Components](#12-chart-components)
+13. [Quote of the Day](#13-quote-of-the-day)
+14. [QR Code Card](#14-qr-code-card)
+15. [Spotify Song Card](#15-spotify-song-card)
+16. [Recent Wins](#16-recent-wins)
+17. [Fun Facts Card](#17-fun-facts-card)
+18. [Celebration Popup System](#18-celebration-popup-system)
+19. [Confetti System](#19-confetti-system)
+20. [Animated Counter](#20-animated-counter)
+21. [Complete Animation Catalog](#21-complete-animation-catalog)
+22. [Submit Page](#22-submit-page)
+23. [Auth Page](#23-auth-page)
+24. [Admin Layout](#24-admin-layout)
+25. [Icon Usage Map](#25-icon-usage-map)
+26. [Spacing Patterns](#26-spacing-patterns)
+27. [Typography Scale](#27-typography-scale)
+28. [State Management & Persistence](#28-state-management--persistence)
+29. [Realtime & Connection Indicators](#29-realtime--connection-indicators)
+30. [Responsive & Fullscreen Behavior](#30-responsive--fullscreen-behavior)
+
+---
+
+## 1. Global Foundation
+
+### Font Stack
+
+```css
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+```
+
+**Inter** is the primary typeface. No custom display font is used — the entire app relies on Inter with varying weights (400, 500, 600, 700, 800, 900) for hierarchy.
+
+### Border Radius
+
+All themes share the same border radius system:
+
+| Token | Value |
+|---|---|
+| `--radius` | `0.75rem` (12px) |
+| `border-radius-lg` | `var(--radius)` = 0.75rem |
+| `border-radius-md` | `calc(var(--radius) - 2px)` = 0.625rem |
+| `border-radius-sm` | `calc(var(--radius) - 4px)` = 0.5rem |
+
+### Base Reset
+
+```css
+* {
+  border-color: hsl(var(--border));
+}
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+```
+
+### Default Transition
+
+```css
+--transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+Applied via the `.transition-smooth` utility class.
+
+### Tailwind Configuration
+
+- **Dark mode**: Class-based (`darkMode: ["class"]`)
+- **Content paths**: `./pages/**/*.{ts,tsx}`, `./components/**/*.{ts,tsx}`, `./app/**/*.{ts,tsx}`, `./src/**/*.{ts,tsx}`
+- **Plugin**: `tailwindcss-animate`
+
+---
+
+## 2. Theme System
+
+The app supports **4 themes** switched via `data-theme` attribute on `<html>`. Theme preference is persisted to `localStorage` under the key `dashboard-theme` using Zustand's `persist` middleware. Default theme is `dark`.
+
+### Theme Application
+
+```typescript
+document.documentElement.setAttribute('data-theme', themeName);
+```
+
+### Complete Token Table
+
+All values are HSL (hue saturation% lightness%):
+
+| Token | Dark (default) | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--background` | `220 26% 14%` | `40 33% 97%` | `260 30% 12%` | `40 30% 96%` |
+| `--foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--card` | `220 20% 18%` | `0 0% 100%` | `260 25% 16%` | `0 0% 100%` |
+| `--card-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--popover` | `220 26% 14%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--popover-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--primary` | `195 100% 50%` | `270 91% 65%` | `330 100% 60%` | `300 60% 45%` |
+| `--primary-foreground` | `220 26% 14%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--secondary` | `220 20% 25%` | `220 14% 96%` | `260 25% 22%` | `40 20% 92%` |
+| `--secondary-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--muted` | `220 20% 20%` | `220 14% 96%` | `260 25% 20%` | `40 20% 94%` |
+| `--muted-foreground` | `215 20% 65%` | `220 9% 46%` | `260 20% 70%` | `0 0% 45%` |
+| `--accent` | `38 95% 55%` | `48 96% 53%` | `45 100% 55%` | `52 100% 50%` |
+| `--accent-foreground` | `220 26% 14%` | `220 14% 15%` | `260 30% 12%` | `0 0% 13%` |
+| `--success` | `142 76% 45%` | `160 84% 39%` | `150 100% 45%` | `168 76% 42%` |
+| `--success-foreground` | `210 40% 98%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--destructive` | `0 84% 60%` | `0 84% 60%` | `0 90% 60%` | `0 84% 60%` |
+| `--destructive-foreground` | `210 40% 98%` | `0 0% 100%` | `60 100% 97%` | `0 0% 100%` |
+| `--border` | `220 20% 25%` | `220 13% 91%` | `260 25% 25%` | `40 15% 88%` |
+| `--input` | `220 20% 25%` | `220 13% 91%` | `260 25% 25%` | `40 15% 88%` |
+| `--ring` | `195 100% 50%` | `270 91% 65%` | `330 100% 60%` | `300 60% 45%` |
+
+### Theme Character
+
+- **Dark**: Cyan primary, gold accent, dark navy background. Tech/monitoring feel.
+- **Light**: Purple primary, yellow accent, warm off-white background. Professional/brand.
+- **Vibrant**: Hot pink primary, gold accent, deep purple background. Celebration/party mode.
+- **helloDarwin**: Magenta primary, yellow accent, warm cream background. Brand identity.
+
+---
+
+## 3. Gradient System
+
+Each theme defines 3 gradients. All gradients use a `135deg` angle.
+
+### Gradient Definitions
+
+| Gradient | Dark | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--gradient-primary` | `hsl(195 100% 50%)` → `hsl(210 100% 60%)` | `hsl(270 91% 65%)` → `hsl(280 85% 55%)` | `hsl(330 100% 60%)` → `hsl(280 100% 65%)` | `hsl(300 60% 45%)` → `hsl(280 55% 50%)` |
+| `--gradient-celebration` | `hsl(38 95% 55%)` → `hsl(45 100% 60%)` | `hsl(48 96% 53%)` → `hsl(45 100% 60%)` | `hsl(45 100% 55%)` → `hsl(30 100% 60%)` | `hsl(52 100% 50%)` → `hsl(45 100% 55%)` |
+| `--gradient-success` | `hsl(142 76% 45%)` → `hsl(150 80% 50%)` | `hsl(160 84% 39%)` → `hsl(150 80% 45%)` | `hsl(150 100% 45%)` → `hsl(120 100% 50%)` | `hsl(168 76% 42%)` → `hsl(160 70% 45%)` |
+
+### CSS Utility Classes
+
+```css
+.gradient-primary   { background: var(--gradient-primary); }
+.gradient-celebration { background: var(--gradient-celebration); }
+.gradient-success   { background: var(--gradient-success); }
+```
+
+### Usage Patterns
+
+- `gradient-primary`: KPI card icons, logo square, celebration photo borders
+- `gradient-celebration`: Fun Facts icon, accent highlights
+- `gradient-success`: Success-themed KPI icons
+
+---
+
+## 4. Shadow System
+
+| Shadow | Dark | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--shadow-card` | `0 4px 20px hsl(220 26% 8% / 0.4)` | `0 4px 20px hsl(220 14% 15% / 0.08)` | `0 4px 20px hsl(260 30% 5% / 0.5)` | `0 4px 20px hsl(0 0% 0% / 0.06)` |
+| `--shadow-elevated` | `0 8px 40px hsl(220 26% 8% / 0.6)` | `0 8px 40px hsl(220 14% 15% / 0.12)` | `0 8px 40px hsl(260 30% 5% / 0.7)` | `0 8px 40px hsl(0 0% 0% / 0.1)` |
+
+### CSS Utility Classes
+
+```css
+.shadow-card     { box-shadow: var(--shadow-card); }
+.shadow-elevated { box-shadow: var(--shadow-elevated); }
+```
+
+### Usage
+
+- `.shadow-card`: All `<Card>` components (KPI cards, chart cards, feed)
+- `.shadow-elevated`: Celebration popup images, employee photo circles, GIF images
+
+---
+
+## 5. Utility Classes
+
+Custom utility classes defined in `index.css` under `@layer utilities`:
+
+| Class | Effect |
+|---|---|
+| `.gradient-primary` | Background = `var(--gradient-primary)` |
+| `.gradient-celebration` | Background = `var(--gradient-celebration)` |
+| `.gradient-success` | Background = `var(--gradient-success)` |
+| `.shadow-card` | Box-shadow = `var(--shadow-card)` |
+| `.shadow-elevated` | Box-shadow = `var(--shadow-elevated)` |
+| `.transition-smooth` | Transition = `var(--transition-smooth)` |
+| `.animate-confetti-enhanced` | 4s confetti fall animation, infinite |
+| `.animate-celebration-entrance` | 0.8s spring entrance, forwards |
+| `.animate-photo-bounce` | 0.7s spring bounce, starts at `opacity: 0` |
+| `.animate-title-glow` | 2s pulsing gold text-shadow, infinite |
+| `.animate-gif-entrance` | 0.6s spring entrance, 0.5s delay, starts at `opacity: 0` |
+| `.animate-pulse-glow` | 2s pulsing primary box-shadow, infinite |
+| `.animate-epic-shake` | 0.5s horizontal shake, ease-in-out |
+| `.animate-epic-glow` | 2s pulsing amber box-shadow, infinite |
+
+---
+
+## 6. Core UI Components
+
+All components use shadcn/ui built on Radix UI primitives + Tailwind.
+
+### Card
+
+**File**: `src/components/ui/card.tsx`
+
+| Part | Classes |
+|---|---|
+| `Card` (root) | `rounded-lg border bg-card text-card-foreground shadow-sm` |
+| `CardHeader` | `flex flex-col space-y-1.5 p-6` |
+| `CardTitle` | `text-2xl font-semibold leading-none tracking-tight` (renders `<h3>`) |
+| `CardDescription` | `text-sm text-muted-foreground` |
+| `CardContent` | `p-6 pt-0` |
+| `CardFooter` | `flex items-center p-6 pt-0` |
+
+### Button
+
+**File**: `src/components/ui/button.tsx`
+
+**Base classes**: `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0`
+
+**Variants**:
+
+| Variant | Classes |
+|---|---|
+| `default` | `bg-primary text-primary-foreground hover:bg-primary/90` |
+| `destructive` | `bg-destructive text-destructive-foreground hover:bg-destructive/90` |
+| `outline` | `border border-input bg-background hover:bg-accent hover:text-accent-foreground` |
+| `secondary` | `bg-secondary text-secondary-foreground hover:bg-secondary/80` |
+| `ghost` | `hover:bg-accent hover:text-accent-foreground` |
+| `link` | `text-primary underline-offset-4 hover:underline` |
+
+**Sizes**:
+
+| Size | Classes |
+|---|---|
+| `default` | `h-10 px-4 py-2` |
+| `sm` | `h-9 rounded-md px-3` |
+| `lg` | `h-11 rounded-md px-8` |
+| `icon` | `h-10 w-10` |
+
+### Input
+
+**File**: `src/components/ui/input.tsx`
+
+**Classes**: `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`
+
+### Progress
+
+**File**: `src/components/ui/progress.tsx`
+
+- **Root**: `relative h-4 w-full overflow-hidden rounded-full bg-secondary`
+- **Indicator**: `h-full w-full flex-1 bg-primary transition-all`, positioned via `transform: translateX(-${100 - value}%)`
+
+### Avatar
+
+**File**: `src/components/ui/avatar.tsx`
+
+- **Root**: `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full` (default size, overridden per context)
+- **Image**: `aspect-square h-full w-full`
+- **Fallback**: `flex h-full w-full items-center justify-center rounded-full bg-muted`
+
+**Size usage across the app**:
+
+| Context | Size |
+|---|---|
+| Feed (compact) | `w-5 h-5` |
+| Feed (image overlay) | `w-6 h-6` |
+| Feed (text-only) | `w-8 h-8` |
+| Spotify shared-by | `h-6 w-6` |
+| Leaderboard podium | `w-10 h-10` |
+| Recent Wins stacked (compact) | `w-5 h-5` |
+| Recent Wins stacked (full) | `w-10 h-10` |
+| Celebration owner photo | `w-36 h-36` |
+| Celebration Notion task | `w-28 h-28` |
+| Epic mode photo | `w-80 h-80` |
+
+### Badge
+
+**File**: `src/components/ui/badge.tsx`
+
+**Base**: `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`
+
+**Variants**:
+
+| Variant | Classes |
+|---|---|
+| `default` | `border-transparent bg-primary text-primary-foreground hover:bg-primary/80` |
+| `secondary` | `border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80` |
+| `destructive` | `border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80` |
+| `outline` | `text-foreground` |
+
+**Custom badge styles used in Recent Wins**:
+
+| Win Type | Custom Classes |
+|---|---|
+| Grant (acceptation) | `bg-emerald-500/20 text-emerald-400 border-emerald-500/30` with 🎉 emoji |
+| Signature (quote_signed) | `bg-cyan-500/20 text-cyan-400 border-cyan-500/30` with ✍️ emoji |
+| Renewal (renewal_signed) | `bg-blue-500/20 text-blue-400 border-blue-500/30` with 🔄 emoji |
+
+---
+
+## 7. Dashboard Layout
+
+**File**: `src/pages/Dashboard.tsx`
+
+### Overall Structure
+
+```
+h-screen bg-background flex flex-col overflow-hidden
+├── Header (border-b, shrink-0)
+├── main (flex-1 p-3 flex flex-col gap-3 overflow-hidden)
+│   ├── Action buttons row (shrink-0, flex justify-end gap-2)
+│   ├── KPI Carousel (shrink-0)
+│   ├── Error banner (conditional, shrink-0)
+│   └── Main content grid (flex-1, min-h-0)
+│       ├── Feed (col-span-4, row-span-4)
+│       ├── Chart (col-span-5, row-span-4)
+│       ├── Quote (col-span-3, row-span-2)
+│       └── QR Code (col-span-3, row-span-2)
+```
+
+### Main Content Grid
+
+```css
+.grid {
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0.75rem; /* gap-3 */
+  min-height: 0;
+}
+```
+
+### Action Buttons Row
+
+- Reset Celebration button (debug tool)
+- Refresh button: `variant="outline" size="sm" className="gap-2 h-7 text-xs"`
+  - `RefreshCw` icon: `h-3 w-3`, animated with `animate-spin` when loading
+
+### Error Banner
+
+```
+bg-destructive/10 border border-destructive text-destructive-foreground p-2 rounded-lg
+flex items-center justify-between text-sm shrink-0
+```
+
+With a "Retry" button: `variant="outline" size="sm" className="h-6 text-xs"`
+
+---
+
+## 8. Header Component
+
+**File**: `src/components/Dashboard/Header.tsx`
+
+### Structure
+
+```
+header: flex items-center justify-between px-4 py-2 border-b border-border
+├── Left: Logo + Title
+│   ├── Logo box: w-8 h-8 rounded-lg gradient-primary flex items-center justify-center
+│   │   └── Sparkles icon: w-4 h-4 text-primary-foreground
+│   └── Text block:
+│       ├── h1: text-lg font-bold text-foreground leading-tight → "helloDarwin"
+│       └── p: text-xs text-muted-foreground → "Celebration Dashboard"
+│
+└── Right: Controls (flex items-center gap-4)
+    ├── Dashboard Type Selector
+    ├── Theme Switcher
+    ├── Fullscreen Toggle
+    ├── Admin Dropdown
+    └── Connection Status
+```
+
+### Dashboard Type Selector
+
+Container: `bg-secondary/50 rounded-lg p-1`, `flex items-center gap-1`
+
+Two buttons ("Service Team" with `MonitorPlay` icon, "Dev Team" with `Code2` icon):
+- Active: `variant="default"`, size `"sm"`, `className="gap-1.5 text-xs"`
+- Inactive: `variant="ghost"`, same size and className
+
+### Theme Switcher
+
+Same container style: `bg-secondary/50 rounded-lg p-1`
+
+Four buttons:
+| Theme | Label | Icon |
+|---|---|---|
+| `dark` | "Dark" | `Moon` |
+| `light` | "Light" | `Sun` |
+| `vibrant` | "Vibrant" | `Zap` |
+| `hellodarwin` | "hD" | `Palette` |
+
+Active = `variant="default"`, inactive = `variant="ghost"`. All `size="sm" text-xs gap-1.5`.
+
+### Fullscreen Toggle
+
+`variant="outline" size="sm" gap-2`
+
+- Shows `Maximize` icon when not fullscreen, `Minimize` when fullscreen
+- Both icons: `h-4 w-4`
+
+### Admin Dropdown
+
+Trigger: `variant="outline" size="sm" gap-2`, `Settings` icon `h-4 w-4`, label "Admin"
+
+Content: `align="end"`, three menu items:
+- "Employees" with `Settings` icon
+- "Celebrations" with `Sparkles` icon
+- "Sound Settings" with `Volume2` icon
+
+### Connection Status Indicator
+
+Container: `flex items-center gap-2 px-2 py-1 rounded-md bg-secondary/30`
+
+| State | Dot | Icon | Label |
+|---|---|---|---|
+| Connected | `w-2 h-2 rounded-full bg-green-500 animate-pulse` | `Wifi w-3.5 h-3.5` | "Live" |
+| Connecting | (none) | `Loader2 w-3.5 h-3.5 animate-spin` | "Connecting..." |
+| Disconnected | `w-2 h-2 rounded-full bg-red-500` | `WifiOff w-3.5 h-3.5` | "Disconnected" |
+
+Label: `text-sm text-muted-foreground`
+
+---
+
+## 9. KPI Card Variants
+
+### 9.1 Basic KPICard
+
+**File**: `src/components/Dashboard/KPICard.tsx`
+
+```
+Card: shadow-card border-border transition-smooth h-full
+└── CardContent: p-6 (compact) or p-8 (full), h-full
+    ├── Top row (flex items-start justify-between mb-4/5):
+    │   ├── Icon box: w-14/16 h-14/16 rounded-xl [gradient] flex items-center justify-center
+    │   │   └── Icon: w-7/8 h-7/8 text-primary-foreground
+    │   └── Trend badge (optional)
+    └── Bottom:
+        ├── Title: text-xl/2xl font-semibold text-foreground/80 mb-2
+        └── Value: text-4xl/5xl font-bold text-foreground
+```
+
+**Variant gradients**:
+- `primary` → `gradient-primary`
+- `success` → `gradient-success`
+- `accent` → `gradient-celebration`
+
+**Trend badge**: `text-lg/xl px-3 py-1.5 rounded-full flex items-center gap-1 font-bold`
+- Positive: `bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400`, prefix `↑`
+- Negative: `bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400`, prefix `↓`
+- Neutral: `bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400`
+
+### 9.2 LeaderKPICard
+
+**File**: `src/components/Dashboard/LeaderKPICard.tsx`
+
+Same top section as KPICard (compact sizing), plus a leaderboard podium at the bottom.
+
+```
+CardContent: p-6 flex flex-col h-full
+├── Icon row: w-14 h-14 rounded-xl gradient-primary, mb-3
+├── Title: text-xl font-semibold text-foreground/80 mb-1
+├── Value: text-4xl font-bold text-foreground mb-4
+└── Leaders podium: mt-auto flex items-end justify-start gap-3 pt-2
+    └── Per leader (up to 3):
+        ├── Avatar: w-10 h-10 border-2 border-border
+        │   └── Fallback: text-xs font-bold, single initial
+        ├── Rank emoji: absolute -top-2 -right-2 text-base leading-none
+        │   (🥇, 🥈, 🥉)
+        ├── Name: text-xs font-medium text-foreground truncate max-w-[60px]
+        └── Value: text-[11px] font-bold [rankColor]
+```
+
+**Rank colors**: `["text-yellow-500", "text-slate-400", "text-amber-700"]`
+
+**Leader value format**: `$1.2M`, `$150K`, `$500` (abbreviated currency)
+
+### 9.3 PaceKPICard
+
+**File**: `src/components/Dashboard/PaceKPICard.tsx`
+
+Shows count/goal with progress bar and pace indicator.
+
+```
+Card: shadow-card border-border transition-smooth h-full
+└── CardContent: p-6 flex flex-col h-full
+    ├── Top row: mb-4
+    │   ├── Icon box: w-14 h-14 rounded-xl gradient-primary
+    │   │   └── ClipboardList icon: w-7 h-7 text-primary-foreground
+    │   └── Pace badge: text-lg px-3 py-1.5 rounded-full font-bold
+    │       (green if ahead, red if behind, shows ↑/↓ + absolute diff number)
+    ├── Title: text-xl font-semibold text-foreground/80 mb-1
+    ├── Value: text-4xl font-bold text-foreground mb-3 → "123 / 250"
+    ├── Progress bar: h-2 (overrides default h-4)
+    └── Leaders podium: mt-auto, same structure as LeaderKPICard
+        (value shown as raw number, not currency)
+```
+
+**Pace calculation**: `expectedPace = (daysElapsed / totalDays) * goal`, `diff = count - expectedPace`
+
+### 9.4 LiveKPICard
+
+**File**: `src/components/Dashboard/LiveKPICard.tsx`
+
+Real-time value with animation on change.
+
+```
+Card: shadow-card border-border transition-all duration-300 [ring-2 ring-primary/50 when animating]
+└── CardContent: p-6 (compact) or p-8
+    ├── Top row: flex items-start justify-between mb-4/5
+    │   ├── Icon box: w-14/16 h-14/16 rounded-xl gradient-primary
+    │   │   └── Icon: w-7/8 h-7/8 text-primary-foreground
+    │   └── Live indicator:
+    │       ├── Ping dot: relative flex h-4 w-4
+    │       │   ├── Outer: animate-ping absolute h-full w-full rounded-full bg-red-400 opacity-75
+    │       │   └── Inner: relative inline-flex rounded-full h-4 w-4 bg-red-500
+    │       └── Label: text-xl font-bold text-red-500 uppercase tracking-wide → "Live"
+    ├── Title: text-xl/2xl font-semibold text-foreground/80 mb-2
+    └── Value row: flex items-baseline gap-3
+        ├── Number: text-4xl/5xl font-bold text-foreground transition-all duration-300 [scale-105 when animating]
+        └── Delta: text-xl font-bold [text-green-500 if positive, text-red-500 if negative]
+            Shows ↑/↓ + absolute change number
+```
+
+**Number animation**: Steps through intermediate values at 30ms intervals, up to 20 steps. `isAnimating` flag adds `ring-2 ring-primary/50` to the card and `scale-105` to the number.
+
+---
+
+## 10. KPI Carousel
+
+### Service Dashboard (carousel mode)
+
+Uses **Embla Carousel** (`embla-carousel-react`):
+- `loop: true`
+- `align: "start"`
+- `slidesToScroll: 1`
+- `duration: 30`
+
+Auto-scrolls every **5 seconds**, pauses on hover.
+
+Container: `overflow-hidden shrink-0`
+
+Inner track: `flex -ml-3`, `height: 100%`
+
+Each slide wrapper (`KPISlide`): `min-w-0 shrink-0 grow-0 basis-1/4 pl-3 h-full`
+
+Service dashboard has **7 slides** (loops through them):
+1. LeaderKPICard — "Accepted This Quarter" (CheckCircle, trend)
+2. LeaderKPICard — "Cash Collected - AEs" (DollarSign)
+3. PaceKPICard — "Q2 Client Applications" (goal: 220)
+4. KPICard — "Active Platform Subscribers" (Users)
+5. PaceKPICard — "Discovery Packages Converted" (goal: 30)
+6. PaceKPICard — "Opportunities Created" (goal: 250)
+7. PaceKPICard — "MQL Q2" (goal: 150)
+
+### Dev Dashboard (grid mode)
+
+No carousel — uses static grid: `grid grid-cols-4 gap-3 shrink-0`
+
+4 cards side by side:
+1. LiveKPICard — "Active Users Now" (Activity, live)
+2. KPICard — "Active Subscribers" (Users, primary)
+3. KPICard — "Active SaaS MRR" (DollarSign, success)
+4. KPICard — "Signups This Week" (UserPlus, primary, trend)
+
+---
+
+## 11. Dashboard Feed
+
+**File**: `src/components/Dashboard/DashboardFeed.tsx`
+
+### Container
+
+```
+Card: h-full bg-card/50 backdrop-blur overflow-hidden relative
+└── CardContent: p-0 h-full flex flex-col
+    ├── Content area (flex-1 relative)
+    └── Navigation dots (bottom, conditional)
+```
+
+### Connection Status Badge
+
+Position: `absolute top-2 right-2 z-10`
+
+| State | Classes |
+|---|---|
+| Connected | `bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[10px]` with `w-1 h-1 bg-green-500 rounded-full animate-pulse` dot + "Live" text |
+| Connecting | `bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded-full text-[10px]` with `Wifi w-2.5 h-2.5 animate-pulse` |
+| Disconnected | `bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-full text-[10px]` with `WifiOff w-2.5 h-2.5` |
+
+### Auto-Rotation
+
+- Shows **3 most recent items** from the `dashboard_feed` table
+- Rotates every **25 seconds** via `setInterval`
+- New items from realtime push to front and reset index to 0
+
+### Image Posts
+
+```
+absolute inset-0
+├── img: w-full h-full object-contain bg-black/20
+└── Gradient overlay: absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent
+```
+
+Text overlay positioned at bottom (`justify-end`) in white with `drop-shadow-lg`.
+
+### Text-Only Posts
+
+```
+absolute inset-0 flex flex-col justify-center items-center text-center
+bg-gradient-to-br from-primary/10 to-secondary/10
+```
+
+- `MessageSquare` icon above text: `w-8/12 h-8/12 text-primary/40 mx-auto mb-2/4`
+- Text sizes (responsive): compact = `text-lg`, full = `text-2xl md:text-3xl lg:text-4xl`
+- Text color: `text-foreground`
+
+### Reactions
+
+Container: `flex flex-wrap gap-1 mb-1.5/3`
+
+Each reaction pill:
+- On image: `bg-white/20 backdrop-blur-sm rounded-full px-1.5 py-0.5`
+- On text: `bg-muted rounded-full px-1.5 py-0.5`
+- Emoji + count: `text-xs/sm`, count `text-[10px] opacity-80`
+
+Max reactions shown in compact mode: 4.
+
+### Attribution
+
+```
+flex items-center gap-1.5
+├── Avatar (size varies by context, see Avatar sizes above)
+│   └── Fallback: text-[10px] bg-primary/20 text-primary
+├── Name: font-medium
+└── Channel (optional): · Hash icon (w-2.5/3 h-2.5/3) + channel name, opacity-70
+```
+
+### Navigation Dots
+
+Container: `flex justify-center gap-1 py-1.5/3 bg-background/50 backdrop-blur-sm`
+
+Each dot (button):
+- Active: `bg-primary w-4/6 h-1.5/2 rounded-full` (wider = active indicator)
+- Inactive: `bg-muted-foreground/30 hover:bg-muted-foreground/50 w-1.5/2 h-1.5/2 rounded-full`
+- Transition: `transition-all`
+
+### Empty State
+
+```
+CardContent: flex flex-col items-center justify-center h-full text-center p-3/6 min-h-[180px/300px]
+├── Sparkles icon in circle: w-10/16 h-10/16 bg-primary/10 rounded-full
+├── "No posts yet": text-muted-foreground text-sm/lg mb-1/2
+└── "Add :coal: to Slack or scan QR": text-muted-foreground/70 text-xs/sm
+```
+
+---
+
+## 12. Chart Components
+
+### 12.1 WeeklyAcceptedChart
+
+**File**: `src/components/Dashboard/WeeklyAcceptedChart.tsx`
+
+```
+Card: shadow-card overflow-hidden h-full flex flex-col
+├── CardHeader: pb-2
+│   └── CardTitle: flex items-center gap-2
+│       ├── Icon container: p-2 rounded-lg bg-success/10
+│       │   └── CheckCircle: w-5 h-5 text-success
+│       └── Text:
+│           ├── Title: text-lg font-bold → "Accepted per Week"
+│           └── Subtitle: text-sm font-normal text-muted-foreground
+│               "Total: $XXX since Dec 1" + TrendingUp icon w-4 h-4 text-success ml-1
+└── CardContent: flex-1 min-h-0 pb-6
+    └── Recharts BarChart
+```
+
+**Recharts Configuration**:
+
+| Property | Value |
+|---|---|
+| Margins | `top: 25, right: 10, left: 10, bottom: 20` |
+| Gradient ID | `colorAccepted` |
+| Gradient | Vertical, `hsl(var(--success))` opacity 0.9 → 0.4 |
+| CartesianGrid | `strokeDasharray="3 3"`, `stroke="hsl(var(--border))"`, `opacity={0.3}`, `vertical={false}` |
+| XAxis | `stroke="hsl(var(--muted-foreground))"`, `fontSize={12}`, no tickLine, no axisLine |
+| YAxis | Same stroke/font, no tickLine/axisLine, `tickFormatter` with abbreviated currency, `width={50}` |
+| Bar | `fill="url(#colorAccepted)"`, `radius={[4, 4, 0, 0]}`, `isAnimationActive={false}` |
+| LabelList | `position="top"`, `fill="hsl(var(--foreground))"`, `fontSize={13}`, `fontWeight={600}`, formatted as currency |
+
+### 12.2 WeeklySubscribersChart
+
+**File**: `src/components/Dashboard/WeeklySubscribersChart.tsx`
+
+Identical structure to WeeklyAcceptedChart with these differences:
+
+| Property | Difference |
+|---|---|
+| Icon | `UserPlus` in `bg-primary/10`, `text-primary` |
+| Title | "New Subscribers by Week" |
+| Gradient ID | `colorSubscribers` |
+| Gradient color | `hsl(var(--primary))` instead of success |
+| YAxis width | `30` instead of `50` |
+| YAxis | `allowDecimals={false}` |
+| LabelList fontSize | `14` instead of `13` |
+| LabelList formatter | None (raw number) |
+
+---
+
+## 13. Quote of the Day
+
+**File**: `src/components/Dashboard/QuoteOfTheDay.tsx`
+
+```
+Card: [compact: h-full] bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden
+└── CardContent: flex flex-col justify-center h-full p-5
+    ├── Header row: flex items-center gap-2 mb-3
+    │   ├── Quote icon: h-5 w-5 text-primary
+    │   └── Label: text-xs uppercase tracking-wider text-primary font-semibold → "Quote of the Hour"
+    ├── Quote text: text-2xl font-bold text-foreground leading-tight italic line-clamp-4
+    │   Wrapped in quotes: "{text}"
+    └── Author: text-sm text-muted-foreground mt-3 font-medium → "— {author}"
+```
+
+**Rotation**: Changes every hour. Uses `hoursSinceEpoch % quotes.length` to determine which quote. Checks every 60 seconds for hour change.
+
+**Content**: 15 sports/motivation quotes (Michael Jordan, Wayne Gretzky, Muhammad Ali, etc.).
+
+---
+
+## 14. QR Code Card
+
+**File**: `src/components/Dashboard/QRCodeCard.tsx`
+
+Uses `qrcode.react` (`QRCodeSVG` component).
+
+### Compact Mode (dashboard)
+
+```
+Card: h-full flex flex-col
+└── CardContent: flex-1 flex flex-col items-center justify-center p-3 gap-2
+    ├── QR container: bg-white p-2 rounded-lg shadow-inner
+    │   └── QRCodeSVG: size={100}, level="M", includeMargin={false}, black on white
+    └── Label:
+        ├── Row: flex items-center justify-center gap-1.5 text-xs font-medium text-foreground
+        │   QrCode icon w-3 h-3 text-primary + "Share with Team"
+        └── Sub: text-xs text-muted-foreground → "Scan to post"
+```
+
+### Full Mode
+
+```
+Card: h-full flex flex-col
+├── CardHeader: pb-2
+│   └── CardTitle: text-lg flex items-center gap-2
+│       QrCode w-5 h-5 text-primary + "Share with the Team"
+└── CardContent: flex-1 flex flex-col items-center justify-center gap-4
+    ├── QR container: bg-white p-4 rounded-xl shadow-inner
+    │   └── QRCodeSVG: size={140}, level="M"
+    └── Label:
+        ├── Row: flex items-center justify-center gap-2 text-sm font-medium text-foreground
+        │   Smartphone icon w-4 h-4 + "Scan to post"
+        └── Sub: text-xs text-muted-foreground → "Share photos & messages on the dashboard"
+```
+
+QR encodes: `${window.location.origin}/submit`
+
+---
+
+## 15. Spotify Song Card
+
+**File**: `src/components/Dashboard/SpotifySong.tsx`
+
+```
+Card: [compact: h-full] bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden
+└── CardContent: flex h-full p-0
+    ├── Left half (w-1/2 shrink-0):
+    │   └── Album cover img: w-full h-full object-scale-down
+    │       OR fallback: bg-muted, centered Music icon h-12 w-12 text-muted-foreground
+    └── Right half (w-1/2 flex flex-col justify-center p-4 min-w-0):
+        ├── Now Playing indicator: flex items-center gap-2 mb-2
+        │   ├── Label: text-[10px] uppercase tracking-wider text-primary font-semibold
+        │   └── Ping dot: relative flex h-2 w-2
+        │       ├── Outer: animate-ping absolute h-full w-full rounded-full bg-primary opacity-75
+        │       └── Inner: relative inline-flex rounded-full h-2 w-2 bg-primary
+        ├── Track name: font-bold text-foreground text-base leading-tight line-clamp-2
+        ├── Artist: text-sm text-muted-foreground truncate mt-1
+        └── Shared by (if posted_by exists): flex items-center gap-2 mt-3
+            ├── Avatar: h-6 w-6
+            │   └── Fallback: text-[10px] bg-muted
+            └── Text: text-xs text-muted-foreground truncate
+                "Shared by " + name in text-foreground font-medium
+```
+
+### Loading State
+
+`RefreshCw h-5 w-5 animate-spin text-muted-foreground` centered in card.
+
+### Empty State
+
+`Music h-8 w-8 text-muted-foreground` + "No songs yet" `text-sm text-muted-foreground`, centered.
+
+### Realtime
+
+Subscribes to `slack_spotify_songs` INSERT events. Also re-fetches on tab visibility change.
+
+---
+
+## 16. Recent Wins
+
+**File**: `src/components/Dashboard/RecentWins.tsx`
+
+### Structure
+
+```
+Card: shadow-card h-full overflow-hidden
+├── CardHeader: py-2/3 px-3/4
+│   └── CardTitle: flex items-center gap-2 text-sm/lg
+│       Trophy icon w-4/6 h-4/6 text-accent + "Recent Wins"
+└── CardContent: px-3/4 pb-3/4 h-[calc(100%-3.5rem)] overflow-hidden
+    └── Scroll container (ref): h-full overflow-hidden, scrollBehavior: 'auto'
+        └── Duplicate list (space-y-1/2) for seamless infinite scroll
+```
+
+### Auto-Scroll Animation
+
+Uses `requestAnimationFrame` at **0.5 pixels per frame**. Content is duplicated (rendered twice). When scroll position reaches `scrollHeight / 2`, it resets to 0 for a seamless loop.
+
+### Win Item
+
+```
+flex items-center gap-3 p-1.5/3 rounded-lg bg-secondary/50 border border-border
+├── Stacked avatars: flex -space-x-2 shrink-0
+│   ├── Owner avatar: w-5/10 h-5/10 border-2 border-background
+│   │   └── Fallback: text-[8px]/xs bg-primary text-primary-foreground
+│   └── AM avatar (if exists): w-5/10 h-5/10 border-2 border-background
+│       └── Fallback: text-[8px]/xs bg-accent text-accent-foreground
+├── Info (flex-1 min-w-0):
+│   ├── Row: flex items-center gap-2
+│   │   ├── Client name: font-semibold text-foreground truncate text-[11px]/base
+│   │   └── Win type badge (Grant/Signature/Renewal)
+│   └── Deal name: text-muted-foreground truncate text-[10px]/sm
+└── Amount (text-right shrink-0):
+    ├── Amount: font-bold text-accent text-xs/lg
+    └── Date: text-muted-foreground text-[9px]/sm
+```
+
+---
+
+## 17. Fun Facts Card
+
+**File**: `src/components/Dashboard/FunFacts.tsx`
+
+```
+Card: shadow-card [compact: h-full]
+└── CardContent: p-4/6 [compact: h-full flex flex-col]
+    └── Row: flex items-start gap-3/4 [compact: flex-1]
+        ├── Icon circle: w-10 h-10 rounded-full gradient-celebration flex items-center justify-center flex-shrink-0
+        │   └── Lightbulb icon: w-5 h-5 text-accent-foreground
+        │       (or RefreshCw with animate-spin when loading)
+        └── Text:
+            ├── Label: text-sm font-medium text-accent mb-1 → "Fun Fact"
+            └── Fact text: text-base/foreground leading-relaxed
+                transition-opacity duration-500 [opacity-50 when loading]
+```
+
+Fallback facts are hardcoded. AI-generated fact fetched from `generate-fun-fact` edge function.
+
+---
+
+## 18. Celebration Popup System
+
+**File**: `src/components/Celebration/CelebrationPopup.tsx`
+
+The most complex visual component. A full-screen overlay that triggers when deals are won.
+
+### Lifecycle & Timing
+
+| Phase | Duration | Events |
+|---|---|---|
+| `celebration` (standard) | 5 seconds | Show photos, title, GIF, confetti |
+| `celebration` (epic mode) | 7 seconds | Enhanced golden celebration |
+| `counter` | 5 seconds (total = 10s) | Animated counter showing running total |
+| Special events | 10 seconds total | Plat du jour, churn, notion task (no counter phase) |
+| Auto-close failsafe | 10 seconds | Always closes after 10s regardless |
+| Close transition | 600ms | Scale down + fade out |
+
+### Overlay Base
+
+```css
+fixed inset-0 z-50 flex items-center justify-center
+transition-all duration-500
+```
+
+**Normal state**: `bg-black/95 opacity-100`
+**Closing state**: `bg-black/0 opacity-0`
+
+### Closing Animation
+
+Applied to inner content:
+```css
+scale-75 opacity-0 translate-y-10
+/* Transition: duration-500 */
+```
+
+### Event Titles (French)
+
+| Event Type | Title |
+|---|---|
+| Default (acceptation) | "ACCEPTATION!!!" |
+| `subscription` | "NOUVEL ABONNÉ PLATEFORME!!" |
+| `application` | "APPLICATION DÉPOSÉE!!" |
+| `quote_signed` | "NOUVELLE SIGNATURE !" |
+| `renewal_signed` | "RENOUVELLEMENT SIGNÉ !" |
+| `pdm_paid` | "PDM PAYÉ !!!" |
+| `pkg_paid` | "ACCOMPAGNEMENT PAYÉ!!" |
+| `plat_du_jour` | "PLAT DU JOUR" |
+| `subscription_churn` | "ABONNÉ PERDU" |
+| `notion_task` | "TÂCHE COMPLÉTÉE!" |
+
+### 18.1 Standard Celebration Phase
+
+```
+Container: relative z-10 text-center space-y-6 px-8 max-w-4xl animate-celebration-entrance
+
+├── Employee Photos (flex justify-center items-end gap-8 if both):
+│   ├── Owner photo:
+│   │   ├── Glow: absolute inset-0 rounded-full bg-primary/30 blur-xl animate-pulse
+│   │   ├── Image: w-36 h-36 rounded-full object-cover border-4 border-primary shadow-2xl ring-4 ring-primary/30
+│   │   ├── Name tag: absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary px-4 py-1.5 rounded-full shadow-lg
+│   │   │   └── text-sm font-bold text-primary-foreground whitespace-nowrap
+│   │   └── Role label (if both): text-xs text-white/60 mt-6 font-medium → "Deal Owner" or "Closer"
+│   │   └── PLG badge (if is_plg): absolute -top-2 -right-2 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full
+│   │
+│   └── Account Manager photo:
+│       ├── Glow: absolute inset-0 rounded-full bg-accent/30 blur-xl animate-pulse
+│       ├── Image: w-36 h-36 rounded-full object-cover border-4 border-accent shadow-2xl ring-4 ring-accent/30
+│       ├── Name tag: absolute -bottom-3 left-1/2 -translate-x-1/2 bg-accent px-4 py-1.5 rounded-full shadow-lg
+│       │   └── text-sm font-bold text-accent-foreground whitespace-nowrap
+│       └── Role label: text-xs text-white/60 mt-6 font-medium → "Account Manager"
+│
+├── Title + Info (space-y-4 pt-4):
+│   ├── Title: text-5xl md:text-6xl font-black tracking-tight animate-title-glow
+│   │   Background gradient (varies by event type):
+│   │   - Acceptation: linear-gradient(135deg, hsl(38, 95%, 55%) → hsl(45, 100%, 60%) → hsl(38, 95%, 65%)) [GOLD]
+│   │   - Subscription: linear-gradient(135deg, hsl(280, 95%, 55%) → hsl(300, 100%, 60%) → hsl(280, 95%, 65%)) [PURPLE]
+│   │   - Quote/Renewal signed: linear-gradient(135deg, hsl(170, 95%, 45%) → hsl(180, 100%, 50%) → hsl(190, 95%, 55%)) [CYAN]
+│   │   - PDM/PKG paid: linear-gradient(135deg, hsl(45, 95%, 55%) → hsl(35, 100%, 60%) → hsl(45, 95%, 65%)) [AMBER]
+│   │   Applied with: WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+│   │
+│   ├── Display message: text-xl md:text-2xl text-white/90 font-medium
+│   │
+│   ├── Lead source (quote_signed, pdm_paid, pkg_paid):
+│   │   text-sm text-white/60 + value in text-cyan-400 font-medium
+│   │
+│   └── Amount/Company details:
+│       - Subscription: company in text-lg md:text-xl text-purple-300 font-semibold
+│         + interval/MRR pills: bg-white/10 px-4 py-2 rounded-lg
+│         MRR value: font-bold text-emerald-400 (formatted fr-CA CAD)
+│       - Others: company in text-lg md:text-xl text-amber-400 font-semibold
+│         + amount: text-3xl md:text-4xl font-black text-emerald-400 animate-pulse
+│
+├── GIF: flex justify-center animate-gif-entrance
+│   └── img: max-w-[350px] w-full rounded-2xl shadow-elevated border-4 border-primary/50
+│
+└── Bouncing dots: flex justify-center gap-3 pt-2
+    └── 8 × div: w-3 h-3 rounded-full bg-gradient-to-r from-primary to-accent animate-bounce
+        style: animationDelay: {i * 0.1}s, animationDuration: 0.8s
+```
+
+### 18.2 Counter Phase
+
+```
+Container: fixed inset-0 z-50, bg-black/95
+├── Confetti
+└── Content: relative z-10 text-center px-8 animate-scale-in
+    ├── Icon: w-24 h-24 rounded-full [color]/20 flex items-center justify-center
+    │   Icon colors by event type:
+    │   - subscription: bg-purple-500/20, Zap icon text-purple-400
+    │   - application: bg-blue-500/20, FileText text-blue-400
+    │   - quote/renewal_signed: bg-cyan-500/20, FileText text-cyan-400
+    │   - pdm/pkg_paid: bg-amber-500/20, DollarSign text-amber-400
+    │   - acceptation: bg-green-500/20, TrendingUp text-green-400
+    │
+    ├── Label: text-2xl md:text-3xl text-white/70 mb-4 font-medium
+    │   Content varies by event type (French labels)
+    │
+    ├── Counter: text-6xl md:text-8xl lg:text-9xl font-black text-white
+    │   - Static display for quote_signed, pdm_paid, pkg_paid (formatted fr-CA CAD)
+    │   - AnimatedCounter for others (see section 20)
+    │
+    ├── Deal info: mt-8 text-lg text-white/70
+    │   - Subscription: "+1 nouvel abonné" in text-emerald-400 font-semibold
+    │   - Quote: "+1 nouveau contrat" in text-cyan-400 font-semibold
+    │   - Others: "+{montant}" in text-emerald-400 font-semibold + company
+    │
+    └── Bouncing dots: same as celebration phase (8 dots)
+```
+
+### 18.3 Churn Alert
+
+```
+Overlay: bg-red-950/95 (closing: bg-red-950/0)
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-32 h-32 rounded-full bg-red-500/20 animate-pulse
+    │   └── AlertTriangle: w-16 h-16 text-red-400
+    ├── Title: text-6xl md:text-7xl font-black tracking-tight text-red-400
+    │   "⚠️ ABONNÉ PERDU"
+    ├── Amount: text-5xl md:text-6xl font-black text-red-300
+    │   "-{montant} MRR"
+    ├── Company: text-2xl text-white/70
+    └── GIF (optional): max-w-[300px] rounded-2xl border-4 border-red-500/50
+```
+
+### 18.4 Notion Task Completion
+
+```
+Overlay: bg-black/95
+Confetti: yes
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-24 h-24 rounded-full bg-emerald-500/20
+    │   └── CheckCircle2: w-12 h-12 text-emerald-400
+    ├── Title: text-5xl md:text-6xl font-black tracking-tight
+    │   Gradient: linear-gradient(135deg, hsl(160, 95%, 45%) → hsl(140, 100%, 50%)) [GREEN]
+    ├── Message: text-2xl md:text-3xl text-white/90 font-medium
+    ├── Project: text-xl text-cyan-400
+    ├── Owner photo (optional): w-28 h-28 rounded-full border-4 border-emerald-500
+    ├── Owner name: text-lg text-white/70
+    └── GIF (optional): max-w-[300px] rounded-2xl border-4 border-emerald-500/50
+```
+
+### 18.5 Plat du Jour
+
+```
+Overlay: bg-black/95
+Confetti: yes
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-24 h-24 rounded-full bg-orange-500/20
+    │   └── UtensilsCrossed: w-12 h-12 text-orange-400
+    ├── Title: text-6xl md:text-7xl font-black tracking-tight animate-title-glow
+    │   Gradient: linear-gradient(135deg, hsl(30, 95%, 55%) → hsl(40, 100%, 60%) → hsl(25, 95%, 55%)) [ORANGE]
+    ├── Food photo: animate-gif-entrance
+    │   max-w-[600px] max-h-[450px] w-full h-auto rounded-3xl shadow-elevated border-4 border-orange-500/50 object-cover
+    ├── Caption: text-2xl md:text-3xl text-white/90 font-medium
+    └── Bouncing dots: 8 dots
+        bg-gradient-to-r from-orange-400 to-amber-400 (orange variant)
+```
+
+### 18.6 Epic Mode (Dev Dashboard Subscription)
+
+Triggered when a `celebration_special_modes` record with `mode='epic'` is active for the subscription event on dev dashboard.
+
+```
+Overlay: bg-gradient-to-br from-yellow-900/95 via-black/95 to-purple-900/95
+
+Golden glow effects (absolute, pointer-events-none):
+├── Large glow: w-[800px] h-[800px] bg-yellow-400/20 rounded-full blur-3xl animate-pulse
+└── Medium glow: w-[600px] h-[600px] bg-amber-400/30 rounded-full blur-2xl animate-pulse (0.5s delay)
+
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    Combined animation: celebration-entrance 0.8s + epic-shake 0.5s
+    
+    ├── MASSIVE Photo:
+    │   ├── Glow layer: absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 blur-3xl animate-pulse scale-125
+    │   ├── Border ring 1: absolute -inset-4 rounded-full border-8 border-yellow-400/60 animate-pulse
+    │   ├── Border ring 2: absolute -inset-8 rounded-full border-4 border-amber-300/40 animate-pulse (0.3s delay)
+    │   ├── Image: relative w-80 h-80 rounded-full object-cover border-8 border-yellow-400 shadow-2xl ring-8 ring-yellow-500/50
+    │   │   boxShadow: "0 0 60px rgba(251, 191, 36, 0.6), 0 0 120px rgba(251, 191, 36, 0.4), 0 0 180px rgba(251, 191, 36, 0.2)"
+    │   └── Crown: absolute -top-6 left-1/2 -translate-x-1/2
+    │       text-6xl animate-bounce → "🏆"
+    │
+    ├── Title: text-7xl md:text-8xl font-black tracking-tight
+    │   Gradient: linear-gradient(135deg, hsl(45, 100%, 60%) → hsl(35, 100%, 50%) → hsl(280, 100%, 60%) → hsl(300, 100%, 65%)) [GOLD → PURPLE]
+    │   textShadow: "0 0 40px rgba(251, 191, 36, 0.5)"
+    │   animation: title-glow 2s ease-in-out infinite alternate
+    │   Emoji wrapping: "🔥 {title} 🔥"
+    │
+    ├── Message: text-3xl md:text-4xl text-white font-bold
+    ├── Company: text-xl md:text-2xl text-yellow-300 font-semibold
+    │
+    ├── Subscription details (flex justify-center gap-8 text-xl):
+    │   ├── Interval pill: bg-yellow-500/20 border-2 border-yellow-400 px-6 py-3 rounded-2xl
+    │   │   Label: text-white/70 + Value: font-black text-yellow-300
+    │   └── MRR pill: same container
+    │       Label: text-white/70 + Value: font-black text-emerald-400 (formatted CAD)
+    │
+    └── Epic bouncing dots: 12 dots (not 8)
+        w-4 h-4 (larger) bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500
+        animationDelay: {i * 0.08}s, animationDuration: 0.6s
+        boxShadow: "0 0 10px rgba(251, 191, 36, 0.8)"
+```
+
+Epic mode is **one-time use**: disabled after the celebration completes (delayed by total duration + 1s).
+
+---
+
+## 19. Confetti System
+
+**File**: `src/components/Celebration/Confetti.tsx`
+
+### Container
+
+```css
+fixed inset-0 pointer-events-none z-50 overflow-hidden
+transition-opacity duration-500
+/* isClosing ? 'opacity-0' : 'opacity-100' */
+```
+
+### Particles
+
+- **Count**: 50 pieces
+- **Colors** (8 HSL colors):
+  1. `hsl(195, 100%, 50%)` — primary cyan
+  2. `hsl(38, 95%, 55%)` — accent gold
+  3. `hsl(142, 76%, 45%)` — success green
+  4. `hsl(210, 100%, 60%)` — blue
+  5. `hsl(45, 100%, 60%)` — yellow
+  6. `hsl(340, 82%, 52%)` — pink
+  7. `hsl(280, 80%, 60%)` — purple
+  8. `hsl(15, 90%, 55%)` — orange
+
+- **Shapes** (4 types):
+  1. **Circle**: `backgroundColor: color, borderRadius: 50%`
+  2. **Square**: `backgroundColor: color, borderRadius: 2px`
+  3. **Triangle**: `width: 0, height: 0, border-left/right: transparent, border-bottom: colored` (CSS triangle trick)
+  4. **Star**: `backgroundColor: color, clipPath: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)`
+
+- **Randomized properties**:
+  - `left`: 0-100% horizontal position
+  - `delay`: 0-2s animation delay
+  - `size`: 6-18px (width & height)
+  - `duration`: 3-5s animation duration
+  - `rotation`: 0-360° initial rotation
+
+- **Animation**: `animate-confetti-enhanced` (see Animation Catalog)
+- **Performance**: `willChange: 'transform'` on each piece
+
+---
+
+## 20. Animated Counter
+
+**File**: `src/components/Celebration/AnimatedCounter.tsx`
+
+### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `number` | required | Target value |
+| `startFrom` | `number` | `value` | Starting value for animation |
+| `duration` | `number` | `8000` | Animation duration in ms |
+| `className` | `string` | `""` | Additional classes |
+| `formatAsCurrency` | `boolean` | `true` | Format as CAD currency |
+
+### Animation Algorithm
+
+- **Easing**: Ease-in-quad (`progress * progress`) — starts slow, accelerates
+- **Engine**: `requestAnimationFrame` loop
+- **Formula**: `initialValue + (value - initialValue) * easeInQuad`
+- **Updates**: Every frame until `progress >= 1`
+
+### Visual
+
+```
+Container: relative [className]
+├── Number: tabular-nums transition-transform duration-300 inline-block
+│   scale-105 when animating, scale-100 when done
+└── Glow overlay (when animating):
+    absolute inset-0 bg-gradient-to-t from-transparent via-primary/5 to-transparent
+    animate-pulse pointer-events-none rounded-lg
+```
+
+### Formatting
+
+- **Currency**: `Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", minimumFractionDigits: 0 })`
+- **Non-currency**: `num.toLocaleString("fr-CA")`
+
+### Duration by Event Type
+
+- Acceptation: `8000ms`
+- Subscription: `4000ms`
+- Renewal signed: `4000ms`
+
+---
+
+## 21. Complete Animation Catalog
+
+### Custom Keyframe Animations
+
+| Name | Keyframes | Duration | Easing | Loop | Start State |
+|---|---|---|---|---|---|
+| `confetti-enhanced` | `translateY(-20vh → 20vh → 50vh → 75vh → 110vh)`, `rotate(0 → 180 → 360 → 540 → 720deg)`, `scale(1 → 1.2 → 0.8 → 1.1 → 0.5)`, `translateX(0 → 20px → -20px → 10px → -10px)`, `opacity(1 → 1 → 1 → 0.8 → 0)` | 4s | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | infinite | — |
+| `celebration-entrance` | `scale(0.3) translateY(50px) opacity(0)` → `scale(1.1) translateY(-10px)` → `scale(0.95) translateY(5px)` → `scale(1) translateY(0) opacity(1)` | 0.8s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards) | `scale(0.3) opacity(0)` |
+| `photo-bounce` | `scale(0) translateY(30px) opacity(0)` → `scale(1.15) translateY(-15px)` → `scale(0.95) translateY(5px)` → `scale(1) translateY(0) opacity(1)` | 0.7s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards) | `opacity: 0` |
+| `title-glow` | `text-shadow: 0 0 30px/60px gold(0.5/0.3), brightness(1)` ↔ `text-shadow: 0 0 50px/100px gold(0.8/0.5), brightness(1.2)` | 2s | ease-in-out | infinite | — |
+| `gif-entrance` | `scale(0.5) translateY(30px) opacity(0)` → `scale(1) translateY(0) opacity(1)` | 0.6s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards), 0.5s delay | `opacity: 0` |
+| `pulse-glow` | `box-shadow: 0 0 20px primary(0.3)` ↔ `box-shadow: 0 0 40px primary(0.6)` | 2s | ease-in-out | infinite | — |
+| `epic-shake` | `translateX` alternating between `0`, `-5px`, `+5px` over 10 keyframe steps | 0.5s | ease-in-out | once | — |
+| `epic-glow` | `box-shadow: 0 0 40/80/120px amber` ↔ `box-shadow: 0 0 60/120/180px amber` | 2s | ease-in-out | infinite | — |
+
+### Spring Easing Note
+
+The easing `cubic-bezier(0.34, 1.56, 0.64, 1)` is a **spring overshoot** curve — it overshoots the target and bounces back, giving a lively, bouncy feel to entrances.
+
+### Tailwind Built-in Animations Used
+
+| Animation | Where Used |
+|---|---|
+| `animate-pulse` | Celebration glows, connection dots, Live indicator, amount text |
+| `animate-spin` | Loading spinners (RefreshCw icon) |
+| `animate-ping` | Live indicator outer ring (LiveKPICard, SpotifySong) |
+| `animate-bounce` | Celebration bouncing dots, epic crown emoji |
+
+**Bounce customization**: Custom `animationDelay` (staggered per dot) and `animationDuration` (`0.6s` for epic, `0.8s` for standard) applied via inline style.
+
+---
+
+## 22. Submit Page
+
+**File**: `src/pages/Submit.tsx`
+
+### Layout
+
+```
+min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5
+flex items-center justify-center p-4
+└── Card: w-full max-w-md
+```
+
+### Form State
+
+```
+CardHeader: text-center pb-4
+├── Icon circle: w-12 h-12 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center
+│   └── Sparkles: w-6 h-6 text-primary
+├── CardTitle: text-2xl → "Share with the Team"
+└── CardDescription → "Post a photo, message, or both to the dashboard"
+
+CardContent:
+└── form: space-y-4
+    ├── Name input: Label + Input (required)
+    ├── Message: Label + Textarea (rows=3)
+    ├── Photo section:
+    │   - If preview: relative rounded-lg overflow-hidden border
+    │     img: w-full h-48 object-cover
+    │     Remove button: absolute top-2 right-2 variant="destructive" size="sm"
+    │   - If no preview: grid grid-cols-2 gap-2
+    │     ├── Camera button: variant="outline" h-20 flex-col gap-2
+    │     │   Camera icon w-6 h-6 + "Take Photo" text-xs
+    │     └── Upload button: variant="outline" h-20 flex-col gap-2
+    │         Upload icon w-6 h-6 + "Upload" text-xs
+    ├── IP Warning box:
+    │   flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg
+    │   AlertTriangle icon: w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0
+    │   Title: font-medium text-foreground → "Heads up!"
+    │   Text: text-muted-foreground text-sm
+    ├── Consent checkbox: flex items-center gap-3 cursor-pointer
+    │   Checkbox + "I understand and agree" text-sm text-foreground
+    └── Submit button: w-full, disabled when !consent or no content
+        Send icon w-4 h-4 mr-2 + "Post to Dashboard"
+        Loading: animate-spin ⏳ emoji + "Posting..."
+```
+
+### Success State
+
+```
+Card: w-full max-w-md text-center
+└── CardContent: pt-8 pb-6
+    ├── Icon: w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full
+    │   └── CheckCircle: w-10 h-10 text-primary
+    ├── Title: text-2xl font-bold mb-2 → "Posted!"
+    ├── Text: text-muted-foreground mb-6 → "Your content is now live on the dashboard."
+    └── Button: variant="outline" w-full → "Submit Another"
+```
+
+---
+
+## 23. Auth Page
+
+**File**: `src/pages/Auth.tsx`
+
+### Layout
+
+```
+min-h-screen flex items-center justify-center bg-background p-4
+└── Card: w-full max-w-md
+    ├── CardHeader:
+    │   ├── CardTitle → "Employee Admin"
+    │   └── CardDescription → "Sign in or create an account to manage employees"
+    └── CardContent:
+        └── Tabs: defaultValue="signin"
+            ├── TabsList: grid w-full grid-cols-2
+            │   ├── TabsTrigger: "Sign In"
+            │   └── TabsTrigger: "Sign Up"
+            ├── TabsContent "signin":
+            │   form: space-y-4
+            │   ├── Email: Label + Input type="email" placeholder="you@example.com"
+            │   ├── Password: Label + Input type="password"
+            │   ├── Submit: Button w-full → "Sign In" / "Signing in..."
+            │   └── Forgot: Button variant="link" w-full text-muted-foreground
+            └── TabsContent "signup":
+                form: space-y-4
+                ├── Email: Label + Input type="email"
+                ├── Password: Label + Input type="password" minLength={6}
+                └── Submit: Button w-full → "Sign Up" / "Creating account..."
+```
+
+### Forgot Password View
+
+Same outer layout. Card with:
+- Title: "Reset Password"
+- Description: "Enter your email to receive a reset link"
+- Email input
+- "Send Reset Link" button (w-full)
+- "Back to Sign In" ghost button (w-full)
+
+---
+
+## 24. Admin Layout
+
+**File**: `src/components/Admin/AdminLayout.tsx`
+
+```
+min-h-screen bg-background
+├── header: border-b border-border bg-card
+│   └── container mx-auto px-4 py-4 flex items-center justify-between
+│       ├── Left: flex items-center gap-4
+│       │   ├── Back button: variant="ghost" size="sm" gap-2
+│       │   │   ArrowLeft h-4 w-4 + "Back to Dashboard"
+│       │   └── h1: text-2xl font-bold text-foreground → {title}
+│       └── Right:
+│           └── Sign Out: variant="outline" gap-2
+│               LogOut h-4 w-4 + "Sign Out"
+└── main: container mx-auto px-4 py-8
+    └── {children}
+```
+
+---
+
+## 25. Icon Usage Map
+
+All icons from `lucide-react`. Every icon used in the app:
+
+| Icon | Size(s) | Context |
+|---|---|---|
+| `Sparkles` | `w-4 h-4`, `w-5 h-5`, `w-6 h-6`, `w-8 h-8` | Logo, celebrations admin, empty feed, submit page |
+| `CheckCircle` | `w-5 h-5`, `w-10 h-10` | Accepted KPI, chart icon, submit success |
+| `CheckCircle2` | `w-12 h-12` | Notion task celebration |
+| `DollarSign` | `w-7 h-7`, `w-8 h-8`, `w-12 h-12` | MRR KPI, cash collected, counter icon |
+| `Users` | `w-7 h-7`, `w-8 h-8` | Subscribers KPI |
+| `Activity` | `w-7 h-7`, `w-8 h-8` | Live users KPI |
+| `UserPlus` | `w-5 h-5`, `w-7 h-7` | Signups KPI, subscribers chart |
+| `Trophy` | `w-4 h-4`, `w-6 h-6` | Recent Wins header |
+| `Quote` | `h-5 w-5` | Quote of the Day |
+| `QrCode` | `w-3 h-3`, `w-5 h-5` | QR Code card |
+| `Smartphone` | `w-4 h-4` | QR Code full mode |
+| `Music` | `h-8 w-8`, `h-12 w-12` | Spotify card empty/fallback |
+| `RefreshCw` | `h-3 w-3`, `h-5 w-5` | Refresh button, loading states |
+| `Wifi` / `WifiOff` | `w-2.5 h-2.5`, `w-3.5 h-3.5`, `w-4 h-4` | Connection status indicators |
+| `Loader2` | `w-3.5 h-3.5` | Connecting spinner (with `animate-spin`) |
+| `Moon` | `h-3.5 w-3.5` | Dark theme button |
+| `Sun` | `h-3.5 w-3.5` | Light theme button |
+| `Zap` | `h-3.5 w-3.5`, `w-12 h-12` | Vibrant theme button, subscription counter |
+| `Palette` | `h-3.5 w-3.5` | helloDarwin theme button |
+| `Settings` | `h-4 w-4` | Admin dropdown trigger/items |
+| `Volume2` | `h-4 w-4` | Sound settings menu item |
+| `MonitorPlay` | `h-3.5 w-3.5` | Service Team dashboard selector |
+| `Code2` | `h-3.5 w-3.5` | Dev Team dashboard selector |
+| `Maximize` / `Minimize` | `h-4 w-4` | Fullscreen toggle |
+| `Camera` | `w-6 h-6` | Submit page take photo |
+| `Upload` | `w-6 h-6` | Submit page upload |
+| `Send` | `w-4 h-4` | Submit button |
+| `AlertTriangle` | `w-5 h-5`, `w-16 h-16` | IP warning, churn celebration |
+| `TrendingUp` | `w-4 h-4`, `w-12 h-12` | Chart subtitles, acceptation counter |
+| `TrendingDown` | imported but not directly rendered | Available for future use |
+| `FileText` | `w-12 h-12` | Application/signature counter icon |
+| `UtensilsCrossed` | `w-12 h-12` | Plat du jour celebration |
+| `ClipboardList` | `w-7 h-7` | Pace KPI card icon |
+| `Lightbulb` | `w-5 h-5` | Fun Facts card |
+| `MessageSquare` | `w-8 h-8`, `w-12 h-12` | Feed text-only posts |
+| `Hash` | `w-2.5 h-2.5`, `w-3 h-3` | Slack channel indicator in feed |
+| `User` | imported | Available |
+| `ArrowLeft` | `h-4 w-4` | Admin back button |
+| `LogOut` | `h-4 w-4` | Admin sign out |
+
+---
+
+## 26. Spacing Patterns
+
+### Global Spacing Rules
+
+| Context | Value | Tailwind |
+|---|---|---|
+| Dashboard outer padding | 12px | `p-3` |
+| Grid gaps | 12px | `gap-3` |
+| Card content (standard) | 24px | `p-6` |
+| Card content (compact) | 12-16px | `p-3` to `p-4` |
+| Card content (KPI full) | 32px | `p-8` |
+| Header padding | 16px horizontal, 8px vertical | `px-4 py-2` |
+| Button group gaps | 4-8px | `gap-1` to `gap-2` |
+| Button group container | 4px padding | `p-1` |
+| Header control gaps | 16px | `gap-4` |
+| Navigation dot gaps | 4px | `gap-1` |
+| Feed reaction gaps | 4px | `gap-1` |
+| Celebration content spacing | 24px | `space-y-6` |
+| Celebration dots gap | 12px | `gap-3` |
+| Form spacing | 16px | `space-y-4` |
+| Admin content | 16px horizontal, 32px vertical | `px-4 py-8` |
+
+---
+
+## 27. Typography Scale
+
+All weights use Inter. Key text sizes used:
+
+| Context | Size | Weight | Additional |
+|---|---|---|---|
+| Dashboard title (h1) | `text-lg` (18px) | `font-bold` (700) | `leading-tight` |
+| Dashboard subtitle | `text-xs` (12px) | normal (400) | `text-muted-foreground` |
+| KPI value (full) | `text-5xl` (48px) | `font-bold` (700) | — |
+| KPI value (compact) | `text-4xl` (36px) | `font-bold` (700) | — |
+| KPI title (full) | `text-2xl` (24px) | `font-semibold` (600) | `text-foreground/80` |
+| KPI title (compact) | `text-xl` (20px) | `font-semibold` (600) | `text-foreground/80` |
+| Card title | `text-2xl` (24px) | `font-semibold` (600) | `leading-none tracking-tight` |
+| Chart title | `text-lg` (18px) | `font-bold` (700) | — |
+| Chart subtitle | `text-sm` (14px) | normal | `text-muted-foreground` |
+| Quote text | `text-2xl` (24px) | `font-bold` (700) | `italic line-clamp-4 leading-tight` |
+| Quote author | `text-sm` (14px) | `font-medium` (500) | `text-muted-foreground` |
+| Feed text (full, text-only) | `text-2xl md:text-3xl lg:text-4xl` | `font-medium` (500) | `text-foreground leading-relaxed` |
+| Feed text (full, on image) | `text-lg` (18px) | `font-medium` (500) | `text-white drop-shadow-lg` |
+| Celebration title | `text-5xl md:text-6xl` (48-60px) | `font-black` (900) | `tracking-tight`, gradient text |
+| Celebration epic title | `text-7xl md:text-8xl` (72-96px) | `font-black` (900) | `tracking-tight`, gradient + glow |
+| Counter number | `text-6xl md:text-8xl lg:text-9xl` | `font-black` (900) | `text-white tabular-nums` |
+| Body button | `text-sm` (14px) | `font-medium` (500) | — |
+| Small labels | `text-xs` (12px) | `font-semibold` (600) | Often `uppercase tracking-wider` |
+| Tiny text | `text-[10px]` or `text-[9px]` | varies | Used for reaction counts, win dates |
+
+---
+
+## 28. State Management & Persistence
+
+### Zustand Stores
+
+| Store | File | Persisted? | Key |
+|---|---|---|---|
+| `useThemeStore` | `src/store/themeStore.ts` | Yes (`localStorage`) | `dashboard-theme` |
+| `useDashboardStore` | `src/store/dashboardStore.ts` | Yes (`localStorage`) | (dashboard type: service/dev) |
+| `useAppStore` | `src/store/appStore.ts` | No | Current event, celebration queue, connection status |
+
+### Theme Persistence
+
+On rehydration, the `onRehydrateStorage` callback applies `data-theme` attribute to `document.documentElement`.
+
+---
+
+## 29. Realtime & Connection Indicators
+
+### Supabase Realtime Channels
+
+| Channel | Table | Event | Purpose |
+|---|---|---|---|
+| `dashboard-feed-changes-{timestamp}` | `dashboard_feed` | INSERT | New feed posts |
+| `spotify-songs-realtime` | `slack_spotify_songs` | INSERT | New Spotify songs |
+| `pending-celebrations-{timestamp}` | `pending_celebrations` | INSERT | New celebration triggers |
+
+### Reconnection Strategy
+
+- Max attempts: 5
+- Backoff: Exponential (`2^attempt * 1000ms`)
+- Triggers reconnect on: `CHANNEL_ERROR`, `TIMED_OUT`
+- Resets attempts on: successful `SUBSCRIBED`
+- Also reconnects on: tab visibility change (`visibilitychange` event), auth token refresh
+
+### Periodic Refresh
+
+- Dashboard feed: every 30 seconds
+- Quote rotation check: every 60 seconds
+
+---
+
+## 30. Responsive & Fullscreen Behavior
+
+### Fullscreen
+
+The dashboard is designed for **TV/large screen display**. The fullscreen toggle uses the native `document.requestFullscreen()` API.
+
+### Viewport Assumptions
+
+- **Dashboard**: Fixed `h-screen` layout, no scrolling. Designed for 1920×1080 TV screens.
+- **Submit page**: Mobile-first, scrollable, centered card with `max-w-md`.
+- **Auth page**: Same mobile-first centered layout.
+- **Admin pages**: Standard responsive layout with `container mx-auto`.
+
+### No Mobile Breakpoints on Dashboard
+
+The dashboard grid (`grid-cols-12 grid-rows-4`) does **not** have responsive breakpoints — it's designed for a single large-screen layout. The KPI carousel shows `basis-1/4` slides regardless of screen width.
+
+### Mobile Considerations
+
+Only the Submit page uses mobile-specific features:
+- `capture="environment"` on camera input (opens rear camera on mobile)
+- Touch-friendly button sizes (`h-20` for camera/upload buttons)
+
+---
+
+## Appendix A: Color Quick Reference
+
+### Hard-coded Colors (non-token)
+
+These colors are used directly in components, not via CSS variables:
+
+| Color | Usage |
+|---|---|
+| `bg-green-500` / `text-green-500` | Connection "connected" dot, positive delta |
+| `bg-yellow-500` / `text-yellow-500` | Connection "connecting" dot |
+| `bg-red-500` / `text-red-500` | Live indicator, negative delta, connection "disconnected" |
+| `bg-red-400` / `text-red-400` | Churn celebration icon/title |
+| `bg-red-300` / `text-red-300` | Churn amount |
+| `text-red-950/95` | Churn overlay background |
+| `text-emerald-400` / `bg-emerald-500/20` | Celebration amount, notion icon, grant badge |
+| `text-cyan-400` / `bg-cyan-500/20` | Signature badge, project labels |
+| `text-blue-400` / `bg-blue-500/20` | Renewal badge, application counter icon |
+| `text-purple-300` / `text-purple-400` / `bg-purple-500/20` | Subscription company name, counter icon, PLG badge |
+| `text-amber-400` / `bg-amber-500/20` | PDM/PKG counter icon, company names |
+| `text-orange-400` / `bg-orange-500/20` | Plat du jour icon |
+| `text-yellow-300` / `text-yellow-400` / `bg-yellow-400` | Epic mode text, borders, glow |
+| `bg-green-100` / `text-green-700` | Trend badge (positive) — light mode aware with dark: variants |
+| `bg-red-100` / `text-red-700` | Trend badge (negative) — light mode aware |
+| `bg-gray-100` / `text-gray-600` | Trend badge (neutral) — light mode aware |
+| `text-white` / `bg-white` | Celebration text, QR code background |
+| `bg-black/95` / `bg-black/80` / `bg-black/20` | Celebration overlays, image overlays |
+
+### Rank Colors
+
+| Rank | Color |
+|---|---|
+| 1st (🥇) | `text-yellow-500` |
+| 2nd (🥈) | `text-slate-400` |
+| 3rd (🥉) | `text-amber-700` |
+
+---
+
+## Appendix B: Number Formatting
+
+| Format | Locale | Options | Example |
+|---|---|---|---|
+| Currency (full) | `fr-CA` | `style: "currency", currency: "CAD", min/maxFractionDigits: 0` | `1 500 $` |
+| Currency (abbreviated) | Custom | `$1.2M`, `$150K`, `$500` | — |
+| Non-currency | `fr-CA` | `toLocaleString()` | `1 234` |
+
+---
+
+## Appendix C: Sound System
+
+Celebrations trigger sounds via `playCelebrationSound(eventType, rawAmount)`. Sound settings are stored in the `celebration_sound_settings` database table and can be configured per event type with:
+- Base ringtone URL
+- High-amount ringtone URL (for amounts above threshold)
+- Amount threshold
+- Volume (0-1)
+- Enable/disable toggle
+- Dashboard type filter
+
+Churn events play a separate sound. Sound files are stored in Supabase Storage.
+
+---
+
+## Appendix D: File Structure
+
+```
+src/
+├── components/
+│   ├── Admin/
+│   │   ├── AdminLayout.tsx          # Admin page wrapper
+│   │   ├── EmployeeForm.tsx         # Employee CRUD form
+│   │   ├── EmployeeList.tsx         # Employee table
+│   │   ├── PhotoUpload.tsx          # Photo upload widget
+│   │   ├── AcceptationBracketSettings.tsx
+│   │   └── WebhookStatusPanel.tsx
+│   ├── Celebration/
+│   │   ├── CelebrationPopup.tsx     # Full celebration overlay (823 lines)
+│   │   ├── Confetti.tsx             # Confetti particle system
+│   │   └── AnimatedCounter.tsx      # Counting animation
+│   ├── Dashboard/
+│   │   ├── Header.tsx               # Top bar with controls
+│   │   ├── KPICard.tsx              # Basic KPI card
+│   │   ├── LeaderKPICard.tsx        # KPI with leaderboard
+│   │   ├── PaceKPICard.tsx          # KPI with progress bar
+│   │   ├── LiveKPICard.tsx          # Real-time animated KPI
+│   │   ├── DashboardFeed.tsx        # Social feed carousel
+│   │   ├── WeeklyAcceptedChart.tsx  # Bar chart (service)
+│   │   ├── WeeklySubscribersChart.tsx # Bar chart (dev)
+│   │   ├── QuoteOfTheDay.tsx        # Rotating quotes
+│   │   ├── QRCodeCard.tsx           # QR code for submit
+│   │   ├── SpotifySong.tsx          # Now playing card
+│   │   ├── RecentWins.tsx           # Auto-scrolling wins list
+│   │   ├── FunFacts.tsx             # AI-generated facts
+│   │   ├── StatsChart.tsx           # (alternative chart)
+│   │   └── TeamPhotosFeed.tsx       # (team photos)
+│   ├── Debug/
+│   │   └── ResetCelebrationButton.tsx
+│   ├── ui/                          # shadcn/ui components
+│   │   ├── card.tsx
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── badge.tsx
+│   │   ├── avatar.tsx
+│   │   ├── progress.tsx
+│   │   ├── tabs.tsx
+│   │   ├── chart.tsx
+│   │   └── ... (30+ components)
+│   └── NavLink.tsx
+├── pages/
+│   ├── Dashboard.tsx                # Main dashboard page
+│   ├── Submit.tsx                   # Mobile submission form
+│   ├── Auth.tsx                     # Login/signup
+│   ├── Index.tsx                    # Root redirect
+│   └── admin/
+│       ├── Employees.tsx
+│       ├── Celebrations.tsx
+│       └── SoundSettings.tsx
+├── store/
+│   ├── themeStore.ts                # Theme persistence
+│   ├── dashboardStore.ts            # Dashboard type persistence
+│   └── appStore.ts                  # Celebration state
+├── hooks/
+│   ├── useDashboardData.ts          # Service metrics
+│   ├── useDevDashboardData.ts       # Dev metrics
+│   ├── useRealtimeAnalytics.ts      # Google Analytics live
+│   ├── useEpicMode.ts              # Epic celebration mode
+│   └── useAuth.tsx                  # Auth state
+├── utils/
+│   ├── celebrationSounds.ts         # Sound playback
+│   ├── randomGif.ts                 # GIF selection
+│   └── ringtoneOptions.ts           # Sound presets
+├── index.css                        # Design tokens + animations
+└── App.tsx                          # Router setup
+```
+
+---
+
+*End of Design System Specification. This document represents the complete visual identity of the helloDarwin Celebration Dashboard as of February 2026.*
+# 10 — Design System: Exhaustive Visual Specification
+
+> **Purpose**: This document is a complete, pixel-level specification of every visual element in the helloDarwin Celebration Dashboard. Another Lovable project can use this document alone to replicate the exact look, feel, animations, spacing, and interaction patterns of this application.
+
+---
+
+## Table of Contents
+
+1. [Global Foundation](#1-global-foundation)
+2. [Theme System](#2-theme-system)
+3. [Gradient System](#3-gradient-system)
+4. [Shadow System](#4-shadow-system)
+5. [Utility Classes](#5-utility-classes)
+6. [Core UI Components](#6-core-ui-components)
+7. [Dashboard Layout](#7-dashboard-layout)
+8. [Header Component](#8-header-component)
+9. [KPI Card Variants](#9-kpi-card-variants)
+10. [KPI Carousel](#10-kpi-carousel)
+11. [Dashboard Feed](#11-dashboard-feed)
+12. [Chart Components](#12-chart-components)
+13. [Quote of the Day](#13-quote-of-the-day)
+14. [QR Code Card](#14-qr-code-card)
+15. [Spotify Song Card](#15-spotify-song-card)
+16. [Recent Wins](#16-recent-wins)
+17. [Fun Facts Card](#17-fun-facts-card)
+18. [Celebration Popup System](#18-celebration-popup-system)
+19. [Confetti System](#19-confetti-system)
+20. [Animated Counter](#20-animated-counter)
+21. [Complete Animation Catalog](#21-complete-animation-catalog)
+22. [Submit Page](#22-submit-page)
+23. [Auth Page](#23-auth-page)
+24. [Admin Layout](#24-admin-layout)
+25. [Icon Usage Map](#25-icon-usage-map)
+26. [Spacing Patterns](#26-spacing-patterns)
+27. [Typography Scale](#27-typography-scale)
+28. [State Management & Persistence](#28-state-management--persistence)
+29. [Realtime & Connection Indicators](#29-realtime--connection-indicators)
+30. [Responsive & Fullscreen Behavior](#30-responsive--fullscreen-behavior)
+
+---
+
+## 1. Global Foundation
+
+### Font Stack
+
+```css
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+```
+
+**Inter** is the primary typeface. No custom display font is used — the entire app relies on Inter with varying weights (400, 500, 600, 700, 800, 900) for hierarchy.
+
+### Border Radius
+
+All themes share the same border radius system:
+
+| Token | Value |
+|---|---|
+| `--radius` | `0.75rem` (12px) |
+| `border-radius-lg` | `var(--radius)` = 0.75rem |
+| `border-radius-md` | `calc(var(--radius) - 2px)` = 0.625rem |
+| `border-radius-sm` | `calc(var(--radius) - 4px)` = 0.5rem |
+
+### Base Reset
+
+```css
+* {
+  border-color: hsl(var(--border));
+}
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+```
+
+### Default Transition
+
+```css
+--transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+Applied via the `.transition-smooth` utility class.
+
+### Tailwind Configuration
+
+- **Dark mode**: Class-based (`darkMode: ["class"]`)
+- **Content paths**: `./pages/**/*.{ts,tsx}`, `./components/**/*.{ts,tsx}`, `./app/**/*.{ts,tsx}`, `./src/**/*.{ts,tsx}`
+- **Plugin**: `tailwindcss-animate`
+
+---
+
+## 2. Theme System
+
+The app supports **4 themes** switched via `data-theme` attribute on `<html>`. Theme preference is persisted to `localStorage` under the key `dashboard-theme` using Zustand's `persist` middleware. Default theme is `dark`.
+
+### Theme Application
+
+```typescript
+document.documentElement.setAttribute('data-theme', themeName);
+```
+
+### Complete Token Table
+
+All values are HSL (hue saturation% lightness%):
+
+| Token | Dark (default) | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--background` | `220 26% 14%` | `40 33% 97%` | `260 30% 12%` | `40 30% 96%` |
+| `--foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--card` | `220 20% 18%` | `0 0% 100%` | `260 25% 16%` | `0 0% 100%` |
+| `--card-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--popover` | `220 26% 14%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--popover-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--primary` | `195 100% 50%` | `270 91% 65%` | `330 100% 60%` | `300 60% 45%` |
+| `--primary-foreground` | `220 26% 14%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--secondary` | `220 20% 25%` | `220 14% 96%` | `260 25% 22%` | `40 20% 92%` |
+| `--secondary-foreground` | `210 40% 98%` | `220 14% 15%` | `60 100% 97%` | `0 0% 13%` |
+| `--muted` | `220 20% 20%` | `220 14% 96%` | `260 25% 20%` | `40 20% 94%` |
+| `--muted-foreground` | `215 20% 65%` | `220 9% 46%` | `260 20% 70%` | `0 0% 45%` |
+| `--accent` | `38 95% 55%` | `48 96% 53%` | `45 100% 55%` | `52 100% 50%` |
+| `--accent-foreground` | `220 26% 14%` | `220 14% 15%` | `260 30% 12%` | `0 0% 13%` |
+| `--success` | `142 76% 45%` | `160 84% 39%` | `150 100% 45%` | `168 76% 42%` |
+| `--success-foreground` | `210 40% 98%` | `0 0% 100%` | `260 30% 12%` | `0 0% 100%` |
+| `--destructive` | `0 84% 60%` | `0 84% 60%` | `0 90% 60%` | `0 84% 60%` |
+| `--destructive-foreground` | `210 40% 98%` | `0 0% 100%` | `60 100% 97%` | `0 0% 100%` |
+| `--border` | `220 20% 25%` | `220 13% 91%` | `260 25% 25%` | `40 15% 88%` |
+| `--input` | `220 20% 25%` | `220 13% 91%` | `260 25% 25%` | `40 15% 88%` |
+| `--ring` | `195 100% 50%` | `270 91% 65%` | `330 100% 60%` | `300 60% 45%` |
+
+### Theme Character
+
+- **Dark**: Cyan primary, gold accent, dark navy background. Tech/monitoring feel.
+- **Light**: Purple primary, yellow accent, warm off-white background. Professional/brand.
+- **Vibrant**: Hot pink primary, gold accent, deep purple background. Celebration/party mode.
+- **helloDarwin**: Magenta primary, yellow accent, warm cream background. Brand identity.
+
+---
+
+## 3. Gradient System
+
+Each theme defines 3 gradients. All gradients use a `135deg` angle.
+
+### Gradient Definitions
+
+| Gradient | Dark | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--gradient-primary` | `hsl(195 100% 50%)` → `hsl(210 100% 60%)` | `hsl(270 91% 65%)` → `hsl(280 85% 55%)` | `hsl(330 100% 60%)` → `hsl(280 100% 65%)` | `hsl(300 60% 45%)` → `hsl(280 55% 50%)` |
+| `--gradient-celebration` | `hsl(38 95% 55%)` → `hsl(45 100% 60%)` | `hsl(48 96% 53%)` → `hsl(45 100% 60%)` | `hsl(45 100% 55%)` → `hsl(30 100% 60%)` | `hsl(52 100% 50%)` → `hsl(45 100% 55%)` |
+| `--gradient-success` | `hsl(142 76% 45%)` → `hsl(150 80% 50%)` | `hsl(160 84% 39%)` → `hsl(150 80% 45%)` | `hsl(150 100% 45%)` → `hsl(120 100% 50%)` | `hsl(168 76% 42%)` → `hsl(160 70% 45%)` |
+
+### CSS Utility Classes
+
+```css
+.gradient-primary   { background: var(--gradient-primary); }
+.gradient-celebration { background: var(--gradient-celebration); }
+.gradient-success   { background: var(--gradient-success); }
+```
+
+### Usage Patterns
+
+- `gradient-primary`: KPI card icons, logo square, celebration photo borders
+- `gradient-celebration`: Fun Facts icon, accent highlights
+- `gradient-success`: Success-themed KPI icons
+
+---
+
+## 4. Shadow System
+
+| Shadow | Dark | Light | Vibrant | helloDarwin |
+|---|---|---|---|---|
+| `--shadow-card` | `0 4px 20px hsl(220 26% 8% / 0.4)` | `0 4px 20px hsl(220 14% 15% / 0.08)` | `0 4px 20px hsl(260 30% 5% / 0.5)` | `0 4px 20px hsl(0 0% 0% / 0.06)` |
+| `--shadow-elevated` | `0 8px 40px hsl(220 26% 8% / 0.6)` | `0 8px 40px hsl(220 14% 15% / 0.12)` | `0 8px 40px hsl(260 30% 5% / 0.7)` | `0 8px 40px hsl(0 0% 0% / 0.1)` |
+
+### CSS Utility Classes
+
+```css
+.shadow-card     { box-shadow: var(--shadow-card); }
+.shadow-elevated { box-shadow: var(--shadow-elevated); }
+```
+
+### Usage
+
+- `.shadow-card`: All `<Card>` components (KPI cards, chart cards, feed)
+- `.shadow-elevated`: Celebration popup images, employee photo circles, GIF images
+
+---
+
+## 5. Utility Classes
+
+Custom utility classes defined in `index.css` under `@layer utilities`:
+
+| Class | Effect |
+|---|---|
+| `.gradient-primary` | Background = `var(--gradient-primary)` |
+| `.gradient-celebration` | Background = `var(--gradient-celebration)` |
+| `.gradient-success` | Background = `var(--gradient-success)` |
+| `.shadow-card` | Box-shadow = `var(--shadow-card)` |
+| `.shadow-elevated` | Box-shadow = `var(--shadow-elevated)` |
+| `.transition-smooth` | Transition = `var(--transition-smooth)` |
+| `.animate-confetti-enhanced` | 4s confetti fall animation, infinite |
+| `.animate-celebration-entrance` | 0.8s spring entrance, forwards |
+| `.animate-photo-bounce` | 0.7s spring bounce, starts at `opacity: 0` |
+| `.animate-title-glow` | 2s pulsing gold text-shadow, infinite |
+| `.animate-gif-entrance` | 0.6s spring entrance, 0.5s delay, starts at `opacity: 0` |
+| `.animate-pulse-glow` | 2s pulsing primary box-shadow, infinite |
+| `.animate-epic-shake` | 0.5s horizontal shake, ease-in-out |
+| `.animate-epic-glow` | 2s pulsing amber box-shadow, infinite |
+
+---
+
+## 6. Core UI Components
+
+All components use shadcn/ui built on Radix UI primitives + Tailwind.
+
+### Card
+
+**File**: `src/components/ui/card.tsx`
+
+| Part | Classes |
+|---|---|
+| `Card` (root) | `rounded-lg border bg-card text-card-foreground shadow-sm` |
+| `CardHeader` | `flex flex-col space-y-1.5 p-6` |
+| `CardTitle` | `text-2xl font-semibold leading-none tracking-tight` (renders `<h3>`) |
+| `CardDescription` | `text-sm text-muted-foreground` |
+| `CardContent` | `p-6 pt-0` |
+| `CardFooter` | `flex items-center p-6 pt-0` |
+
+### Button
+
+**File**: `src/components/ui/button.tsx`
+
+**Base classes**: `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0`
+
+**Variants**:
+
+| Variant | Classes |
+|---|---|
+| `default` | `bg-primary text-primary-foreground hover:bg-primary/90` |
+| `destructive` | `bg-destructive text-destructive-foreground hover:bg-destructive/90` |
+| `outline` | `border border-input bg-background hover:bg-accent hover:text-accent-foreground` |
+| `secondary` | `bg-secondary text-secondary-foreground hover:bg-secondary/80` |
+| `ghost` | `hover:bg-accent hover:text-accent-foreground` |
+| `link` | `text-primary underline-offset-4 hover:underline` |
+
+**Sizes**:
+
+| Size | Classes |
+|---|---|
+| `default` | `h-10 px-4 py-2` |
+| `sm` | `h-9 rounded-md px-3` |
+| `lg` | `h-11 rounded-md px-8` |
+| `icon` | `h-10 w-10` |
+
+### Input
+
+**File**: `src/components/ui/input.tsx`
+
+**Classes**: `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`
+
+### Progress
+
+**File**: `src/components/ui/progress.tsx`
+
+- **Root**: `relative h-4 w-full overflow-hidden rounded-full bg-secondary`
+- **Indicator**: `h-full w-full flex-1 bg-primary transition-all`, positioned via `transform: translateX(-${100 - value}%)`
+
+### Avatar
+
+**File**: `src/components/ui/avatar.tsx`
+
+- **Root**: `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full` (default size, overridden per context)
+- **Image**: `aspect-square h-full w-full`
+- **Fallback**: `flex h-full w-full items-center justify-center rounded-full bg-muted`
+
+**Size usage across the app**:
+
+| Context | Size |
+|---|---|
+| Feed (compact) | `w-5 h-5` |
+| Feed (image overlay) | `w-6 h-6` |
+| Feed (text-only) | `w-8 h-8` |
+| Spotify shared-by | `h-6 w-6` |
+| Leaderboard podium | `w-10 h-10` |
+| Recent Wins stacked (compact) | `w-5 h-5` |
+| Recent Wins stacked (full) | `w-10 h-10` |
+| Celebration owner photo | `w-36 h-36` |
+| Celebration Notion task | `w-28 h-28` |
+| Epic mode photo | `w-80 h-80` |
+
+### Badge
+
+**File**: `src/components/ui/badge.tsx`
+
+**Base**: `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`
+
+**Variants**:
+
+| Variant | Classes |
+|---|---|
+| `default` | `border-transparent bg-primary text-primary-foreground hover:bg-primary/80` |
+| `secondary` | `border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80` |
+| `destructive` | `border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80` |
+| `outline` | `text-foreground` |
+
+**Custom badge styles used in Recent Wins**:
+
+| Win Type | Custom Classes |
+|---|---|
+| Grant (acceptation) | `bg-emerald-500/20 text-emerald-400 border-emerald-500/30` with 🎉 emoji |
+| Signature (quote_signed) | `bg-cyan-500/20 text-cyan-400 border-cyan-500/30` with ✍️ emoji |
+| Renewal (renewal_signed) | `bg-blue-500/20 text-blue-400 border-blue-500/30` with 🔄 emoji |
+
+---
+
+## 7. Dashboard Layout
+
+**File**: `src/pages/Dashboard.tsx`
+
+### Overall Structure
+
+```
+h-screen bg-background flex flex-col overflow-hidden
+├── Header (border-b, shrink-0)
+├── main (flex-1 p-3 flex flex-col gap-3 overflow-hidden)
+│   ├── Action buttons row (shrink-0, flex justify-end gap-2)
+│   ├── KPI Carousel (shrink-0)
+│   ├── Error banner (conditional, shrink-0)
+│   └── Main content grid (flex-1, min-h-0)
+│       ├── Feed (col-span-4, row-span-4)
+│       ├── Chart (col-span-5, row-span-4)
+│       ├── Quote (col-span-3, row-span-2)
+│       └── QR Code (col-span-3, row-span-2)
+```
+
+### Main Content Grid
+
+```css
+.grid {
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0.75rem; /* gap-3 */
+  min-height: 0;
+}
+```
+
+### Action Buttons Row
+
+- Reset Celebration button (debug tool)
+- Refresh button: `variant="outline" size="sm" className="gap-2 h-7 text-xs"`
+  - `RefreshCw` icon: `h-3 w-3`, animated with `animate-spin` when loading
+
+### Error Banner
+
+```
+bg-destructive/10 border border-destructive text-destructive-foreground p-2 rounded-lg
+flex items-center justify-between text-sm shrink-0
+```
+
+With a "Retry" button: `variant="outline" size="sm" className="h-6 text-xs"`
+
+---
+
+## 8. Header Component
+
+**File**: `src/components/Dashboard/Header.tsx`
+
+### Structure
+
+```
+header: flex items-center justify-between px-4 py-2 border-b border-border
+├── Left: Logo + Title
+│   ├── Logo box: w-8 h-8 rounded-lg gradient-primary flex items-center justify-center
+│   │   └── Sparkles icon: w-4 h-4 text-primary-foreground
+│   └── Text block:
+│       ├── h1: text-lg font-bold text-foreground leading-tight → "helloDarwin"
+│       └── p: text-xs text-muted-foreground → "Celebration Dashboard"
+│
+└── Right: Controls (flex items-center gap-4)
+    ├── Dashboard Type Selector
+    ├── Theme Switcher
+    ├── Fullscreen Toggle
+    ├── Admin Dropdown
+    └── Connection Status
+```
+
+### Dashboard Type Selector
+
+Container: `bg-secondary/50 rounded-lg p-1`, `flex items-center gap-1`
+
+Two buttons ("Service Team" with `MonitorPlay` icon, "Dev Team" with `Code2` icon):
+- Active: `variant="default"`, size `"sm"`, `className="gap-1.5 text-xs"`
+- Inactive: `variant="ghost"`, same size and className
+
+### Theme Switcher
+
+Same container style: `bg-secondary/50 rounded-lg p-1`
+
+Four buttons:
+| Theme | Label | Icon |
+|---|---|---|
+| `dark` | "Dark" | `Moon` |
+| `light` | "Light" | `Sun` |
+| `vibrant` | "Vibrant" | `Zap` |
+| `hellodarwin` | "hD" | `Palette` |
+
+Active = `variant="default"`, inactive = `variant="ghost"`. All `size="sm" text-xs gap-1.5`.
+
+### Fullscreen Toggle
+
+`variant="outline" size="sm" gap-2`
+
+- Shows `Maximize` icon when not fullscreen, `Minimize` when fullscreen
+- Both icons: `h-4 w-4`
+
+### Admin Dropdown
+
+Trigger: `variant="outline" size="sm" gap-2`, `Settings` icon `h-4 w-4`, label "Admin"
+
+Content: `align="end"`, three menu items:
+- "Employees" with `Settings` icon
+- "Celebrations" with `Sparkles` icon
+- "Sound Settings" with `Volume2` icon
+
+### Connection Status Indicator
+
+Container: `flex items-center gap-2 px-2 py-1 rounded-md bg-secondary/30`
+
+| State | Dot | Icon | Label |
+|---|---|---|---|
+| Connected | `w-2 h-2 rounded-full bg-green-500 animate-pulse` | `Wifi w-3.5 h-3.5` | "Live" |
+| Connecting | (none) | `Loader2 w-3.5 h-3.5 animate-spin` | "Connecting..." |
+| Disconnected | `w-2 h-2 rounded-full bg-red-500` | `WifiOff w-3.5 h-3.5` | "Disconnected" |
+
+Label: `text-sm text-muted-foreground`
+
+---
+
+## 9. KPI Card Variants
+
+### 9.1 Basic KPICard
+
+**File**: `src/components/Dashboard/KPICard.tsx`
+
+```
+Card: shadow-card border-border transition-smooth h-full
+└── CardContent: p-6 (compact) or p-8 (full), h-full
+    ├── Top row (flex items-start justify-between mb-4/5):
+    │   ├── Icon box: w-14/16 h-14/16 rounded-xl [gradient] flex items-center justify-center
+    │   │   └── Icon: w-7/8 h-7/8 text-primary-foreground
+    │   └── Trend badge (optional)
+    └── Bottom:
+        ├── Title: text-xl/2xl font-semibold text-foreground/80 mb-2
+        └── Value: text-4xl/5xl font-bold text-foreground
+```
+
+**Variant gradients**:
+- `primary` → `gradient-primary`
+- `success` → `gradient-success`
+- `accent` → `gradient-celebration`
+
+**Trend badge**: `text-lg/xl px-3 py-1.5 rounded-full flex items-center gap-1 font-bold`
+- Positive: `bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400`, prefix `↑`
+- Negative: `bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400`, prefix `↓`
+- Neutral: `bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400`
+
+### 9.2 LeaderKPICard
+
+**File**: `src/components/Dashboard/LeaderKPICard.tsx`
+
+Same top section as KPICard (compact sizing), plus a leaderboard podium at the bottom.
+
+```
+CardContent: p-6 flex flex-col h-full
+├── Icon row: w-14 h-14 rounded-xl gradient-primary, mb-3
+├── Title: text-xl font-semibold text-foreground/80 mb-1
+├── Value: text-4xl font-bold text-foreground mb-4
+└── Leaders podium: mt-auto flex items-end justify-start gap-3 pt-2
+    └── Per leader (up to 3):
+        ├── Avatar: w-10 h-10 border-2 border-border
+        │   └── Fallback: text-xs font-bold, single initial
+        ├── Rank emoji: absolute -top-2 -right-2 text-base leading-none
+        │   (🥇, 🥈, 🥉)
+        ├── Name: text-xs font-medium text-foreground truncate max-w-[60px]
+        └── Value: text-[11px] font-bold [rankColor]
+```
+
+**Rank colors**: `["text-yellow-500", "text-slate-400", "text-amber-700"]`
+
+**Leader value format**: `$1.2M`, `$150K`, `$500` (abbreviated currency)
+
+### 9.3 PaceKPICard
+
+**File**: `src/components/Dashboard/PaceKPICard.tsx`
+
+Shows count/goal with progress bar and pace indicator.
+
+```
+Card: shadow-card border-border transition-smooth h-full
+└── CardContent: p-6 flex flex-col h-full
+    ├── Top row: mb-4
+    │   ├── Icon box: w-14 h-14 rounded-xl gradient-primary
+    │   │   └── ClipboardList icon: w-7 h-7 text-primary-foreground
+    │   └── Pace badge: text-lg px-3 py-1.5 rounded-full font-bold
+    │       (green if ahead, red if behind, shows ↑/↓ + absolute diff number)
+    ├── Title: text-xl font-semibold text-foreground/80 mb-1
+    ├── Value: text-4xl font-bold text-foreground mb-3 → "123 / 250"
+    ├── Progress bar: h-2 (overrides default h-4)
+    └── Leaders podium: mt-auto, same structure as LeaderKPICard
+        (value shown as raw number, not currency)
+```
+
+**Pace calculation**: `expectedPace = (daysElapsed / totalDays) * goal`, `diff = count - expectedPace`
+
+### 9.4 LiveKPICard
+
+**File**: `src/components/Dashboard/LiveKPICard.tsx`
+
+Real-time value with animation on change.
+
+```
+Card: shadow-card border-border transition-all duration-300 [ring-2 ring-primary/50 when animating]
+└── CardContent: p-6 (compact) or p-8
+    ├── Top row: flex items-start justify-between mb-4/5
+    │   ├── Icon box: w-14/16 h-14/16 rounded-xl gradient-primary
+    │   │   └── Icon: w-7/8 h-7/8 text-primary-foreground
+    │   └── Live indicator:
+    │       ├── Ping dot: relative flex h-4 w-4
+    │       │   ├── Outer: animate-ping absolute h-full w-full rounded-full bg-red-400 opacity-75
+    │       │   └── Inner: relative inline-flex rounded-full h-4 w-4 bg-red-500
+    │       └── Label: text-xl font-bold text-red-500 uppercase tracking-wide → "Live"
+    ├── Title: text-xl/2xl font-semibold text-foreground/80 mb-2
+    └── Value row: flex items-baseline gap-3
+        ├── Number: text-4xl/5xl font-bold text-foreground transition-all duration-300 [scale-105 when animating]
+        └── Delta: text-xl font-bold [text-green-500 if positive, text-red-500 if negative]
+            Shows ↑/↓ + absolute change number
+```
+
+**Number animation**: Steps through intermediate values at 30ms intervals, up to 20 steps. `isAnimating` flag adds `ring-2 ring-primary/50` to the card and `scale-105` to the number.
+
+---
+
+## 10. KPI Carousel
+
+### Service Dashboard (carousel mode)
+
+Uses **Embla Carousel** (`embla-carousel-react`):
+- `loop: true`
+- `align: "start"`
+- `slidesToScroll: 1`
+- `duration: 30`
+
+Auto-scrolls every **5 seconds**, pauses on hover.
+
+Container: `overflow-hidden shrink-0`
+
+Inner track: `flex -ml-3`, `height: 100%`
+
+Each slide wrapper (`KPISlide`): `min-w-0 shrink-0 grow-0 basis-1/4 pl-3 h-full`
+
+Service dashboard has **7 slides** (loops through them):
+1. LeaderKPICard — "Accepted This Quarter" (CheckCircle, trend)
+2. LeaderKPICard — "Cash Collected - AEs" (DollarSign)
+3. PaceKPICard — "Q2 Client Applications" (goal: 220)
+4. KPICard — "Active Platform Subscribers" (Users)
+5. PaceKPICard — "Discovery Packages Converted" (goal: 30)
+6. PaceKPICard — "Opportunities Created" (goal: 250)
+7. PaceKPICard — "MQL Q2" (goal: 150)
+
+### Dev Dashboard (grid mode)
+
+No carousel — uses static grid: `grid grid-cols-4 gap-3 shrink-0`
+
+4 cards side by side:
+1. LiveKPICard — "Active Users Now" (Activity, live)
+2. KPICard — "Active Subscribers" (Users, primary)
+3. KPICard — "Active SaaS MRR" (DollarSign, success)
+4. KPICard — "Signups This Week" (UserPlus, primary, trend)
+
+---
+
+## 11. Dashboard Feed
+
+**File**: `src/components/Dashboard/DashboardFeed.tsx`
+
+### Container
+
+```
+Card: h-full bg-card/50 backdrop-blur overflow-hidden relative
+└── CardContent: p-0 h-full flex flex-col
+    ├── Content area (flex-1 relative)
+    └── Navigation dots (bottom, conditional)
+```
+
+### Connection Status Badge
+
+Position: `absolute top-2 right-2 z-10`
+
+| State | Classes |
+|---|---|
+| Connected | `bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[10px]` with `w-1 h-1 bg-green-500 rounded-full animate-pulse` dot + "Live" text |
+| Connecting | `bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded-full text-[10px]` with `Wifi w-2.5 h-2.5 animate-pulse` |
+| Disconnected | `bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-full text-[10px]` with `WifiOff w-2.5 h-2.5` |
+
+### Auto-Rotation
+
+- Shows **3 most recent items** from the `dashboard_feed` table
+- Rotates every **25 seconds** via `setInterval`
+- New items from realtime push to front and reset index to 0
+
+### Image Posts
+
+```
+absolute inset-0
+├── img: w-full h-full object-contain bg-black/20
+└── Gradient overlay: absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent
+```
+
+Text overlay positioned at bottom (`justify-end`) in white with `drop-shadow-lg`.
+
+### Text-Only Posts
+
+```
+absolute inset-0 flex flex-col justify-center items-center text-center
+bg-gradient-to-br from-primary/10 to-secondary/10
+```
+
+- `MessageSquare` icon above text: `w-8/12 h-8/12 text-primary/40 mx-auto mb-2/4`
+- Text sizes (responsive): compact = `text-lg`, full = `text-2xl md:text-3xl lg:text-4xl`
+- Text color: `text-foreground`
+
+### Reactions
+
+Container: `flex flex-wrap gap-1 mb-1.5/3`
+
+Each reaction pill:
+- On image: `bg-white/20 backdrop-blur-sm rounded-full px-1.5 py-0.5`
+- On text: `bg-muted rounded-full px-1.5 py-0.5`
+- Emoji + count: `text-xs/sm`, count `text-[10px] opacity-80`
+
+Max reactions shown in compact mode: 4.
+
+### Attribution
+
+```
+flex items-center gap-1.5
+├── Avatar (size varies by context, see Avatar sizes above)
+│   └── Fallback: text-[10px] bg-primary/20 text-primary
+├── Name: font-medium
+└── Channel (optional): · Hash icon (w-2.5/3 h-2.5/3) + channel name, opacity-70
+```
+
+### Navigation Dots
+
+Container: `flex justify-center gap-1 py-1.5/3 bg-background/50 backdrop-blur-sm`
+
+Each dot (button):
+- Active: `bg-primary w-4/6 h-1.5/2 rounded-full` (wider = active indicator)
+- Inactive: `bg-muted-foreground/30 hover:bg-muted-foreground/50 w-1.5/2 h-1.5/2 rounded-full`
+- Transition: `transition-all`
+
+### Empty State
+
+```
+CardContent: flex flex-col items-center justify-center h-full text-center p-3/6 min-h-[180px/300px]
+├── Sparkles icon in circle: w-10/16 h-10/16 bg-primary/10 rounded-full
+├── "No posts yet": text-muted-foreground text-sm/lg mb-1/2
+└── "Add :coal: to Slack or scan QR": text-muted-foreground/70 text-xs/sm
+```
+
+---
+
+## 12. Chart Components
+
+### 12.1 WeeklyAcceptedChart
+
+**File**: `src/components/Dashboard/WeeklyAcceptedChart.tsx`
+
+```
+Card: shadow-card overflow-hidden h-full flex flex-col
+├── CardHeader: pb-2
+│   └── CardTitle: flex items-center gap-2
+│       ├── Icon container: p-2 rounded-lg bg-success/10
+│       │   └── CheckCircle: w-5 h-5 text-success
+│       └── Text:
+│           ├── Title: text-lg font-bold → "Accepted per Week"
+│           └── Subtitle: text-sm font-normal text-muted-foreground
+│               "Total: $XXX since Dec 1" + TrendingUp icon w-4 h-4 text-success ml-1
+└── CardContent: flex-1 min-h-0 pb-6
+    └── Recharts BarChart
+```
+
+**Recharts Configuration**:
+
+| Property | Value |
+|---|---|
+| Margins | `top: 25, right: 10, left: 10, bottom: 20` |
+| Gradient ID | `colorAccepted` |
+| Gradient | Vertical, `hsl(var(--success))` opacity 0.9 → 0.4 |
+| CartesianGrid | `strokeDasharray="3 3"`, `stroke="hsl(var(--border))"`, `opacity={0.3}`, `vertical={false}` |
+| XAxis | `stroke="hsl(var(--muted-foreground))"`, `fontSize={12}`, no tickLine, no axisLine |
+| YAxis | Same stroke/font, no tickLine/axisLine, `tickFormatter` with abbreviated currency, `width={50}` |
+| Bar | `fill="url(#colorAccepted)"`, `radius={[4, 4, 0, 0]}`, `isAnimationActive={false}` |
+| LabelList | `position="top"`, `fill="hsl(var(--foreground))"`, `fontSize={13}`, `fontWeight={600}`, formatted as currency |
+
+### 12.2 WeeklySubscribersChart
+
+**File**: `src/components/Dashboard/WeeklySubscribersChart.tsx`
+
+Identical structure to WeeklyAcceptedChart with these differences:
+
+| Property | Difference |
+|---|---|
+| Icon | `UserPlus` in `bg-primary/10`, `text-primary` |
+| Title | "New Subscribers by Week" |
+| Gradient ID | `colorSubscribers` |
+| Gradient color | `hsl(var(--primary))` instead of success |
+| YAxis width | `30` instead of `50` |
+| YAxis | `allowDecimals={false}` |
+| LabelList fontSize | `14` instead of `13` |
+| LabelList formatter | None (raw number) |
+
+---
+
+## 13. Quote of the Day
+
+**File**: `src/components/Dashboard/QuoteOfTheDay.tsx`
+
+```
+Card: [compact: h-full] bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden
+└── CardContent: flex flex-col justify-center h-full p-5
+    ├── Header row: flex items-center gap-2 mb-3
+    │   ├── Quote icon: h-5 w-5 text-primary
+    │   └── Label: text-xs uppercase tracking-wider text-primary font-semibold → "Quote of the Hour"
+    ├── Quote text: text-2xl font-bold text-foreground leading-tight italic line-clamp-4
+    │   Wrapped in quotes: "{text}"
+    └── Author: text-sm text-muted-foreground mt-3 font-medium → "— {author}"
+```
+
+**Rotation**: Changes every hour. Uses `hoursSinceEpoch % quotes.length` to determine which quote. Checks every 60 seconds for hour change.
+
+**Content**: 15 sports/motivation quotes (Michael Jordan, Wayne Gretzky, Muhammad Ali, etc.).
+
+---
+
+## 14. QR Code Card
+
+**File**: `src/components/Dashboard/QRCodeCard.tsx`
+
+Uses `qrcode.react` (`QRCodeSVG` component).
+
+### Compact Mode (dashboard)
+
+```
+Card: h-full flex flex-col
+└── CardContent: flex-1 flex flex-col items-center justify-center p-3 gap-2
+    ├── QR container: bg-white p-2 rounded-lg shadow-inner
+    │   └── QRCodeSVG: size={100}, level="M", includeMargin={false}, black on white
+    └── Label:
+        ├── Row: flex items-center justify-center gap-1.5 text-xs font-medium text-foreground
+        │   QrCode icon w-3 h-3 text-primary + "Share with Team"
+        └── Sub: text-xs text-muted-foreground → "Scan to post"
+```
+
+### Full Mode
+
+```
+Card: h-full flex flex-col
+├── CardHeader: pb-2
+│   └── CardTitle: text-lg flex items-center gap-2
+│       QrCode w-5 h-5 text-primary + "Share with the Team"
+└── CardContent: flex-1 flex flex-col items-center justify-center gap-4
+    ├── QR container: bg-white p-4 rounded-xl shadow-inner
+    │   └── QRCodeSVG: size={140}, level="M"
+    └── Label:
+        ├── Row: flex items-center justify-center gap-2 text-sm font-medium text-foreground
+        │   Smartphone icon w-4 h-4 + "Scan to post"
+        └── Sub: text-xs text-muted-foreground → "Share photos & messages on the dashboard"
+```
+
+QR encodes: `${window.location.origin}/submit`
+
+---
+
+## 15. Spotify Song Card
+
+**File**: `src/components/Dashboard/SpotifySong.tsx`
+
+```
+Card: [compact: h-full] bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden
+└── CardContent: flex h-full p-0
+    ├── Left half (w-1/2 shrink-0):
+    │   └── Album cover img: w-full h-full object-scale-down
+    │       OR fallback: bg-muted, centered Music icon h-12 w-12 text-muted-foreground
+    └── Right half (w-1/2 flex flex-col justify-center p-4 min-w-0):
+        ├── Now Playing indicator: flex items-center gap-2 mb-2
+        │   ├── Label: text-[10px] uppercase tracking-wider text-primary font-semibold
+        │   └── Ping dot: relative flex h-2 w-2
+        │       ├── Outer: animate-ping absolute h-full w-full rounded-full bg-primary opacity-75
+        │       └── Inner: relative inline-flex rounded-full h-2 w-2 bg-primary
+        ├── Track name: font-bold text-foreground text-base leading-tight line-clamp-2
+        ├── Artist: text-sm text-muted-foreground truncate mt-1
+        └── Shared by (if posted_by exists): flex items-center gap-2 mt-3
+            ├── Avatar: h-6 w-6
+            │   └── Fallback: text-[10px] bg-muted
+            └── Text: text-xs text-muted-foreground truncate
+                "Shared by " + name in text-foreground font-medium
+```
+
+### Loading State
+
+`RefreshCw h-5 w-5 animate-spin text-muted-foreground` centered in card.
+
+### Empty State
+
+`Music h-8 w-8 text-muted-foreground` + "No songs yet" `text-sm text-muted-foreground`, centered.
+
+### Realtime
+
+Subscribes to `slack_spotify_songs` INSERT events. Also re-fetches on tab visibility change.
+
+---
+
+## 16. Recent Wins
+
+**File**: `src/components/Dashboard/RecentWins.tsx`
+
+### Structure
+
+```
+Card: shadow-card h-full overflow-hidden
+├── CardHeader: py-2/3 px-3/4
+│   └── CardTitle: flex items-center gap-2 text-sm/lg
+│       Trophy icon w-4/6 h-4/6 text-accent + "Recent Wins"
+└── CardContent: px-3/4 pb-3/4 h-[calc(100%-3.5rem)] overflow-hidden
+    └── Scroll container (ref): h-full overflow-hidden, scrollBehavior: 'auto'
+        └── Duplicate list (space-y-1/2) for seamless infinite scroll
+```
+
+### Auto-Scroll Animation
+
+Uses `requestAnimationFrame` at **0.5 pixels per frame**. Content is duplicated (rendered twice). When scroll position reaches `scrollHeight / 2`, it resets to 0 for a seamless loop.
+
+### Win Item
+
+```
+flex items-center gap-3 p-1.5/3 rounded-lg bg-secondary/50 border border-border
+├── Stacked avatars: flex -space-x-2 shrink-0
+│   ├── Owner avatar: w-5/10 h-5/10 border-2 border-background
+│   │   └── Fallback: text-[8px]/xs bg-primary text-primary-foreground
+│   └── AM avatar (if exists): w-5/10 h-5/10 border-2 border-background
+│       └── Fallback: text-[8px]/xs bg-accent text-accent-foreground
+├── Info (flex-1 min-w-0):
+│   ├── Row: flex items-center gap-2
+│   │   ├── Client name: font-semibold text-foreground truncate text-[11px]/base
+│   │   └── Win type badge (Grant/Signature/Renewal)
+│   └── Deal name: text-muted-foreground truncate text-[10px]/sm
+└── Amount (text-right shrink-0):
+    ├── Amount: font-bold text-accent text-xs/lg
+    └── Date: text-muted-foreground text-[9px]/sm
+```
+
+---
+
+## 17. Fun Facts Card
+
+**File**: `src/components/Dashboard/FunFacts.tsx`
+
+```
+Card: shadow-card [compact: h-full]
+└── CardContent: p-4/6 [compact: h-full flex flex-col]
+    └── Row: flex items-start gap-3/4 [compact: flex-1]
+        ├── Icon circle: w-10 h-10 rounded-full gradient-celebration flex items-center justify-center flex-shrink-0
+        │   └── Lightbulb icon: w-5 h-5 text-accent-foreground
+        │       (or RefreshCw with animate-spin when loading)
+        └── Text:
+            ├── Label: text-sm font-medium text-accent mb-1 → "Fun Fact"
+            └── Fact text: text-base/foreground leading-relaxed
+                transition-opacity duration-500 [opacity-50 when loading]
+```
+
+Fallback facts are hardcoded. AI-generated fact fetched from `generate-fun-fact` edge function.
+
+---
+
+## 18. Celebration Popup System
+
+**File**: `src/components/Celebration/CelebrationPopup.tsx`
+
+The most complex visual component. A full-screen overlay that triggers when deals are won.
+
+### Lifecycle & Timing
+
+| Phase | Duration | Events |
+|---|---|---|
+| `celebration` (standard) | 5 seconds | Show photos, title, GIF, confetti |
+| `celebration` (epic mode) | 7 seconds | Enhanced golden celebration |
+| `counter` | 5 seconds (total = 10s) | Animated counter showing running total |
+| Special events | 10 seconds total | Plat du jour, churn, notion task (no counter phase) |
+| Auto-close failsafe | 10 seconds | Always closes after 10s regardless |
+| Close transition | 600ms | Scale down + fade out |
+
+### Overlay Base
+
+```css
+fixed inset-0 z-50 flex items-center justify-center
+transition-all duration-500
+```
+
+**Normal state**: `bg-black/95 opacity-100`
+**Closing state**: `bg-black/0 opacity-0`
+
+### Closing Animation
+
+Applied to inner content:
+```css
+scale-75 opacity-0 translate-y-10
+/* Transition: duration-500 */
+```
+
+### Event Titles (French)
+
+| Event Type | Title |
+|---|---|
+| Default (acceptation) | "ACCEPTATION!!!" |
+| `subscription` | "NOUVEL ABONNÉ PLATEFORME!!" |
+| `application` | "APPLICATION DÉPOSÉE!!" |
+| `quote_signed` | "NOUVELLE SIGNATURE !" |
+| `renewal_signed` | "RENOUVELLEMENT SIGNÉ !" |
+| `pdm_paid` | "PDM PAYÉ !!!" |
+| `pkg_paid` | "ACCOMPAGNEMENT PAYÉ!!" |
+| `plat_du_jour` | "PLAT DU JOUR" |
+| `subscription_churn` | "ABONNÉ PERDU" |
+| `notion_task` | "TÂCHE COMPLÉTÉE!" |
+
+### 18.1 Standard Celebration Phase
+
+```
+Container: relative z-10 text-center space-y-6 px-8 max-w-4xl animate-celebration-entrance
+
+├── Employee Photos (flex justify-center items-end gap-8 if both):
+│   ├── Owner photo:
+│   │   ├── Glow: absolute inset-0 rounded-full bg-primary/30 blur-xl animate-pulse
+│   │   ├── Image: w-36 h-36 rounded-full object-cover border-4 border-primary shadow-2xl ring-4 ring-primary/30
+│   │   ├── Name tag: absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary px-4 py-1.5 rounded-full shadow-lg
+│   │   │   └── text-sm font-bold text-primary-foreground whitespace-nowrap
+│   │   └── Role label (if both): text-xs text-white/60 mt-6 font-medium → "Deal Owner" or "Closer"
+│   │   └── PLG badge (if is_plg): absolute -top-2 -right-2 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full
+│   │
+│   └── Account Manager photo:
+│       ├── Glow: absolute inset-0 rounded-full bg-accent/30 blur-xl animate-pulse
+│       ├── Image: w-36 h-36 rounded-full object-cover border-4 border-accent shadow-2xl ring-4 ring-accent/30
+│       ├── Name tag: absolute -bottom-3 left-1/2 -translate-x-1/2 bg-accent px-4 py-1.5 rounded-full shadow-lg
+│       │   └── text-sm font-bold text-accent-foreground whitespace-nowrap
+│       └── Role label: text-xs text-white/60 mt-6 font-medium → "Account Manager"
+│
+├── Title + Info (space-y-4 pt-4):
+│   ├── Title: text-5xl md:text-6xl font-black tracking-tight animate-title-glow
+│   │   Background gradient (varies by event type):
+│   │   - Acceptation: linear-gradient(135deg, hsl(38, 95%, 55%) → hsl(45, 100%, 60%) → hsl(38, 95%, 65%)) [GOLD]
+│   │   - Subscription: linear-gradient(135deg, hsl(280, 95%, 55%) → hsl(300, 100%, 60%) → hsl(280, 95%, 65%)) [PURPLE]
+│   │   - Quote/Renewal signed: linear-gradient(135deg, hsl(170, 95%, 45%) → hsl(180, 100%, 50%) → hsl(190, 95%, 55%)) [CYAN]
+│   │   - PDM/PKG paid: linear-gradient(135deg, hsl(45, 95%, 55%) → hsl(35, 100%, 60%) → hsl(45, 95%, 65%)) [AMBER]
+│   │   Applied with: WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+│   │
+│   ├── Display message: text-xl md:text-2xl text-white/90 font-medium
+│   │
+│   ├── Lead source (quote_signed, pdm_paid, pkg_paid):
+│   │   text-sm text-white/60 + value in text-cyan-400 font-medium
+│   │
+│   └── Amount/Company details:
+│       - Subscription: company in text-lg md:text-xl text-purple-300 font-semibold
+│         + interval/MRR pills: bg-white/10 px-4 py-2 rounded-lg
+│         MRR value: font-bold text-emerald-400 (formatted fr-CA CAD)
+│       - Others: company in text-lg md:text-xl text-amber-400 font-semibold
+│         + amount: text-3xl md:text-4xl font-black text-emerald-400 animate-pulse
+│
+├── GIF: flex justify-center animate-gif-entrance
+│   └── img: max-w-[350px] w-full rounded-2xl shadow-elevated border-4 border-primary/50
+│
+└── Bouncing dots: flex justify-center gap-3 pt-2
+    └── 8 × div: w-3 h-3 rounded-full bg-gradient-to-r from-primary to-accent animate-bounce
+        style: animationDelay: {i * 0.1}s, animationDuration: 0.8s
+```
+
+### 18.2 Counter Phase
+
+```
+Container: fixed inset-0 z-50, bg-black/95
+├── Confetti
+└── Content: relative z-10 text-center px-8 animate-scale-in
+    ├── Icon: w-24 h-24 rounded-full [color]/20 flex items-center justify-center
+    │   Icon colors by event type:
+    │   - subscription: bg-purple-500/20, Zap icon text-purple-400
+    │   - application: bg-blue-500/20, FileText text-blue-400
+    │   - quote/renewal_signed: bg-cyan-500/20, FileText text-cyan-400
+    │   - pdm/pkg_paid: bg-amber-500/20, DollarSign text-amber-400
+    │   - acceptation: bg-green-500/20, TrendingUp text-green-400
+    │
+    ├── Label: text-2xl md:text-3xl text-white/70 mb-4 font-medium
+    │   Content varies by event type (French labels)
+    │
+    ├── Counter: text-6xl md:text-8xl lg:text-9xl font-black text-white
+    │   - Static display for quote_signed, pdm_paid, pkg_paid (formatted fr-CA CAD)
+    │   - AnimatedCounter for others (see section 20)
+    │
+    ├── Deal info: mt-8 text-lg text-white/70
+    │   - Subscription: "+1 nouvel abonné" in text-emerald-400 font-semibold
+    │   - Quote: "+1 nouveau contrat" in text-cyan-400 font-semibold
+    │   - Others: "+{montant}" in text-emerald-400 font-semibold + company
+    │
+    └── Bouncing dots: same as celebration phase (8 dots)
+```
+
+### 18.3 Churn Alert
+
+```
+Overlay: bg-red-950/95 (closing: bg-red-950/0)
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-32 h-32 rounded-full bg-red-500/20 animate-pulse
+    │   └── AlertTriangle: w-16 h-16 text-red-400
+    ├── Title: text-6xl md:text-7xl font-black tracking-tight text-red-400
+    │   "⚠️ ABONNÉ PERDU"
+    ├── Amount: text-5xl md:text-6xl font-black text-red-300
+    │   "-{montant} MRR"
+    ├── Company: text-2xl text-white/70
+    └── GIF (optional): max-w-[300px] rounded-2xl border-4 border-red-500/50
+```
+
+### 18.4 Notion Task Completion
+
+```
+Overlay: bg-black/95
+Confetti: yes
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-24 h-24 rounded-full bg-emerald-500/20
+    │   └── CheckCircle2: w-12 h-12 text-emerald-400
+    ├── Title: text-5xl md:text-6xl font-black tracking-tight
+    │   Gradient: linear-gradient(135deg, hsl(160, 95%, 45%) → hsl(140, 100%, 50%)) [GREEN]
+    ├── Message: text-2xl md:text-3xl text-white/90 font-medium
+    ├── Project: text-xl text-cyan-400
+    ├── Owner photo (optional): w-28 h-28 rounded-full border-4 border-emerald-500
+    ├── Owner name: text-lg text-white/70
+    └── GIF (optional): max-w-[300px] rounded-2xl border-4 border-emerald-500/50
+```
+
+### 18.5 Plat du Jour
+
+```
+Overlay: bg-black/95
+Confetti: yes
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    ├── Icon: w-24 h-24 rounded-full bg-orange-500/20
+    │   └── UtensilsCrossed: w-12 h-12 text-orange-400
+    ├── Title: text-6xl md:text-7xl font-black tracking-tight animate-title-glow
+    │   Gradient: linear-gradient(135deg, hsl(30, 95%, 55%) → hsl(40, 100%, 60%) → hsl(25, 95%, 55%)) [ORANGE]
+    ├── Food photo: animate-gif-entrance
+    │   max-w-[600px] max-h-[450px] w-full h-auto rounded-3xl shadow-elevated border-4 border-orange-500/50 object-cover
+    ├── Caption: text-2xl md:text-3xl text-white/90 font-medium
+    └── Bouncing dots: 8 dots
+        bg-gradient-to-r from-orange-400 to-amber-400 (orange variant)
+```
+
+### 18.6 Epic Mode (Dev Dashboard Subscription)
+
+Triggered when a `celebration_special_modes` record with `mode='epic'` is active for the subscription event on dev dashboard.
+
+```
+Overlay: bg-gradient-to-br from-yellow-900/95 via-black/95 to-purple-900/95
+
+Golden glow effects (absolute, pointer-events-none):
+├── Large glow: w-[800px] h-[800px] bg-yellow-400/20 rounded-full blur-3xl animate-pulse
+└── Medium glow: w-[600px] h-[600px] bg-amber-400/30 rounded-full blur-2xl animate-pulse (0.5s delay)
+
+└── Content: space-y-8 px-8 max-w-5xl animate-celebration-entrance
+    Combined animation: celebration-entrance 0.8s + epic-shake 0.5s
+    
+    ├── MASSIVE Photo:
+    │   ├── Glow layer: absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 blur-3xl animate-pulse scale-125
+    │   ├── Border ring 1: absolute -inset-4 rounded-full border-8 border-yellow-400/60 animate-pulse
+    │   ├── Border ring 2: absolute -inset-8 rounded-full border-4 border-amber-300/40 animate-pulse (0.3s delay)
+    │   ├── Image: relative w-80 h-80 rounded-full object-cover border-8 border-yellow-400 shadow-2xl ring-8 ring-yellow-500/50
+    │   │   boxShadow: "0 0 60px rgba(251, 191, 36, 0.6), 0 0 120px rgba(251, 191, 36, 0.4), 0 0 180px rgba(251, 191, 36, 0.2)"
+    │   └── Crown: absolute -top-6 left-1/2 -translate-x-1/2
+    │       text-6xl animate-bounce → "🏆"
+    │
+    ├── Title: text-7xl md:text-8xl font-black tracking-tight
+    │   Gradient: linear-gradient(135deg, hsl(45, 100%, 60%) → hsl(35, 100%, 50%) → hsl(280, 100%, 60%) → hsl(300, 100%, 65%)) [GOLD → PURPLE]
+    │   textShadow: "0 0 40px rgba(251, 191, 36, 0.5)"
+    │   animation: title-glow 2s ease-in-out infinite alternate
+    │   Emoji wrapping: "🔥 {title} 🔥"
+    │
+    ├── Message: text-3xl md:text-4xl text-white font-bold
+    ├── Company: text-xl md:text-2xl text-yellow-300 font-semibold
+    │
+    ├── Subscription details (flex justify-center gap-8 text-xl):
+    │   ├── Interval pill: bg-yellow-500/20 border-2 border-yellow-400 px-6 py-3 rounded-2xl
+    │   │   Label: text-white/70 + Value: font-black text-yellow-300
+    │   └── MRR pill: same container
+    │       Label: text-white/70 + Value: font-black text-emerald-400 (formatted CAD)
+    │
+    └── Epic bouncing dots: 12 dots (not 8)
+        w-4 h-4 (larger) bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500
+        animationDelay: {i * 0.08}s, animationDuration: 0.6s
+        boxShadow: "0 0 10px rgba(251, 191, 36, 0.8)"
+```
+
+Epic mode is **one-time use**: disabled after the celebration completes (delayed by total duration + 1s).
+
+---
+
+## 19. Confetti System
+
+**File**: `src/components/Celebration/Confetti.tsx`
+
+### Container
+
+```css
+fixed inset-0 pointer-events-none z-50 overflow-hidden
+transition-opacity duration-500
+/* isClosing ? 'opacity-0' : 'opacity-100' */
+```
+
+### Particles
+
+- **Count**: 50 pieces
+- **Colors** (8 HSL colors):
+  1. `hsl(195, 100%, 50%)` — primary cyan
+  2. `hsl(38, 95%, 55%)` — accent gold
+  3. `hsl(142, 76%, 45%)` — success green
+  4. `hsl(210, 100%, 60%)` — blue
+  5. `hsl(45, 100%, 60%)` — yellow
+  6. `hsl(340, 82%, 52%)` — pink
+  7. `hsl(280, 80%, 60%)` — purple
+  8. `hsl(15, 90%, 55%)` — orange
+
+- **Shapes** (4 types):
+  1. **Circle**: `backgroundColor: color, borderRadius: 50%`
+  2. **Square**: `backgroundColor: color, borderRadius: 2px`
+  3. **Triangle**: `width: 0, height: 0, border-left/right: transparent, border-bottom: colored` (CSS triangle trick)
+  4. **Star**: `backgroundColor: color, clipPath: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)`
+
+- **Randomized properties**:
+  - `left`: 0-100% horizontal position
+  - `delay`: 0-2s animation delay
+  - `size`: 6-18px (width & height)
+  - `duration`: 3-5s animation duration
+  - `rotation`: 0-360° initial rotation
+
+- **Animation**: `animate-confetti-enhanced` (see Animation Catalog)
+- **Performance**: `willChange: 'transform'` on each piece
+
+---
+
+## 20. Animated Counter
+
+**File**: `src/components/Celebration/AnimatedCounter.tsx`
+
+### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `number` | required | Target value |
+| `startFrom` | `number` | `value` | Starting value for animation |
+| `duration` | `number` | `8000` | Animation duration in ms |
+| `className` | `string` | `""` | Additional classes |
+| `formatAsCurrency` | `boolean` | `true` | Format as CAD currency |
+
+### Animation Algorithm
+
+- **Easing**: Ease-in-quad (`progress * progress`) — starts slow, accelerates
+- **Engine**: `requestAnimationFrame` loop
+- **Formula**: `initialValue + (value - initialValue) * easeInQuad`
+- **Updates**: Every frame until `progress >= 1`
+
+### Visual
+
+```
+Container: relative [className]
+├── Number: tabular-nums transition-transform duration-300 inline-block
+│   scale-105 when animating, scale-100 when done
+└── Glow overlay (when animating):
+    absolute inset-0 bg-gradient-to-t from-transparent via-primary/5 to-transparent
+    animate-pulse pointer-events-none rounded-lg
+```
+
+### Formatting
+
+- **Currency**: `Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", minimumFractionDigits: 0 })`
+- **Non-currency**: `num.toLocaleString("fr-CA")`
+
+### Duration by Event Type
+
+- Acceptation: `8000ms`
+- Subscription: `4000ms`
+- Renewal signed: `4000ms`
+
+---
+
+## 21. Complete Animation Catalog
+
+### Custom Keyframe Animations
+
+| Name | Keyframes | Duration | Easing | Loop | Start State |
+|---|---|---|---|---|---|
+| `confetti-enhanced` | `translateY(-20vh → 20vh → 50vh → 75vh → 110vh)`, `rotate(0 → 180 → 360 → 540 → 720deg)`, `scale(1 → 1.2 → 0.8 → 1.1 → 0.5)`, `translateX(0 → 20px → -20px → 10px → -10px)`, `opacity(1 → 1 → 1 → 0.8 → 0)` | 4s | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | infinite | — |
+| `celebration-entrance` | `scale(0.3) translateY(50px) opacity(0)` → `scale(1.1) translateY(-10px)` → `scale(0.95) translateY(5px)` → `scale(1) translateY(0) opacity(1)` | 0.8s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards) | `scale(0.3) opacity(0)` |
+| `photo-bounce` | `scale(0) translateY(30px) opacity(0)` → `scale(1.15) translateY(-15px)` → `scale(0.95) translateY(5px)` → `scale(1) translateY(0) opacity(1)` | 0.7s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards) | `opacity: 0` |
+| `title-glow` | `text-shadow: 0 0 30px/60px gold(0.5/0.3), brightness(1)` ↔ `text-shadow: 0 0 50px/100px gold(0.8/0.5), brightness(1.2)` | 2s | ease-in-out | infinite | — |
+| `gif-entrance` | `scale(0.5) translateY(30px) opacity(0)` → `scale(1) translateY(0) opacity(1)` | 0.6s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | once (forwards), 0.5s delay | `opacity: 0` |
+| `pulse-glow` | `box-shadow: 0 0 20px primary(0.3)` ↔ `box-shadow: 0 0 40px primary(0.6)` | 2s | ease-in-out | infinite | — |
+| `epic-shake` | `translateX` alternating between `0`, `-5px`, `+5px` over 10 keyframe steps | 0.5s | ease-in-out | once | — |
+| `epic-glow` | `box-shadow: 0 0 40/80/120px amber` ↔ `box-shadow: 0 0 60/120/180px amber` | 2s | ease-in-out | infinite | — |
+
+### Spring Easing Note
+
+The easing `cubic-bezier(0.34, 1.56, 0.64, 1)` is a **spring overshoot** curve — it overshoots the target and bounces back, giving a lively, bouncy feel to entrances.
+
+### Tailwind Built-in Animations Used
+
+| Animation | Where Used |
+|---|---|
+| `animate-pulse` | Celebration glows, connection dots, Live indicator, amount text |
+| `animate-spin` | Loading spinners (RefreshCw icon) |
+| `animate-ping` | Live indicator outer ring (LiveKPICard, SpotifySong) |
+| `animate-bounce` | Celebration bouncing dots, epic crown emoji |
+
+**Bounce customization**: Custom `animationDelay` (staggered per dot) and `animationDuration` (`0.6s` for epic, `0.8s` for standard) applied via inline style.
+
+---
+
+## 22. Submit Page
+
+**File**: `src/pages/Submit.tsx`
+
+### Layout
+
+```
+min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5
+flex items-center justify-center p-4
+└── Card: w-full max-w-md
+```
+
+### Form State
+
+```
+CardHeader: text-center pb-4
+├── Icon circle: w-12 h-12 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center
+│   └── Sparkles: w-6 h-6 text-primary
+├── CardTitle: text-2xl → "Share with the Team"
+└── CardDescription → "Post a photo, message, or both to the dashboard"
+
+CardContent:
+└── form: space-y-4
+    ├── Name input: Label + Input (required)
+    ├── Message: Label + Textarea (rows=3)
+    ├── Photo section:
+    │   - If preview: relative rounded-lg overflow-hidden border
+    │     img: w-full h-48 object-cover
+    │     Remove button: absolute top-2 right-2 variant="destructive" size="sm"
+    │   - If no preview: grid grid-cols-2 gap-2
+    │     ├── Camera button: variant="outline" h-20 flex-col gap-2
+    │     │   Camera icon w-6 h-6 + "Take Photo" text-xs
+    │     └── Upload button: variant="outline" h-20 flex-col gap-2
+    │         Upload icon w-6 h-6 + "Upload" text-xs
+    ├── IP Warning box:
+    │   flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg
+    │   AlertTriangle icon: w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0
+    │   Title: font-medium text-foreground → "Heads up!"
+    │   Text: text-muted-foreground text-sm
+    ├── Consent checkbox: flex items-center gap-3 cursor-pointer
+    │   Checkbox + "I understand and agree" text-sm text-foreground
+    └── Submit button: w-full, disabled when !consent or no content
+        Send icon w-4 h-4 mr-2 + "Post to Dashboard"
+        Loading: animate-spin ⏳ emoji + "Posting..."
+```
+
+### Success State
+
+```
+Card: w-full max-w-md text-center
+└── CardContent: pt-8 pb-6
+    ├── Icon: w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full
+    │   └── CheckCircle: w-10 h-10 text-primary
+    ├── Title: text-2xl font-bold mb-2 → "Posted!"
+    ├── Text: text-muted-foreground mb-6 → "Your content is now live on the dashboard."
+    └── Button: variant="outline" w-full → "Submit Another"
+```
+
+---
+
+## 23. Auth Page
+
+**File**: `src/pages/Auth.tsx`
+
+### Layout
+
+```
+min-h-screen flex items-center justify-center bg-background p-4
+└── Card: w-full max-w-md
+    ├── CardHeader:
+    │   ├── CardTitle → "Employee Admin"
+    │   └── CardDescription → "Sign in or create an account to manage employees"
+    └── CardContent:
+        └── Tabs: defaultValue="signin"
+            ├── TabsList: grid w-full grid-cols-2
+            │   ├── TabsTrigger: "Sign In"
+            │   └── TabsTrigger: "Sign Up"
+            ├── TabsContent "signin":
+            │   form: space-y-4
+            │   ├── Email: Label + Input type="email" placeholder="you@example.com"
+            │   ├── Password: Label + Input type="password"
+            │   ├── Submit: Button w-full → "Sign In" / "Signing in..."
+            │   └── Forgot: Button variant="link" w-full text-muted-foreground
+            └── TabsContent "signup":
+                form: space-y-4
+                ├── Email: Label + Input type="email"
+                ├── Password: Label + Input type="password" minLength={6}
+                └── Submit: Button w-full → "Sign Up" / "Creating account..."
+```
+
+### Forgot Password View
+
+Same outer layout. Card with:
+- Title: "Reset Password"
+- Description: "Enter your email to receive a reset link"
+- Email input
+- "Send Reset Link" button (w-full)
+- "Back to Sign In" ghost button (w-full)
+
+---
+
+## 24. Admin Layout
+
+**File**: `src/components/Admin/AdminLayout.tsx`
+
+```
+min-h-screen bg-background
+├── header: border-b border-border bg-card
+│   └── container mx-auto px-4 py-4 flex items-center justify-between
+│       ├── Left: flex items-center gap-4
+│       │   ├── Back button: variant="ghost" size="sm" gap-2
+│       │   │   ArrowLeft h-4 w-4 + "Back to Dashboard"
+│       │   └── h1: text-2xl font-bold text-foreground → {title}
+│       └── Right:
+│           └── Sign Out: variant="outline" gap-2
+│               LogOut h-4 w-4 + "Sign Out"
+└── main: container mx-auto px-4 py-8
+    └── {children}
+```
+
+---
+
+## 25. Icon Usage Map
+
+All icons from `lucide-react`. Every icon used in the app:
+
+| Icon | Size(s) | Context |
+|---|---|---|
+| `Sparkles` | `w-4 h-4`, `w-5 h-5`, `w-6 h-6`, `w-8 h-8` | Logo, celebrations admin, empty feed, submit page |
+| `CheckCircle` | `w-5 h-5`, `w-10 h-10` | Accepted KPI, chart icon, submit success |
+| `CheckCircle2` | `w-12 h-12` | Notion task celebration |
+| `DollarSign` | `w-7 h-7`, `w-8 h-8`, `w-12 h-12` | MRR KPI, cash collected, counter icon |
+| `Users` | `w-7 h-7`, `w-8 h-8` | Subscribers KPI |
+| `Activity` | `w-7 h-7`, `w-8 h-8` | Live users KPI |
+| `UserPlus` | `w-5 h-5`, `w-7 h-7` | Signups KPI, subscribers chart |
+| `Trophy` | `w-4 h-4`, `w-6 h-6` | Recent Wins header |
+| `Quote` | `h-5 w-5` | Quote of the Day |
+| `QrCode` | `w-3 h-3`, `w-5 h-5` | QR Code card |
+| `Smartphone` | `w-4 h-4` | QR Code full mode |
+| `Music` | `h-8 w-8`, `h-12 w-12` | Spotify card empty/fallback |
+| `RefreshCw` | `h-3 w-3`, `h-5 w-5` | Refresh button, loading states |
+| `Wifi` / `WifiOff` | `w-2.5 h-2.5`, `w-3.5 h-3.5`, `w-4 h-4` | Connection status indicators |
+| `Loader2` | `w-3.5 h-3.5` | Connecting spinner (with `animate-spin`) |
+| `Moon` | `h-3.5 w-3.5` | Dark theme button |
+| `Sun` | `h-3.5 w-3.5` | Light theme button |
+| `Zap` | `h-3.5 w-3.5`, `w-12 h-12` | Vibrant theme button, subscription counter |
+| `Palette` | `h-3.5 w-3.5` | helloDarwin theme button |
+| `Settings` | `h-4 w-4` | Admin dropdown trigger/items |
+| `Volume2` | `h-4 w-4` | Sound settings menu item |
+| `MonitorPlay` | `h-3.5 w-3.5` | Service Team dashboard selector |
+| `Code2` | `h-3.5 w-3.5` | Dev Team dashboard selector |
+| `Maximize` / `Minimize` | `h-4 w-4` | Fullscreen toggle |
+| `Camera` | `w-6 h-6` | Submit page take photo |
+| `Upload` | `w-6 h-6` | Submit page upload |
+| `Send` | `w-4 h-4` | Submit button |
+| `AlertTriangle` | `w-5 h-5`, `w-16 h-16` | IP warning, churn celebration |
+| `TrendingUp` | `w-4 h-4`, `w-12 h-12` | Chart subtitles, acceptation counter |
+| `TrendingDown` | imported but not directly rendered | Available for future use |
+| `FileText` | `w-12 h-12` | Application/signature counter icon |
+| `UtensilsCrossed` | `w-12 h-12` | Plat du jour celebration |
+| `ClipboardList` | `w-7 h-7` | Pace KPI card icon |
+| `Lightbulb` | `w-5 h-5` | Fun Facts card |
+| `MessageSquare` | `w-8 h-8`, `w-12 h-12` | Feed text-only posts |
+| `Hash` | `w-2.5 h-2.5`, `w-3 h-3` | Slack channel indicator in feed |
+| `User` | imported | Available |
+| `ArrowLeft` | `h-4 w-4` | Admin back button |
+| `LogOut` | `h-4 w-4` | Admin sign out |
+
+---
+
+## 26. Spacing Patterns
+
+### Global Spacing Rules
+
+| Context | Value | Tailwind |
+|---|---|---|
+| Dashboard outer padding | 12px | `p-3` |
+| Grid gaps | 12px | `gap-3` |
+| Card content (standard) | 24px | `p-6` |
+| Card content (compact) | 12-16px | `p-3` to `p-4` |
+| Card content (KPI full) | 32px | `p-8` |
+| Header padding | 16px horizontal, 8px vertical | `px-4 py-2` |
+| Button group gaps | 4-8px | `gap-1` to `gap-2` |
+| Button group container | 4px padding | `p-1` |
+| Header control gaps | 16px | `gap-4` |
+| Navigation dot gaps | 4px | `gap-1` |
+| Feed reaction gaps | 4px | `gap-1` |
+| Celebration content spacing | 24px | `space-y-6` |
+| Celebration dots gap | 12px | `gap-3` |
+| Form spacing | 16px | `space-y-4` |
+| Admin content | 16px horizontal, 32px vertical | `px-4 py-8` |
+
+---
+
+## 27. Typography Scale
+
+All weights use Inter. Key text sizes used:
+
+| Context | Size | Weight | Additional |
+|---|---|---|---|
+| Dashboard title (h1) | `text-lg` (18px) | `font-bold` (700) | `leading-tight` |
+| Dashboard subtitle | `text-xs` (12px) | normal (400) | `text-muted-foreground` |
+| KPI value (full) | `text-5xl` (48px) | `font-bold` (700) | — |
+| KPI value (compact) | `text-4xl` (36px) | `font-bold` (700) | — |
+| KPI title (full) | `text-2xl` (24px) | `font-semibold` (600) | `text-foreground/80` |
+| KPI title (compact) | `text-xl` (20px) | `font-semibold` (600) | `text-foreground/80` |
+| Card title | `text-2xl` (24px) | `font-semibold` (600) | `leading-none tracking-tight` |
+| Chart title | `text-lg` (18px) | `font-bold` (700) | — |
+| Chart subtitle | `text-sm` (14px) | normal | `text-muted-foreground` |
+| Quote text | `text-2xl` (24px) | `font-bold` (700) | `italic line-clamp-4 leading-tight` |
+| Quote author | `text-sm` (14px) | `font-medium` (500) | `text-muted-foreground` |
+| Feed text (full, text-only) | `text-2xl md:text-3xl lg:text-4xl` | `font-medium` (500) | `text-foreground leading-relaxed` |
+| Feed text (full, on image) | `text-lg` (18px) | `font-medium` (500) | `text-white drop-shadow-lg` |
+| Celebration title | `text-5xl md:text-6xl` (48-60px) | `font-black` (900) | `tracking-tight`, gradient text |
+| Celebration epic title | `text-7xl md:text-8xl` (72-96px) | `font-black` (900) | `tracking-tight`, gradient + glow |
+| Counter number | `text-6xl md:text-8xl lg:text-9xl` | `font-black` (900) | `text-white tabular-nums` |
+| Body button | `text-sm` (14px) | `font-medium` (500) | — |
+| Small labels | `text-xs` (12px) | `font-semibold` (600) | Often `uppercase tracking-wider` |
+| Tiny text | `text-[10px]` or `text-[9px]` | varies | Used for reaction counts, win dates |
+
+---
+
+## 28. State Management & Persistence
+
+### Zustand Stores
+
+| Store | File | Persisted? | Key |
+|---|---|---|---|
+| `useThemeStore` | `src/store/themeStore.ts` | Yes (`localStorage`) | `dashboard-theme` |
+| `useDashboardStore` | `src/store/dashboardStore.ts` | Yes (`localStorage`) | (dashboard type: service/dev) |
+| `useAppStore` | `src/store/appStore.ts` | No | Current event, celebration queue, connection status |
+
+### Theme Persistence
+
+On rehydration, the `onRehydrateStorage` callback applies `data-theme` attribute to `document.documentElement`.
+
+---
+
+## 29. Realtime & Connection Indicators
+
+### Supabase Realtime Channels
+
+| Channel | Table | Event | Purpose |
+|---|---|---|---|
+| `dashboard-feed-changes-{timestamp}` | `dashboard_feed` | INSERT | New feed posts |
+| `spotify-songs-realtime` | `slack_spotify_songs` | INSERT | New Spotify songs |
+| `pending-celebrations-{timestamp}` | `pending_celebrations` | INSERT | New celebration triggers |
+
+### Reconnection Strategy
+
+- Max attempts: 5
+- Backoff: Exponential (`2^attempt * 1000ms`)
+- Triggers reconnect on: `CHANNEL_ERROR`, `TIMED_OUT`
+- Resets attempts on: successful `SUBSCRIBED`
+- Also reconnects on: tab visibility change (`visibilitychange` event), auth token refresh
+
+### Periodic Refresh
+
+- Dashboard feed: every 30 seconds
+- Quote rotation check: every 60 seconds
+
+---
+
+## 30. Responsive & Fullscreen Behavior
+
+### Fullscreen
+
+The dashboard is designed for **TV/large screen display**. The fullscreen toggle uses the native `document.requestFullscreen()` API.
+
+### Viewport Assumptions
+
+- **Dashboard**: Fixed `h-screen` layout, no scrolling. Designed for 1920×1080 TV screens.
+- **Submit page**: Mobile-first, scrollable, centered card with `max-w-md`.
+- **Auth page**: Same mobile-first centered layout.
+- **Admin pages**: Standard responsive layout with `container mx-auto`.
+
+### No Mobile Breakpoints on Dashboard
+
+The dashboard grid (`grid-cols-12 grid-rows-4`) does **not** have responsive breakpoints — it's designed for a single large-screen layout. The KPI carousel shows `basis-1/4` slides regardless of screen width.
+
+### Mobile Considerations
+
+Only the Submit page uses mobile-specific features:
+- `capture="environment"` on camera input (opens rear camera on mobile)
+- Touch-friendly button sizes (`h-20` for camera/upload buttons)
+
+---
+
+## Appendix A: Color Quick Reference
+
+### Hard-coded Colors (non-token)
+
+These colors are used directly in components, not via CSS variables:
+
+| Color | Usage |
+|---|---|
+| `bg-green-500` / `text-green-500` | Connection "connected" dot, positive delta |
+| `bg-yellow-500` / `text-yellow-500` | Connection "connecting" dot |
+| `bg-red-500` / `text-red-500` | Live indicator, negative delta, connection "disconnected" |
+| `bg-red-400` / `text-red-400` | Churn celebration icon/title |
+| `bg-red-300` / `text-red-300` | Churn amount |
+| `text-red-950/95` | Churn overlay background |
+| `text-emerald-400` / `bg-emerald-500/20` | Celebration amount, notion icon, grant badge |
+| `text-cyan-400` / `bg-cyan-500/20` | Signature badge, project labels |
+| `text-blue-400` / `bg-blue-500/20` | Renewal badge, application counter icon |
+| `text-purple-300` / `text-purple-400` / `bg-purple-500/20` | Subscription company name, counter icon, PLG badge |
+| `text-amber-400` / `bg-amber-500/20` | PDM/PKG counter icon, company names |
+| `text-orange-400` / `bg-orange-500/20` | Plat du jour icon |
+| `text-yellow-300` / `text-yellow-400` / `bg-yellow-400` | Epic mode text, borders, glow |
+| `bg-green-100` / `text-green-700` | Trend badge (positive) — light mode aware with dark: variants |
+| `bg-red-100` / `text-red-700` | Trend badge (negative) — light mode aware |
+| `bg-gray-100` / `text-gray-600` | Trend badge (neutral) — light mode aware |
+| `text-white` / `bg-white` | Celebration text, QR code background |
+| `bg-black/95` / `bg-black/80` / `bg-black/20` | Celebration overlays, image overlays |
+
+### Rank Colors
+
+| Rank | Color |
+|---|---|
+| 1st (🥇) | `text-yellow-500` |
+| 2nd (🥈) | `text-slate-400` |
+| 3rd (🥉) | `text-amber-700` |
+
+---
+
+## Appendix B: Number Formatting
+
+| Format | Locale | Options | Example |
+|---|---|---|---|
+| Currency (full) | `fr-CA` | `style: "currency", currency: "CAD", min/maxFractionDigits: 0` | `1 500 $` |
+| Currency (abbreviated) | Custom | `$1.2M`, `$150K`, `$500` | — |
+| Non-currency | `fr-CA` | `toLocaleString()` | `1 234` |
+
+---
+
+## Appendix C: Sound System
+
+Celebrations trigger sounds via `playCelebrationSound(eventType, rawAmount)`. Sound settings are stored in the `celebration_sound_settings` database table and can be configured per event type with:
+- Base ringtone URL
+- High-amount ringtone URL (for amounts above threshold)
+- Amount threshold
+- Volume (0-1)
+- Enable/disable toggle
+- Dashboard type filter
+
+Churn events play a separate sound. Sound files are stored in Supabase Storage.
+
+---
+
+## Appendix D: File Structure
+
+```
+src/
+├── components/
+│   ├── Admin/
+│   │   ├── AdminLayout.tsx          # Admin page wrapper
+│   │   ├── EmployeeForm.tsx         # Employee CRUD form
+│   │   ├── EmployeeList.tsx         # Employee table
+│   │   ├── PhotoUpload.tsx          # Photo upload widget
+│   │   ├── AcceptationBracketSettings.tsx
+│   │   └── WebhookStatusPanel.tsx
+│   ├── Celebration/
+│   │   ├── CelebrationPopup.tsx     # Full celebration overlay (823 lines)
+│   │   ├── Confetti.tsx             # Confetti particle system
+│   │   └── AnimatedCounter.tsx      # Counting animation
+│   ├── Dashboard/
+│   │   ├── Header.tsx               # Top bar with controls
+│   │   ├── KPICard.tsx              # Basic KPI card
+│   │   ├── LeaderKPICard.tsx        # KPI with leaderboard
+│   │   ├── PaceKPICard.tsx          # KPI with progress bar
+│   │   ├── LiveKPICard.tsx          # Real-time animated KPI
+│   │   ├── DashboardFeed.tsx        # Social feed carousel
+│   │   ├── WeeklyAcceptedChart.tsx  # Bar chart (service)
+│   │   ├── WeeklySubscribersChart.tsx # Bar chart (dev)
+│   │   ├── QuoteOfTheDay.tsx        # Rotating quotes
+│   │   ├── QRCodeCard.tsx           # QR code for submit
+│   │   ├── SpotifySong.tsx          # Now playing card
+│   │   ├── RecentWins.tsx           # Auto-scrolling wins list
+│   │   ├── FunFacts.tsx             # AI-generated facts
+│   │   ├── StatsChart.tsx           # (alternative chart)
+│   │   └── TeamPhotosFeed.tsx       # (team photos)
+│   ├── Debug/
+│   │   └── ResetCelebrationButton.tsx
+│   ├── ui/                          # shadcn/ui components
+│   │   ├── card.tsx
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── badge.tsx
+│   │   ├── avatar.tsx
+│   │   ├── progress.tsx
+│   │   ├── tabs.tsx
+│   │   ├── chart.tsx
+│   │   └── ... (30+ components)
+│   └── NavLink.tsx
+├── pages/
+│   ├── Dashboard.tsx                # Main dashboard page
+│   ├── Submit.tsx                   # Mobile submission form
+│   ├── Auth.tsx                     # Login/signup
+│   ├── Index.tsx                    # Root redirect
+│   └── admin/
+│       ├── Employees.tsx
+│       ├── Celebrations.tsx
+│       └── SoundSettings.tsx
+├── store/
+│   ├── themeStore.ts                # Theme persistence
+│   ├── dashboardStore.ts            # Dashboard type persistence
+│   └── appStore.ts                  # Celebration state
+├── hooks/
+│   ├── useDashboardData.ts          # Service metrics
+│   ├── useDevDashboardData.ts       # Dev metrics
+│   ├── useRealtimeAnalytics.ts      # Google Analytics live
+│   ├── useEpicMode.ts              # Epic celebration mode
+│   └── useAuth.tsx                  # Auth state
+├── utils/
+│   ├── celebrationSounds.ts         # Sound playback
+│   ├── randomGif.ts                 # GIF selection
+│   └── ringtoneOptions.ts           # Sound presets
+├── index.css                        # Design tokens + animations
+└── App.tsx                          # Router setup
+```
+
+---
+
+*End of Design System Specification. This document represents the complete visual identity of the helloDarwin Celebration Dashboard as of February 2026.*

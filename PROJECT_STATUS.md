@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2025-02-26 (marketing design system — Cinematic Split)
+**Last updated:** 2026-03-01 (Lovable design system revamp)
 
 ## What's Built (Current Capabilities)
 
@@ -23,12 +23,12 @@
 
 ### TV Display (/display/[token])
 
-- Celebration overlay (queue, animations, sounds, T to test)
-- KPI cards (read from cached_value)
-- Feed carousel (from feed_items)
-- Recent Wins panel
-- KPI chart (hardcoded mock data)
-- QR code card (links to /submit/[orgId])
+- **Lovable design system**: Theme tokens (Dark/Light/Vibrant), gradients, shadows, Inter font, animations
+- Header: Logo (gradient-primary + Sparkles when no org logo), theme switcher, fullscreen, Replay, Refresh, connection status (green Live)
+- KPI carousel: Auto-rotates every 5s, pause on hover; gradient-primary/success/celebration icon variants; shadow-card
+- 12-column grid layout: Feed (col-span-4), Chart (col-span-5), Recent Wins (col-span-3), QR (col-span-3)
+- Celebration overlay: bg-black/95, gold gradient title, primary-bordered photos, GIF, bouncing dots
+- Confetti: 50 pieces, 8 HSL colors, 4 shapes
 - Feed submission page (`/submit/[orgId]`): mobile-first, no auth, photo/text modes, localStorage author name
 - Supabase Realtime for celebrations and feed_items
 - Auto-reconnect, visibility change handling
@@ -54,6 +54,7 @@
 - Pricing: PricingCards (3 plans), PricingComparison table, PricingFaq accordion
 - About: Story (4 paragraphs), Values (6 items), Location (lang switch); Blog scaffold with CTA
 - Middleware: i18n for marketing routes only; Supabase auth for `/app`, `/login`, `/signup` unchanged
+- **On-site SEO** (per `docs/seo-content-plan-website`): metadataBase, robots, sitemap.xml, robots.txt; canonical + hreflang on all marketing pages; JSON-LD schema (SoftwareApplication, Product, FAQPage, Organization) on home, features, pricing, about; Open Graph image generation; SEO-optimized metadata (title, description) EN/FR; H1/H2 hierarchy aligned with spec; pricing teaser section on homepage
 
 ### Static Website + Dual Vercel
 

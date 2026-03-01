@@ -99,3 +99,85 @@ export async function uploadTeamPhoto(
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
   return data.publicUrl
 }
+
+// --- Feed photos (QR submission) ---
+
+const FEED_PHOTOS_BUCKET = 'feed-photos'
+
+/**
+ * Upload a feed photo to Supabase Storage.
+ * Path: feed-photos/{orgId}/{timestamp}.{ext}
+ * Requires the feed-photos bucket to exist and be public.
+ */
+export async function uploadFeedPhoto(
+  file: File | Blob | { buffer: ArrayBuffer; name: string; type: string; size: number },
+  orgId: string
+): Promise<string> {
+  let buffer: ArrayBuffer
+  try {
+    buffer =
+      file instanceof Blob
+        ? await file.arrayBuffer()
+        : 'buffer' in file
+          ? (file as { buffer: ArrayBuffer }).buffer
+          : await (file as File).arrayBuffer()
+  } catch (e) {
+    console.error('Failed to read file:', e)
+    throw new UploadError('Could not read file. Try a smaller image.', 'UPLOAD_FAILED')
+  }
+  const type =
+    file instanceof Blob
+      ? file.type
+      : 'type' in file
+        ? (file as { type: string }).type
+        : (file as File).type
+  const size =
+    file instanceof Blob
+      ? file.size
+      : 'size' in file
+        ? (file as { size: number }).size
+        : (file as File).size
+
+  if (!ALLOWED_TYPES.includes(type)) {
+    throw new UploadError(
+      'Invalid file type. Use JPG, PNG, or WebP.',
+      'INVALID_TYPE'
+    )
+  }
+
+  if (size > MAX_SIZE_BYTES) {
+    throw new UploadError(
+      `File too large. Maximum size is ${MAX_SIZE_BYTES / 1024 / 1024}MB.`,
+      'TOO_LARGE'
+    )
+  }
+
+  const ext = EXT_MAP[type] ?? 'jpg'
+  const timestamp = Date.now()
+  const path = `${orgId}/${timestamp}.${ext}`
+
+  const supabase = createServiceClient()
+
+  await supabase.storage.createBucket(FEED_PHOTOS_BUCKET, {
+    public: true,
+    fileSizeLimit: '5MB',
+    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  }).catch(() => {})
+
+  const { error } = await supabase.storage.from(FEED_PHOTOS_BUCKET).upload(path, buffer, {
+    contentType: type,
+    upsert: false,
+  })
+
+  if (error) {
+    console.error('Storage upload error:', error)
+    const msg =
+      error.message?.includes('Bucket not found') || error.message?.includes('does not exist')
+        ? 'Storage bucket "feed-photos" not found. Create it in Supabase Dashboard → Storage.'
+        : error.message ?? 'Upload failed.'
+    throw new UploadError(msg, 'UPLOAD_FAILED')
+  }
+
+  const { data } = supabase.storage.from(FEED_PHOTOS_BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}

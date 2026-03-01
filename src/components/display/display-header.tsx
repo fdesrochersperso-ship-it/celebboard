@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Moon, Sun, Zap, Maximize, Minimize, RefreshCw, RotateCcw, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { Moon, Sun, Zap, Maximize, Minimize, RefreshCw, RotateCcw, Wifi, WifiOff, Loader2, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const THEMES = [
   { name: 'dark' as const, label: 'Dark', icon: Moon },
@@ -63,9 +64,9 @@ export function DisplayHeader({ orgName, orgLogoUrl, connectionStatus, onReplayL
   const statusDisplay = (() => {
     switch (connectionStatus) {
       case 'connected':
-        return { color: 'bg-emerald-500', label: 'Live', icon: Wifi, animate: true }
+        return { color: 'bg-green-500', label: 'Live', icon: Wifi, animate: true }
       case 'connecting':
-        return { color: 'bg-amber-500', label: 'Connecting...', icon: Loader2, animate: false }
+        return { color: 'bg-yellow-500', label: 'Connecting...', icon: Loader2, animate: false }
       default:
         return { color: 'bg-red-500', label: 'Disconnected', icon: WifiOff, animate: false }
     }
@@ -74,74 +75,69 @@ export function DisplayHeader({ orgName, orgLogoUrl, connectionStatus, onReplayL
   const StatusIcon = statusDisplay.icon
 
   return (
-    <header className="flex shrink-0 items-center justify-between gap-2 overflow-hidden border-b border-border px-4 py-2 bg-card/50 backdrop-blur">
+    <header className="flex shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border bg-card/50 px-4 py-2 backdrop-blur">
       <div className="flex min-w-0 items-center gap-3">
-        {orgLogoUrl && (
-          <img src={orgLogoUrl} alt="" className="size-9 shrink-0 object-contain" />
+        {orgLogoUrl ? (
+          <img src={orgLogoUrl} alt="" className="size-8 shrink-0 object-contain" />
+        ) : (
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg gradient-primary">
+            <Sparkles className="size-4 text-primary-foreground" />
+          </div>
         )}
         <div className="min-w-0">
-          <h1
-            className="truncate font-bold text-foreground leading-tight"
-            style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)' }}
-          >
-            {orgName}
-          </h1>
+          <h1 className="truncate text-lg font-bold leading-tight text-foreground">{orgName}</h1>
           <p className="text-xs text-muted-foreground">Celebration Dashboard</p>
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        <div className="flex items-center gap-0.5 rounded-lg bg-muted/50 p-0.5">
+      <div className="flex shrink-0 items-center gap-4">
+        <div className="flex items-center gap-1 rounded-lg bg-secondary/50 p-1">
           {THEMES.map(({ name, label, icon: Icon }) => (
-            <button
+            <Button
               key={name}
-              type="button"
+              variant={theme === name ? 'default' : 'ghost'}
+              size="sm"
+              className="gap-1.5 text-xs"
               onClick={() => applyTheme(name)}
-              className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                theme === name ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
             >
               <Icon className="size-3.5" />
               {label}
-            </button>
+            </Button>
           ))}
         </div>
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
           onClick={toggleFullscreen}
-          className="rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted"
           title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
         >
           {isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-        </button>
+        </Button>
         {onReplayLast && (
-          <button
-            type="button"
-            onClick={onReplayLast}
-            className="flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted"
-            title="Replay last celebration"
-          >
+          <Button variant="outline" size="sm" className="gap-2" onClick={onReplayLast} title="Replay last celebration">
             <RotateCcw className="size-3.5" />
             Replay Last
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
           onClick={() => window.location.reload()}
-          className="flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted"
           title="Refresh page"
         >
           <RefreshCw className="size-3.5" />
           Refresh
-        </button>
-        <div className="flex items-center gap-2 rounded-md bg-muted/30 px-2 py-1.5">
+        </Button>
+        <div className="flex items-center gap-2 rounded-md bg-secondary/30 px-2 py-1">
           <div
             className={`size-2 rounded-full ${statusDisplay.color} ${statusDisplay.animate ? 'animate-pulse' : ''}`}
           />
           <StatusIcon
             className={`size-3.5 text-muted-foreground ${connectionStatus === 'connecting' ? 'animate-spin' : ''}`}
           />
-          <span className="text-xs text-muted-foreground">{statusDisplay.label}</span>
+          <span className="text-sm text-muted-foreground">{statusDisplay.label}</span>
         </div>
       </div>
     </header>

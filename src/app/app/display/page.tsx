@@ -155,11 +155,22 @@ export default function DisplayPage() {
     }
   }
 
-  if (orgLoading || (!orgId && !orgLoading)) {
+  if (orgLoading) {
     return (
       <div>
         <h1 className="mb-2 text-2xl font-semibold">Display Settings</h1>
         <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
+  if (!orgId) {
+    return (
+      <div>
+        <h1 className="mb-2 text-2xl font-semibold">Display Settings</h1>
+        <p className="text-muted-foreground">
+          No organization found. You may need to create an organization or ensure you&apos;re in an org.
+        </p>
       </div>
     )
   }

@@ -1,24 +1,24 @@
 {
   "metadata": {
     "home": {
-      "title": "CelebBoard — Les victoires arrivent. Faites-les voir à votre équipe.",
-      "description": "CelebBoard est le moteur de célébration pour les équipes axées sur la performance. Connectez votre CRM, célébrez vos victoires sur les écrans du bureau avec des confettis, des sons, des photos d'équipe et des classements en direct. Prêt en quelques minutes."
+      "title": "CelebBoard — Logiciel de célébration d'équipe pour écrans de bureau",
+      "description": "Célébrez automatiquement les victoires de votre équipe sur vos écrans de bureau. Confettis, sons, photos d'équipe, classements en direct. Connectez HubSpot, Slack ou n'importe quel outil."
     },
     "features": {
-      "title": "Fonctionnalités — Tout ce que l'écran de votre équipe devrait être | CelebBoard",
-      "description": "Célébrations automatisées, classements en direct, indicateurs clés, photos d'équipe, flux de contenu et thèmes. CelebBoard transforme n'importe quel écran en moteur de célébration."
+      "title": "Fonctionnalités — Célébrations, classements, KPIs et plus | CelebBoard",
+      "description": "Célébrations automatisées avec confettis et sons, classements en temps réel, cartes KPI en direct, synchronisation des photos d'équipe, fil de contenu et thèmes personnalisés."
     },
     "pricing": {
-      "title": "Tarifs — Tarification simple. Célébrations illimitées. | CelebBoard",
-      "description": "Tarif fixe avec écrans illimités. Pas de frais par utilisateur. Pas de frais par écran. À partir de 49 $/mois pour un maximum de 15 membres."
+      "title": "Tarification — Forfaits simples, célébrations illimitées | CelebBoard",
+      "description": "Tarification forfaitaire à partir de 49 $/mois. Aucun frais par utilisateur. Écrans illimités sur chaque forfait. Essai gratuit de 14 jours."
     },
     "about": {
-      "title": "À propos — Conçu à Montréal pour les équipes du monde entier | CelebBoard",
-      "description": "CelebBoard est né d'un constat simple : les équipes qui célèbrent ensemble performent ensemble. Découvrez notre mission de rendre chaque victoire visible."
+      "title": "À propos de CelebBoard — Conçu à Montréal | CelebBoard",
+      "description": "CelebBoard est né d'une observation simple : les équipes qui voient leurs victoires ensemble gagnent plus ensemble. Conçu à Montréal."
     },
     "blog": {
-      "title": "Blogue — Réflexions sur la célébration et la motivation d'équipe | CelebBoard",
-      "description": "Articles sur la reconnaissance d'équipe, la culture de bureau, les tableaux de bord TV et comment bâtir un milieu de travail axé sur la célébration."
+      "title": "Blogue — Conseils et guides sur la célébration d'équipe | CelebBoard",
+      "description": "Articles sur la célébration d'équipe, la motivation des ventes, les écrans de bureau et la construction d'une culture de reconnaissance."
     },
     "terms": {
       "title": "Conditions d'utilisation | CelebBoard",
@@ -92,7 +92,7 @@
     },
 
     "problem": {
-      "title": "Le meilleur travail de votre équipe est invisible.",
+      "title": "Le problème dont personne ne parle",
       "subtitle": "En ce moment, les victoires passent inaperçues — sauf si quelqu'un pense à les afficher sur Slack. CelebBoard change la donne.",
       "before": {
         "label": "Avant CelebBoard",
@@ -117,7 +117,7 @@
     },
 
     "featuresGrid": {
-      "title": "Découvrez CelebBoard",
+      "title": "Tout ce que l'écran de votre équipe devrait être",
       "subtitle": "Trois promesses. Une seule plateforme.",
       "cards": [
         {
@@ -148,7 +148,7 @@
     },
 
     "howItWorks": {
-      "title": "Trois étapes. Cinq minutes. Des célébrations pour toujours.",
+      "title": "Comment CelebBoard fonctionne",
       "steps": [
         {
           "number": "1",
@@ -193,7 +193,7 @@
     },
 
     "verticals": {
-      "title": "Si votre équipe le mesure, CelebBoard le célèbre.",
+      "title": "Conçu pour toute équipe axée sur la performance",
       "subtitle": "Conçu pour toute équipe où la performance individuelle entraîne des résultats collectifs.",
       "cards": [
         {
@@ -219,8 +219,14 @@
       ]
     },
 
+    "pricingTeaser": {
+      "title": "Tarification simple. Célébrations illimitées.",
+      "subtitle": "Aucun frais par écran. Tarif forfaitaire à partir de 49 $/mois.",
+      "cta": "Voir les tarifs"
+    },
+
     "cta": {
-      "title": "La prochaine victoire de votre équipe n'attend que ça.",
+      "title": "La prochaine victoire de votre équipe vous attend.",
       "subtitle": "Commencez à célébrer en quelques minutes. Gratuit pendant 14 jours.",
       "cta": "Essayer gratuitement",
       "ctaSecondary": "Réserver une démo",
@@ -235,7 +241,7 @@
     },
 
     "celebrationEngine": {
-      "title": "Le moteur de célébration",
+      "title": "Célébrations automatisées",
       "subtitle": "Votre équipe conclut une vente à 15 h 47. À 15 h 47, chaque écran du bureau explose de confettis, avec la photo de la personne et les détails de la vente. Personne ne l'a publié. Personne ne l'a programmé. C'est juste arrivé.",
       "features": [
         {
@@ -507,7 +513,7 @@
 
   "about": {
     "hero": {
-      "title": "On croit que chaque victoire — grande ou petite — mérite d'être vue.",
+      "title": "Nous croyons que chaque victoire mérite d'être vue.",
       "subtitle": "CelebBoard existe parce qu'on a vu ce qui se passe quand le travail d'une équipe devient visible. L'énergie monte. L'élan se construit. Les gens poussent plus fort — pas parce qu'ils le doivent, mais parce qu'ils le veulent."
     },
 

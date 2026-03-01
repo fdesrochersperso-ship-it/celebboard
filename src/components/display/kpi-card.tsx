@@ -10,12 +10,7 @@ import {
 } from 'lucide-react'
 import { AnimatedCounter } from './animated-counter'
 
-const GRADIENT_COLORS = [
-  'from-violet-500 to-indigo-600',
-  'from-emerald-500 to-teal-600',
-  'from-cyan-500 to-blue-600',
-  'from-amber-500 to-orange-500',
-]
+const GRADIENT_VARIANTS = ['gradient-primary', 'gradient-success', 'gradient-celebration', 'gradient-primary'] as const
 
 function getIconForLabel(label: string): LucideIcon {
   const lower = label.toLowerCase()
@@ -69,7 +64,7 @@ export function KpiCard({ kpi, variantIndex = 0 }: Props) {
 
   const isLive = (kpi.refresh_seconds ?? 300) < 60
   const Icon = getIconForLabel(kpi.label)
-  const gradient = GRADIENT_COLORS[variantIndex % GRADIENT_COLORS.length] ?? GRADIENT_COLORS[0]
+  const gradientClass = GRADIENT_VARIANTS[variantIndex % GRADIENT_VARIANTS.length] ?? 'gradient-primary'
 
   useEffect(() => {
     if (kpi.value != null && prevValue.current !== kpi.value) {
@@ -83,16 +78,16 @@ export function KpiCard({ kpi, variantIndex = 0 }: Props) {
   return (
     <div
       className={`
-        relative overflow-hidden rounded-lg border border-border bg-card shadow-sm
-        p-4 transition-all duration-300
+        relative h-full overflow-hidden rounded-lg border border-border bg-card shadow-card transition-smooth
+        p-6
         ${pulse ? 'animate-kpi-pulse ring-2 ring-primary/50' : ''}
       `}
     >
-      <div className="mb-3 flex items-start justify-between">
+      <div className="mb-4 flex items-start justify-between">
         <div
-          className={`flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg`}
+          className={`flex size-14 items-center justify-center rounded-xl ${gradientClass} text-primary-foreground`}
         >
-          <Icon className="size-6" />
+          <Icon className="size-7" />
         </div>
         <div className="flex items-center gap-2">
           {isLive && (
@@ -106,11 +101,8 @@ export function KpiCard({ kpi, variantIndex = 0 }: Props) {
           )}
         </div>
       </div>
-      <p className="mb-1 text-sm font-semibold text-muted-foreground">{kpi.label}</p>
-      <p
-        className="font-bold text-foreground tabular-nums"
-        style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)' }}
-      >
+      <p className="mb-2 text-xl font-semibold text-foreground/80">{kpi.label}</p>
+      <p className="text-4xl font-bold tabular-nums text-foreground">
         {kpi.format === 'currency' && kpi.value != null ? (
           <AnimatedCounter
             value={kpi.value}

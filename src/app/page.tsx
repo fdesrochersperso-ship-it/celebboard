@@ -1,37 +1,79 @@
-import Link from 'next/link'
+import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { routing } from "@/i18n/routing";
+import { Navbar } from "@/components/marketing/navbar";
+import { Footer } from "@/components/marketing/footer";
+import { Hero } from "@/components/marketing/sections/hero";
+import { LogoBar } from "@/components/marketing/sections/logo-bar";
+import { Problem } from "@/components/marketing/sections/problem";
+import { HowItWorks } from "@/components/marketing/sections/how-it-works";
+import { Testimonials } from "@/components/marketing/sections/testimonials";
+import { Cta } from "@/components/marketing/sections/cta";
 
-export default function Home() {
+const homeSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "CelebBoard",
+  applicationCategory: "BusinessApplication",
+  description:
+    "Team celebration software that automatically displays wins on office TVs with confetti, sounds, team photos, and live leaderboards.",
+  operatingSystem: "Web browser",
+  offers: {
+    "@type": "AggregateOffer",
+    priceCurrency: "USD",
+    lowPrice: "49",
+    highPrice: "149",
+    offerCount: "2",
+  },
+  author: {
+    "@type": "Organization",
+    name: "CelebBoard",
+    url: "https://celebboard.com",
+    foundingLocation: {
+      "@type": "Place",
+      name: "Montreal, Quebec, Canada",
+    },
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({
+    locale: routing.defaultLocale,
+    namespace: "metadata.home",
+  });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: {
+      canonical: "/",
+      languages: { en: "/", fr: "/fr" },
+    },
+  };
+}
+
+export default async function RootPage() {
+  const locale = routing.defaultLocale;
+  const messages = await getMessages({ locale });
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
-      <main className="flex max-w-md flex-col items-center gap-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">CelebBoard</h1>
-        <p className="text-lg text-muted-foreground">
-          Celebration dashboard for sales teams. Display KPIs, feed, and wins on your office TV.
-        </p>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <Link
-            href="/app"
-            className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90"
-          >
-            Open App
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-full border border-border px-6 py-3 font-medium transition-colors hover:bg-muted"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-full border border-border px-6 py-3 font-medium transition-colors hover:bg-muted"
-          >
-            Sign Up
-          </Link>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Display page: /display/[token] — get your token from App → Display Settings
-        </p>
-      </main>
-    </div>
-  )
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchema) }}
+      />
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1">
+          <Hero />
+          <LogoBar />
+          <Problem />
+          <HowItWorks />
+          <Testimonials />
+          <Cta />
+        </main>
+        <Footer />
+      </div>
+    </NextIntlClientProvider>
+  );
 }

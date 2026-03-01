@@ -36,7 +36,7 @@ export function Confetti({ isClosing }: Props) {
   useEffect(() => {
     const shapes: Shape[] = ['circle', 'square', 'triangle', 'star']
     const newPieces: Piece[] = []
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 50; i++) {
       newPieces.push({
         id: i,
         left: Math.random() * 100,

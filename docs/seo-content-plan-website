@@ -1,0 +1,1554 @@
+# CelebBoard — Content Plan, On-Page SEO Spec & Cursor Implementation Guide
+
+> This document contains everything needed to:
+> 1. Build blog infrastructure in the Next.js codebase
+> 2. Implement on-page SEO across all static marketing pages
+> 3. Create 18 blog articles + 7 comparison pages over 4 months
+> 4. Add all required translation keys (EN/FR)
+>
+> **For Cursor**: Reference `@MARKETING-ARCHITECTURE.md` and `@.cursorrules` alongside this document.
+
+---
+
+## Table of Contents
+
+1. [Blog Infrastructure Setup](#1-blog-infrastructure-setup)
+2. [Global SEO Configuration](#2-global-seo-configuration)
+3. [Static Page SEO Specs](#3-static-page-seo-specs)
+4. [Comparison Pages Plan & SEO](#4-comparison-pages-plan--seo)
+5. [Blog Content Plan — 18 Articles](#5-blog-content-plan--18-articles)
+6. [Blog Article SEO Template](#6-blog-article-seo-template)
+7. [Translation Keys (EN/FR)](#7-translation-keys-enfr)
+8. [Schema Markup Specs](#8-schema-markup-specs)
+9. [Internal Linking Map](#9-internal-linking-map)
+10. [Implementation Sequence for Cursor](#10-implementation-sequence-for-cursor)
+
+---
+
+## 1. Blog Infrastructure Setup
+
+The blog does NOT exist yet — only a scaffold `blog/page.tsx`. Build a lightweight MDX-based blog system using local content files (no CMS needed for v1).
+
+### Approach: MDX + Content Collections
+
+Use `next-mdx-remote` for rendering MDX content stored as local `.mdx` files. This keeps things simple, fast, and fully bilingual.
+
+### Dependencies to Install
+
+```bash
+pnpm add next-mdx-remote gray-matter reading-time
+```
+
+### File Structure
+
+```
+src/
+├── app/[locale]/(marketing)/
+│   ├── blog/
+│   │   ├── page.tsx                    # Blog index (lists all articles)
+│   │   └── [slug]/
+│   │       └── page.tsx                # Individual article page
+│   └── vs/
+│       └── [competitor]/
+│           └── page.tsx                # Comparison page (dynamic)
+│
+├── content/
+│   ├── blog/
+│   │   ├── en/                         # English articles
+│   │   │   ├── what-is-team-celebration-software.mdx
+│   │   │   ├── celebrate-sales-wins-without-gamification.mdx
+│   │   │   └── ...
+│   │   └── fr/                         # French articles
+│   │       ├── logiciel-celebration-equipe.mdx
+│   │       ├── celebrer-ventes-sans-gamification.mdx
+│   │       └── ...
+│   └── vs/
+│       ├── en/
+│       │   ├── geckoboard.mdx
+│       │   ├── salesscreen.mdx
+│       │   └── ...
+│       └── fr/
+│           ├── geckoboard.mdx
+│           ├── salesscreen.mdx
+│           └── ...
+│
+└── lib/
+    └── content.ts                      # Content loading utilities
+```
+
+### Content Loading Utility — `src/lib/content.ts`
+
+```typescript
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import readingTime from "reading-time";
+
+const contentDir = path.join(process.cwd(), "src/content");
+
+export interface ArticleMeta {
+  slug: string;
+  title: string;
+  description: string;
+  publishedAt: string;
+  updatedAt?: string;
+  author: string;
+  category: string;
+  tags: string[];
+  featuredImage?: string;
+  featuredImageAlt?: string;
+  readingTime: string;
+  // SEO
+  seoTitle?: string;       // Override for <title> tag if different from title
+  seoDescription?: string; // Override for meta description
+  canonicalUrl?: string;
+  noindex?: boolean;
+}
+
+export interface Article {
+  meta: ArticleMeta;
+  content: string;
+}
+
+export function getArticles(locale: string): ArticleMeta[] {
+  const dir = path.join(contentDir, "blog", locale);
+  if (!fs.existsSync(dir)) return [];
+
+  return fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".mdx"))
+    .map((file) => {
+      const raw = fs.readFileSync(path.join(dir, file), "utf-8");
+      const { data, content } = matter(raw);
+      const stats = readingTime(content);
+      return {
+        slug: file.replace(".mdx", ""),
+        readingTime: stats.text,
+        ...data,
+      } as ArticleMeta;
+    })
+    .filter((a) => !a.noindex)
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+}
+
+export function getArticle(locale: string, slug: string): Article | null {
+  const filePath = path.join(contentDir, "blog", locale, `${slug}.mdx`);
+  if (!fs.existsSync(filePath)) return null;
+
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(raw);
+  const stats = readingTime(content);
+
+  return {
+    meta: {
+      slug,
+      readingTime: stats.text,
+      ...data,
+    } as ArticleMeta,
+    content,
+  };
+}
+
+export function getComparisonPage(locale: string, competitor: string): Article | null {
+  const filePath = path.join(contentDir, "vs", locale, `${competitor}.mdx`);
+  if (!fs.existsSync(filePath)) return null;
+
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(raw);
+  const stats = readingTime(content);
+
+  return {
+    meta: {
+      slug: competitor,
+      readingTime: stats.text,
+      ...data,
+    } as ArticleMeta,
+    content,
+  };
+}
+
+export function getComparisonSlugs(locale: string): string[] {
+  const dir = path.join(contentDir, "vs", locale);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".mdx"))
+    .map((f) => f.replace(".mdx", ""));
+}
+```
+
+### Blog Index Page — `src/app/[locale]/(marketing)/blog/page.tsx`
+
+```tsx
+import { getArticles } from "@/lib/content";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import type { Metadata } from "next";
+
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "blog" });
+  return {
+    title: t("meta.title"),
+    description: t("meta.description"),
+    alternates: {
+      canonical: locale === "en" ? "/blog" : "/fr/blog",
+      languages: { en: "/blog", fr: "/fr/blog" },
+    },
+  };
+}
+
+export default async function BlogIndex({ params }: Props) {
+  const { locale } = await params;
+  const articles = getArticles(locale);
+  const t = await getTranslations({ locale, namespace: "blog" });
+
+  return (
+    <section className="max-w-4xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold mb-4">{t("title")}</h1>
+      <p className="text-lg text-muted-foreground mb-12">{t("subtitle")}</p>
+
+      <div className="grid gap-8">
+        {articles.map((article) => (
+          <article key={article.slug} className="border-b pb-8">
+            <Link href={`/blog/${article.slug}`}>
+              <h2 className="text-2xl font-semibold hover:text-primary transition-colors">
+                {article.title}
+              </h2>
+            </Link>
+            <p className="text-muted-foreground mt-2">{article.description}</p>
+            <div className="flex gap-4 mt-3 text-sm text-muted-foreground">
+              <span>{article.publishedAt}</span>
+              <span>·</span>
+              <span>{article.readingTime}</span>
+              <span>·</span>
+              <span className="capitalize">{article.category}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+```
+
+### Blog Article Page — `src/app/[locale]/(marketing)/blog/[slug]/page.tsx`
+
+```tsx
+import { getArticle, getArticles } from "@/lib/content";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+interface Props {
+  params: Promise<{ locale: string; slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const enArticles = getArticles("en");
+  const frArticles = getArticles("fr");
+  return [
+    ...enArticles.map((a) => ({ locale: "en", slug: a.slug })),
+    ...frArticles.map((a) => ({ locale: "fr", slug: a.slug })),
+  ];
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const article = getArticle(locale, slug);
+  if (!article) return {};
+
+  const { meta } = article;
+  const title = meta.seoTitle || meta.title;
+  const description = meta.seoDescription || meta.description;
+  const url = locale === "en" ? `/blog/${slug}` : `/fr/blog/${slug}`;
+
+  return {
+    title: `${title} | CelebBoard`,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: `/blog/${slug}`,
+        fr: `/fr/blog/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      publishedTime: meta.publishedAt,
+      modifiedTime: meta.updatedAt,
+      authors: [meta.author],
+      images: meta.featuredImage ? [{ url: meta.featuredImage, alt: meta.featuredImageAlt }] : [],
+    },
+  };
+}
+
+export default async function BlogArticle({ params }: Props) {
+  const { locale, slug } = await params;
+  const article = getArticle(locale, slug);
+  if (!article) notFound();
+
+  const { meta, content } = article;
+
+  // JSON-LD structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: meta.title,
+    description: meta.description,
+    datePublished: meta.publishedAt,
+    dateModified: meta.updatedAt || meta.publishedAt,
+    author: { "@type": "Organization", name: "CelebBoard" },
+    publisher: {
+      "@type": "Organization",
+      name: "CelebBoard",
+      logo: { "@type": "ImageObject", url: "https://celebboard.com/logo.png" },
+    },
+    image: meta.featuredImage,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://celebboard.com/blog/${slug}`,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <article className="max-w-3xl mx-auto px-4 py-16">
+        <header className="mb-10">
+          <h1 className="text-4xl font-bold mb-4">{meta.title}</h1>
+          <p className="text-lg text-muted-foreground mb-4">{meta.description}</p>
+          <div className="flex gap-4 text-sm text-muted-foreground">
+            <time dateTime={meta.publishedAt}>{meta.publishedAt}</time>
+            <span>·</span>
+            <span>{meta.readingTime}</span>
+          </div>
+        </header>
+        <div className="prose prose-lg dark:prose-invert max-w-none">
+          <MDXRemote source={content} />
+        </div>
+      </article>
+    </>
+  );
+}
+```
+
+### Comparison Page — `src/app/[locale]/(marketing)/vs/[competitor]/page.tsx`
+
+Same pattern as blog articles, but loads from `src/content/vs/` and uses comparison-specific layout with a feature comparison table component, pricing comparison, and stronger CTAs.
+
+---
+
+## 2. Global SEO Configuration
+
+### Root Layout SEO — `src/app/[locale]/layout.tsx`
+
+Add these to the root marketing layout:
+
+```tsx
+export const metadata: Metadata = {
+  metadataBase: new URL("https://celebboard.com"),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+};
+```
+
+### Sitemap — `src/app/sitemap.ts`
+
+```typescript
+import { getArticles } from "@/lib/content";
+import { getComparisonSlugs } from "@/lib/content";
+import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = "https://celebboard.com";
+
+  // Static pages
+  const staticPages = [
+    { url: "", priority: 1.0, changeFrequency: "weekly" as const },
+    { url: "/features", priority: 0.9, changeFrequency: "monthly" as const },
+    { url: "/pricing", priority: 0.9, changeFrequency: "monthly" as const },
+    { url: "/about", priority: 0.7, changeFrequency: "monthly" as const },
+    { url: "/blog", priority: 0.8, changeFrequency: "weekly" as const },
+  ];
+
+  // Blog articles (both locales)
+  const enArticles = getArticles("en").map((a) => ({
+    url: `/blog/${a.slug}`,
+    lastModified: a.updatedAt || a.publishedAt,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+  const frArticles = getArticles("fr").map((a) => ({
+    url: `/fr/blog/${a.slug}`,
+    lastModified: a.updatedAt || a.publishedAt,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  // Comparison pages
+  const enComparisons = getComparisonSlugs("en").map((slug) => ({
+    url: `/vs/${slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+  const frComparisons = getComparisonSlugs("fr").map((slug) => ({
+    url: `/fr/vs/${slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  // Build full sitemap with both locales for static pages
+  const allStatic = staticPages.flatMap((page) => [
+    { ...page, url: `${baseUrl}${page.url}` },
+    { ...page, url: `${baseUrl}/fr${page.url}` },
+  ]);
+
+  return [
+    ...allStatic,
+    ...enArticles.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
+    ...frArticles.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
+    ...enComparisons.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
+    ...frComparisons.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
+  ];
+}
+```
+
+### robots.txt — `src/app/robots.ts`
+
+```typescript
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/app/", "/api/", "/display/", "/submit/", "/invite/"],
+      },
+    ],
+    sitemap: "https://celebboard.com/sitemap.xml",
+  };
+}
+```
+
+### hreflang Tags
+
+Every page.tsx `generateMetadata` must include `alternates.languages`:
+
+```tsx
+alternates: {
+  canonical: locale === "en" ? "/pricing" : "/fr/pricing",
+  languages: {
+    en: "/pricing",
+    fr: "/fr/pricing",
+  },
+},
+```
+
+### Open Graph Image Defaults
+
+Create `src/app/[locale]/(marketing)/opengraph-image.tsx` using Next.js OG image generation, or provide a static `public/og-default.png` (1200×630px) and reference in layout metadata:
+
+```tsx
+openGraph: {
+  images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "CelebBoard" }],
+  siteName: "CelebBoard",
+  type: "website",
+},
+twitter: {
+  card: "summary_large_image",
+  images: ["/og-default.png"],
+},
+```
+
+---
+
+## 3. Static Page SEO Specs
+
+### Homepage (`/`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard — Team Celebration Software for Office TVs | CelebBoard — Logiciel de célébration d'équipe pour écrans de bureau |
+| Meta description | Automatically celebrate team wins on your office TV. Confetti, sounds, team photos, live leaderboards. Connect HubSpot, Slack, or any tool. Set up in 10 minutes. | Célébrez automatiquement les victoires de votre équipe sur vos écrans de bureau. Confettis, sons, photos d'équipe, classements en direct. Connectez HubSpot, Slack ou n'importe quel outil. |
+| H1 | Wins happen. Make sure your team sees them. | Les victoires arrivent. Assurez-vous que votre équipe les voit. |
+| Canonical | `https://celebboard.com/` | `https://celebboard.com/fr` |
+| OG type | `website` | `website` |
+| Schema | `SoftwareApplication` + `Organization` | Same |
+
+**H2 hierarchy:**
+1. The problem no one talks about / Le problème dont personne ne parle
+2. How CelebBoard works / Comment CelebBoard fonctionne
+3. Built for any activity-driven team / Conçu pour toute équipe axée sur la performance
+4. Everything your team screen should be / Tout ce que l'écran de votre équipe devrait être
+5. Simple pricing. Unlimited celebrations. / Tarification simple. Célébrations illimitées.
+6. Your team's next win is waiting. / La prochaine victoire de votre équipe vous attend.
+
+---
+
+### Features Page (`/features`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | Features — Celebrations, Leaderboards, KPIs & More \| CelebBoard | Fonctionnalités — Célébrations, classements, KPIs et plus \| CelebBoard |
+| Meta description | Automated celebrations with confetti and sounds, real-time leaderboards, live KPI cards, team photo sync, content feed, and custom themes. Everything your office TV needs. | Célébrations automatisées avec confettis et sons, classements en temps réel, cartes KPI en direct, synchronisation des photos d'équipe, fil de contenu et thèmes personnalisés. |
+| H1 | Everything your team screen should be. | Tout ce que l'écran de votre équipe devrait être. |
+| Canonical | `https://celebboard.com/features` | `https://celebboard.com/fr/features` |
+| Schema | `SoftwareApplication` with `featureList` | Same |
+
+**H2 sections:**
+1. Automated celebrations / Célébrations automatisées
+2. Live leaderboards / Classements en direct
+3. KPI cards / Cartes KPI
+4. Team photos / Photos d'équipe
+5. Feed & content rotation / Fil de contenu et rotation
+6. Themes & customization / Thèmes et personnalisation
+7. Works on any screen / Fonctionne sur n'importe quel écran
+8. Integrations / Intégrations
+
+---
+
+### Pricing Page (`/pricing`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | Pricing — Simple Plans, Unlimited Celebrations \| CelebBoard | Tarification — Forfaits simples, célébrations illimitées \| CelebBoard |
+| Meta description | Flat-rate pricing from $49/mo. No per-user fees. Unlimited TVs on every plan. Compare vs SalesScreen, Spinify, and Geckoboard. 14-day free trial. | Tarification forfaitaire à partir de 49 $/mois. Aucun frais par utilisateur. Écrans illimités sur chaque forfait. Essai gratuit de 14 jours. |
+| H1 | Simple pricing. Unlimited celebrations. | Tarification simple. Célébrations illimitées. |
+| Canonical | `https://celebboard.com/pricing` | `https://celebboard.com/fr/pricing` |
+| Schema | `Product` with `Offer` for each tier + `FAQPage` | Same |
+
+**H2 sections:**
+1. Choose your plan / Choisissez votre forfait
+2. How CelebBoard compares / Comment CelebBoard se compare
+3. Frequently asked questions / Questions fréquentes
+
+**FAQ schema items (minimum 8):**
+- Can I really put this on as many TVs as I want?
+- What counts as a "tracked member"?
+- Do you offer annual billing?
+- What if we outgrow our plan?
+- What integrations are included?
+- Is there a free trial?
+- Can I cancel anytime?
+- How is this different from gamification software?
+
+---
+
+### About Page (`/about`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | About CelebBoard — Built in Montreal \| CelebBoard | À propos de CelebBoard — Conçu à Montréal \| CelebBoard |
+| Meta description | CelebBoard was born from a simple observation: teams that see their wins together, win more together. Built in Montreal. | CelebBoard est né d'une observation simple : les équipes qui voient leurs victoires ensemble gagnent plus ensemble. Conçu à Montréal. |
+| H1 | We believe every win deserves to be seen. | Nous croyons que chaque victoire mérite d'être vue. |
+| Canonical | `https://celebboard.com/about` | `https://celebboard.com/fr/about` |
+| Schema | `Organization` with `founder`, `foundingLocation` | Same |
+
+---
+
+### Blog Index (`/blog`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | Blog — Team Celebration Insights & Guides \| CelebBoard | Blogue — Conseils et guides sur la célébration d'équipe \| CelebBoard |
+| Meta description | Articles on team celebration, sales motivation, office TV displays, and building a culture of recognition. Guides, comparisons, and best practices. | Articles sur la célébration d'équipe, la motivation des ventes, les écrans de bureau et la construction d'une culture de reconnaissance. |
+| H1 | CelebBoard Blog | Blogue CelebBoard |
+| Canonical | `https://celebboard.com/blog` | `https://celebboard.com/fr/blog` |
+
+---
+
+## 4. Comparison Pages Plan & SEO
+
+### 7 Comparison Pages
+
+Each comparison page lives at `/vs/[competitor]` and follows a consistent structure.
+
+#### Page Structure (all 7 pages):
+1. Hero with H1 headline + positioning tagline
+2. Quick comparison table (features + pricing side-by-side)
+3. "What [Competitor] does well" (genuine, builds credibility)
+4. "Where [Competitor] falls short for celebration" (specific gaps)
+5. "How CelebBoard is different" (feature walkthrough)
+6. Pricing comparison (always favorable for CelebBoard)
+7. "Who should choose [Competitor]" (fair — builds trust)
+8. "Who should choose CelebBoard" (the celebration buyer)
+9. FAQ section (4-6 comparison-specific questions)
+10. CTA: "Try CelebBoard free for 14 days"
+
+---
+
+### VS-1: CelebBoard vs Geckoboard (`/vs/geckoboard`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Geckoboard — Data vs Energy \| CelebBoard | CelebBoard vs Geckoboard — Données vs énergie \| CelebBoard |
+| Meta description | Geckoboard shows beautiful data. CelebBoard makes people care. Compare TV dashboard features, celebrations, pricing, and integrations. | Geckoboard affiche de belles données. CelebBoard fait en sorte que les gens s'y intéressent. Comparez les fonctionnalités, célébrations et tarification. |
+| H1 | Your dashboard shows the numbers. CelebBoard brings them to life. | Votre tableau de bord affiche les chiffres. CelebBoard leur donne vie. |
+| Target keywords | Geckoboard alternative, Geckoboard with celebrations, TV dashboard alternative |
+| Schema | `FAQPage` |
+| Priority | 🔴 Month 1 |
+
+**Key angles:**
+- Geckoboard = zero celebration features, zero sounds, zero team photos
+- Geckoboard charges $25/TV add-on; CelebBoard = unlimited TVs
+- CelebBoard adds the emotional/motivational layer Geckoboard completely lacks
+- Fair: Geckoboard is excellent for pure data visualization with 90+ integrations
+
+---
+
+### VS-2: CelebBoard vs SalesScreen (`/vs/salesscreen`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs SalesScreen — Celebration Without Complexity \| CelebBoard | CelebBoard vs SalesScreen — Célébration sans complexité \| CelebBoard |
+| Meta description | SalesScreen is a full gamification suite at $25-45/user. CelebBoard delivers the best part — celebrations — at flat-rate pricing. Compare features and pricing. | SalesScreen est une suite de gamification complète à 25-45 $/utilisateur. CelebBoard offre le meilleur — les célébrations — à tarif forfaitaire. |
+| H1 | All the celebration energy. None of the gamification complexity. | Toute l'énergie de la célébration. Aucune complexité de gamification. |
+| Target keywords | SalesScreen alternative, simpler SalesScreen, sales celebration without gamification |
+| Priority | 🔴 Month 2 |
+
+**Key angles:**
+- SalesScreen = 12+ competition types, XP systems, reward shops, coaching modules
+- 20-person team: SalesScreen ~$700/mo vs CelebBoard $149/mo
+- CelebBoard delivers the best part of SalesScreen (celebrations) without months of setup
+- Fair: SalesScreen is excellent for teams that want deep competition mechanics and coaching
+
+---
+
+### VS-3: CelebBoard vs Spinify (`/vs/spinify`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Spinify — Do You Need 20 Game Mechanics? \| CelebBoard | CelebBoard vs Spinify — Avez-vous besoin de 20 mécaniques de jeu? \| CelebBoard |
+| Meta description | Spinify offers 250+ leaderboard designs and AI coaching. CelebBoard offers instant celebrations on your office TV. Compare pricing and features. | Spinify offre plus de 250 designs de classement et du coaching IA. CelebBoard offre des célébrations instantanées sur votre écran de bureau. |
+| H1 | Your team doesn't need 20 game mechanics. They need to feel the win. | Votre équipe n'a pas besoin de 20 mécaniques de jeu. Elle a besoin de ressentir la victoire. |
+| Target keywords | Spinify alternative, simple Spinify alternative, celebration without gamification |
+| Priority | 🟡 Month 3 |
+
+---
+
+### VS-4: CelebBoard vs Hoopla (`/vs/hoopla`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Hoopla — The TV Celebration Platform for 2026 \| CelebBoard | CelebBoard vs Hoopla — La plateforme de célébration TV pour 2026 \| CelebBoard |
+| Meta description | Hoopla was acquired by Raydiant and is no longer standalone. CelebBoard is the TV-first celebration platform Hoopla users have been searching for. | Hoopla a été acquis par Raydiant et n'est plus disponible seul. CelebBoard est la plateforme de célébration TV que les utilisateurs de Hoopla cherchent. |
+| H1 | The TV celebration platform Hoopla users have been searching for. | La plateforme de célébration TV que les utilisateurs de Hoopla cherchent. |
+| Target keywords | Hoopla alternative, Hoopla replacement 2026, Hoopla alternative for sales |
+| Priority | 🔴 Month 1 |
+
+---
+
+### VS-5: CelebBoard vs Plecto (`/vs/plecto`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Plecto — Team Energy vs Dashboard Analytics \| CelebBoard | CelebBoard vs Plecto — Énergie d'équipe vs analytique de tableau de bord \| CelebBoard |
+| Meta description | Plecto starts at $200/mo for 10 users with analytics-first dashboards. CelebBoard starts at $49/mo with celebration-first TV displays. Compare the two. | Plecto commence à 200 $/mois pour 10 utilisateurs. CelebBoard commence à 49 $/mois avec des affichages TV centrés sur la célébration. |
+| H1 | A dashboard your team will actually look up from their desk to watch. | Un tableau de bord que votre équipe voudra réellement regarder. |
+| Target keywords | Plecto alternative, Plecto simpler alternative |
+| Priority | 🟡 Month 4 |
+
+---
+
+### VS-6: CelebBoard vs Fugo (`/vs/fugo`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Fugo — Celebration Engine vs Digital Signage \| CelebBoard | CelebBoard vs Fugo — Moteur de célébration vs affichage numérique \| CelebBoard |
+| Meta description | Fugo is a general-purpose digital signage platform. CelebBoard is purpose-built for team celebrations with deep CRM integration. Compare features. | Fugo est une plateforme d'affichage numérique générale. CelebBoard est conçu spécifiquement pour les célébrations d'équipe avec intégration CRM approfondie. |
+| H1 | Purpose-built for celebrations, not general signage. | Conçu pour les célébrations, pas pour l'affichage général. |
+| Target keywords | Fugo alternative for sales, Fugo celebration alternative |
+| Priority | 🟡 Month 5 |
+
+---
+
+### VS-7: CelebBoard vs Ambition (`/vs/ambition`)
+
+| Field | EN | FR |
+|---|---|---|
+| `<title>` | CelebBoard vs Ambition — Instant Celebrations at a Fraction of the Price \| CelebBoard | CelebBoard vs Ambition — Célébrations instantanées à une fraction du prix \| CelebBoard |
+| Meta description | Ambition charges $40-100/user with opaque enterprise pricing and delayed "Anthems." CelebBoard delivers instant celebrations from $49/mo flat. | Ambition facture 40-100 $/utilisateur avec une tarification opaque. CelebBoard offre des célébrations instantanées à partir de 49 $/mois forfaitaire. |
+| H1 | Enterprise features. Startup simplicity. A fraction of the price. | Fonctionnalités entreprise. Simplicité de startup. Une fraction du prix. |
+| Target keywords | Ambition alternative, cheaper Ambition alternative |
+| Priority | 🟡 Month 6 |
+
+---
+
+## 5. Blog Content Plan — 18 Articles
+
+### Content Priority Tiers
+
+- 🔴 **Critical** — Publish first. Category-defining or highest-intent keywords.
+- 🟡 **High** — Publish months 2-3. Supports pillar content and captures competitor traffic.
+- 🟢 **Standard** — Publish months 3-4. Expands topical authority and targets long-tail.
+
+---
+
+### ARTICLE 1 🔴 — What is Team Celebration Software? (Pillar Page)
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `what-is-team-celebration-software` |
+| **Slug (FR)** | `logiciel-celebration-equipe` |
+| **Category** | celebrations |
+| **Target keywords** | team celebration software, sales celebration software, automated team celebration, celebration platform |
+| **Word count** | 3,500-4,000 |
+| **Type** | Pillar / Definitive guide |
+| **Funnel** | Top |
+| **Internal links TO** | /features, /pricing, /vs/geckoboard, /vs/salesscreen, /vs/hoopla, /blog/celebrate-sales-wins-without-gamification |
+| **SEO title (EN)** | What is Team Celebration Software? The Complete Guide \| CelebBoard |
+| **SEO title (FR)** | Qu'est-ce qu'un logiciel de célébration d'équipe? Le guide complet \| CelebBoard |
+| **Meta desc (EN)** | Team celebration software automatically announces wins on office TVs with confetti, sounds, and team photos. Learn what it is, why it works, and how to choose one. |
+| **Meta desc (FR)** | Un logiciel de célébration d'équipe annonce automatiquement les victoires sur les écrans du bureau avec confettis, sons et photos d'équipe. Découvrez comment ça fonctionne. |
+| **Schema** | Article + HowTo (implementation section) |
+
+**Outline:**
+1. What is team celebration software?
+2. How it works (connect → configure → celebrate)
+3. Why visible recognition drives performance (research)
+4. Celebration software vs gamification — what's the difference?
+5. Key features to look for
+6. Who uses it (sales, production, advisory, any metric-driven team)
+7. How to choose the right tool
+8. Getting started with CelebBoard
+
+---
+
+### ARTICLE 2 🔴 — 7 Ways to Celebrate Sales Wins Without a Gamification Platform
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `celebrate-sales-wins-without-gamification` |
+| **Slug (FR)** | `celebrer-ventes-sans-gamification` |
+| **Category** | celebrations |
+| **Target keywords** | celebrate sales wins, sales celebration ideas, sales win celebration, celebrate deal closings |
+| **Word count** | 2,500-3,000 |
+| **Type** | Listicle / Guide |
+| **Funnel** | Top |
+| **Internal links TO** | /features, /vs/salesscreen, /vs/spinify, /blog/what-is-team-celebration-software |
+| **SEO title (EN)** | 7 Ways to Celebrate Sales Wins (Without a Gamification Platform) \| CelebBoard |
+| **SEO title (FR)** | 7 façons de célébrer les ventes (sans plateforme de gamification) \| CelebBoard |
+| **Meta desc (EN)** | You don't need a complex gamification suite to celebrate team wins. Here are 7 proven approaches — from simple to automated — that create real team energy. |
+| **Meta desc (FR)** | Vous n'avez pas besoin d'une suite de gamification complexe pour célébrer les victoires. Voici 7 approches prouvées qui créent une véritable énergie d'équipe. |
+
+---
+
+### ARTICLE 3 🔴 — Why Your Office TV Should Do More Than Show Charts
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `office-tv-more-than-charts` |
+| **Slug (FR)** | `ecran-bureau-plus-que-graphiques` |
+| **Category** | office-tv |
+| **Target keywords** | office TV dashboard ideas, what to display on office TV, office TV for teams, team TV display ideas |
+| **Word count** | 2,000-2,500 |
+| **Type** | Thought leadership |
+| **Funnel** | Top |
+| **Internal links TO** | /features, /vs/geckoboard, /blog/what-is-team-celebration-software |
+| **SEO title (EN)** | Why Your Office TV Should Do More Than Show Charts \| CelebBoard |
+| **SEO title (FR)** | Pourquoi l'écran de votre bureau devrait faire plus qu'afficher des graphiques \| CelebBoard |
+| **Meta desc (EN)** | A TV showing charts is furniture. A TV showing celebrations is a motivational engine. Here's why the best teams are rethinking their office displays. |
+| **Meta desc (FR)** | Un écran qui affiche des graphiques, c'est un meuble. Un écran qui affiche des célébrations, c'est un moteur de motivation. Découvrez pourquoi les meilleures équipes repensent leurs affichages. |
+
+---
+
+### ARTICLE 4 🔴 — How to Set Up a Team Celebration Display in 10 Minutes
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `setup-team-celebration-display` |
+| **Slug (FR)** | `configurer-affichage-celebration-equipe` |
+| **Category** | tutorials |
+| **Target keywords** | team celebration display setup, office TV celebration setup, how to display celebrations on TV |
+| **Word count** | 2,000 |
+| **Type** | Tutorial / How-to |
+| **Funnel** | Mid |
+| **Internal links TO** | /features, /pricing, /blog/what-is-team-celebration-software |
+| **SEO title (EN)** | How to Set Up a Team Celebration Display in 10 Minutes \| CelebBoard |
+| **SEO title (FR)** | Comment configurer un affichage de célébration d'équipe en 10 minutes \| CelebBoard |
+| **Meta desc (EN)** | Step-by-step guide to getting CelebBoard running on your office TV. Connect your CRM, pick celebration templates, and go live in under 10 minutes. |
+| **Meta desc (FR)** | Guide étape par étape pour lancer CelebBoard sur l'écran de votre bureau. Connectez votre CRM, choisissez vos modèles de célébration et soyez en direct en moins de 10 minutes. |
+| **Schema** | HowTo |
+
+---
+
+### ARTICLE 5 🔴 — The Real Cost of Sales Gamification Software
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `real-cost-sales-gamification-software` |
+| **Slug (FR)** | `vrai-cout-logiciel-gamification-ventes` |
+| **Category** | comparisons |
+| **Target keywords** | sales gamification pricing, sales gamification cost, gamification software price comparison |
+| **Word count** | 2,500-3,000 |
+| **Type** | Analysis |
+| **Funnel** | Mid |
+| **Internal links TO** | /pricing, /vs/salesscreen, /vs/spinify, /vs/ambition |
+| **SEO title (EN)** | The Real Cost of Sales Gamification Software in 2026 \| CelebBoard |
+| **SEO title (FR)** | Le vrai coût d'un logiciel de gamification des ventes en 2026 \| CelebBoard |
+| **Meta desc (EN)** | SalesScreen, Spinify, and Ambition charge $25-100/user/mo with hidden costs. We break down the real pricing and show a simpler, more affordable alternative. |
+| **Meta desc (FR)** | SalesScreen, Spinify et Ambition facturent 25-100 $/utilisateur/mois avec des coûts cachés. Nous analysons les vrais prix et présentons une alternative plus simple et abordable. |
+
+---
+
+### ARTICLE 6 🟡 — How to Display HubSpot Deals on Your Office TV
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `display-hubspot-deals-office-tv` |
+| **Slug (FR)** | `afficher-transactions-hubspot-ecran-bureau` |
+| **Category** | integrations |
+| **Target keywords** | HubSpot TV dashboard, HubSpot deal display, display HubSpot on office TV, HubSpot leaderboard display |
+| **Word count** | 2,000-2,500 |
+| **Type** | Tutorial |
+| **Funnel** | Mid |
+| **Internal links TO** | /features, /pricing, /blog/setup-team-celebration-display |
+| **SEO title (EN)** | How to Display HubSpot Deals on Your Office TV \| CelebBoard |
+| **SEO title (FR)** | Comment afficher les transactions HubSpot sur l'écran de votre bureau \| CelebBoard |
+| **Meta desc (EN)** | Connect HubSpot to your office TV and automatically celebrate closed deals, display pipeline KPIs, and show real-time leaderboards. Step-by-step guide. |
+| **Meta desc (FR)** | Connectez HubSpot à votre écran de bureau et célébrez automatiquement les transactions conclues, affichez les KPI de pipeline et montrez les classements en temps réel. |
+
+---
+
+### ARTICLE 7 🟡 — Why Production Teams Deserve the Same Recognition as Sales
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `production-teams-deserve-recognition` |
+| **Slug (FR)** | `equipes-production-meritent-reconnaissance` |
+| **Category** | team-motivation |
+| **Target keywords** | production team recognition, manufacturing team celebration, factory floor display, production milestone celebration |
+| **Word count** | 2,000-2,500 |
+| **Type** | Thought leadership |
+| **Funnel** | Top |
+| **Internal links TO** | /for/production (future), /features, /blog/what-is-team-celebration-software |
+| **SEO title (EN)** | Why Production Teams Deserve the Same Recognition as Sales \| CelebBoard |
+
+---
+
+### ARTICLE 8 🟡 — 5 Metrics Every Activity-Driven Team Should Display on TV
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `metrics-activity-driven-team-display-tv` |
+| **Slug (FR)** | `metriques-equipe-performance-afficher-ecran` |
+| **Category** | office-tv |
+| **Target keywords** | team KPI TV dashboard, metrics to display on office TV, sales metrics TV display |
+| **Word count** | 2,000 |
+| **Type** | Listicle |
+| **Funnel** | Top |
+| **Internal links TO** | /features, /pricing, /blog/office-tv-more-than-charts |
+
+---
+
+### ARTICLE 9 🟡 — The Science of Visible Recognition
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `science-of-visible-recognition` |
+| **Slug (FR)** | `science-reconnaissance-visible` |
+| **Category** | team-motivation |
+| **Target keywords** | team recognition ROI, visible recognition impact, employee recognition research, team celebration science |
+| **Word count** | 3,000 |
+| **Type** | Research / Thought leadership |
+| **Funnel** | Top |
+| **Internal links TO** | /features, /about, /blog/what-is-team-celebration-software |
+
+---
+
+### ARTICLE 10 🟡 — How Advisory Firms Use Office TVs to Drive Retention
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `advisory-firms-office-tv-retention` |
+| **Slug (FR)** | `cabinets-conseil-ecran-bureau-retention` |
+| **Category** | use-cases |
+| **Target keywords** | advisory firm team motivation, consulting team recognition, professional services celebration |
+| **Word count** | 2,000 |
+| **Type** | Use case |
+| **Funnel** | Top |
+| **Internal links TO** | /for/services (future), /features |
+
+---
+
+### ARTICLE 11 🟡 — TV Dashboard Buyer's Guide: Data vs. Energy (Pillar Page)
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `tv-dashboard-buyers-guide` |
+| **Slug (FR)** | `guide-acheteur-tableau-bord-tv` |
+| **Category** | comparisons |
+| **Target keywords** | TV dashboard software comparison, best TV dashboard for teams, office TV display software |
+| **Word count** | 3,500 |
+| **Type** | Pillar / Comparison guide |
+| **Funnel** | Mid |
+| **Internal links TO** | /vs/geckoboard, /vs/salesscreen, /vs/spinify, /vs/fugo, /vs/plecto, /pricing |
+| **Schema** | Article + FAQPage |
+
+---
+
+### ARTICLE 12 🟢 — How to Keep Remote and In-Office Teams Equally Celebrated
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `remote-in-office-teams-celebration` |
+| **Slug (FR)** | `equipes-distance-bureau-celebration` |
+| **Category** | team-motivation |
+| **Target keywords** | remote team celebration, hybrid team recognition, celebrate wins remote team |
+| **Word count** | 2,000 |
+| **Type** | Guide |
+| **Funnel** | Top |
+
+---
+
+### ARTICLE 13 🟢 — Setting Up Slack-Triggered Celebrations for Your Office TV
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `slack-triggered-celebrations-office-tv` |
+| **Slug (FR)** | `celebrations-declenchees-slack-ecran-bureau` |
+| **Category** | integrations |
+| **Target keywords** | Slack office TV celebration, Slack celebration bot, Slack TV display |
+| **Word count** | 1,800 |
+| **Type** | Tutorial |
+| **Funnel** | Mid |
+| **Schema** | HowTo |
+
+---
+
+### ARTICLE 14 🟢 — What Happens When You Make Every Win Visible
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `make-every-win-visible` |
+| **Slug (FR)** | `rendre-chaque-victoire-visible` |
+| **Category** | team-motivation |
+| **Target keywords** | team recognition impact, visible wins, team performance visibility |
+| **Word count** | 2,500 |
+| **Type** | Thought leadership |
+| **Funnel** | Top |
+
+---
+
+### ARTICLE 15 🟢 — The Complete HubSpot + CelebBoard Setup Guide
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `hubspot-celebboard-setup-guide` |
+| **Slug (FR)** | `guide-configuration-hubspot-celebboard` |
+| **Category** | integrations |
+| **Target keywords** | HubSpot celebration setup, HubSpot CelebBoard integration, HubSpot TV celebration |
+| **Word count** | 2,500 |
+| **Type** | Tutorial |
+| **Funnel** | Mid |
+| **Schema** | HowTo |
+
+---
+
+### ARTICLE 16 🟢 — Best Sales Celebration Tools in 2026
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `best-sales-celebration-tools-2026` |
+| **Slug (FR)** | `meilleurs-outils-celebration-ventes-2026` |
+| **Category** | comparisons |
+| **Target keywords** | best sales celebration tools, sales celebration software 2026, team celebration tools |
+| **Word count** | 3,000 |
+| **Type** | Listicle / Roundup |
+| **Funnel** | Mid |
+| **Internal links TO** | all /vs/ pages, /pricing, /features |
+
+---
+
+### ARTICLE 17 🟢 — How to Build a Culture of Celebration in Sales Teams
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `build-culture-celebration-sales` |
+| **Slug (FR)** | `construire-culture-celebration-ventes` |
+| **Category** | team-motivation |
+| **Target keywords** | sales team culture celebration, celebration culture workplace, sales team recognition culture |
+| **Word count** | 2,500 |
+| **Type** | Thought leadership |
+| **Funnel** | Top |
+
+---
+
+### ARTICLE 18 🟢 — From Bell Ringing to Automation: The Evolution of Sales Celebrations
+
+| Field | Value |
+|---|---|
+| **Slug (EN)** | `evolution-sales-celebrations` |
+| **Slug (FR)** | `evolution-celebrations-ventes` |
+| **Category** | celebrations |
+| **Target keywords** | sales bell ringing history, sales celebration evolution, modern sales celebration |
+| **Word count** | 2,000 |
+| **Type** | Thought leadership / Storytelling |
+| **Funnel** | Top |
+
+---
+
+### Publishing Schedule
+
+| Month | Week | Content |
+|---|---|---|
+| **Month 1** | W1 | Article 1 (Pillar: What is Team Celebration Software?) |
+| | W1 | VS-1: CelebBoard vs Geckoboard |
+| | W2 | Article 2 (7 Ways to Celebrate Sales Wins) |
+| | W2 | VS-4: CelebBoard vs Hoopla |
+| | W3 | Article 3 (Office TV More Than Charts) |
+| | W4 | Article 4 (Setup Tutorial) |
+| **Month 2** | W1 | Article 5 (Real Cost of Gamification) |
+| | W1 | VS-2: CelebBoard vs SalesScreen |
+| | W2 | Article 6 (HubSpot on TV) |
+| | W3 | Article 7 (Production Teams Recognition) |
+| | W4 | Article 8 (5 Metrics to Display) |
+| **Month 3** | W1 | Article 9 (Science of Visible Recognition) |
+| | W1 | VS-3: CelebBoard vs Spinify |
+| | W2 | Article 10 (Advisory Firms) |
+| | W3 | Article 11 (Pillar: TV Dashboard Buyer's Guide) |
+| | W3 | VS-5: CelebBoard vs Plecto |
+| | W4 | Article 12 (Remote Celebration) |
+| **Month 4** | W1 | Article 13 (Slack Tutorial) |
+| | W1 | VS-6: CelebBoard vs Fugo |
+| | W2 | Article 14 (Make Every Win Visible) |
+| | W3 | Article 15 (HubSpot Setup Guide) |
+| | W3 | VS-7: CelebBoard vs Ambition |
+| | W4 | Article 16 (Best Tools 2026) |
+| | W4 | Article 17 (Build Celebration Culture) |
+| | Bonus | Article 18 (Evolution of Sales Celebrations) |
+
+---
+
+## 6. Blog Article SEO Template
+
+Every `.mdx` file MUST include this frontmatter:
+
+```yaml
+---
+title: "Article Title — Displayed as H1"
+description: "2-3 sentence description. Appears below title and in cards on blog index."
+seoTitle: "SEO-Optimized Title | CelebBoard"        # For <title> tag, max 60 chars
+seoDescription: "Compelling meta description with primary keyword naturally included, max 155 chars."
+publishedAt: "2026-03-15"
+updatedAt: "2026-03-15"                               # Update when content is revised
+author: "CelebBoard"
+category: "celebrations"                               # One of: celebrations, team-motivation, office-tv, integrations, comparisons, tutorials, use-cases
+tags: ["sales celebration", "team recognition", "office TV"]
+featuredImage: "/blog/article-slug-hero.png"
+featuredImageAlt: "Descriptive alt text with keyword where natural"
+---
+```
+
+### On-Page SEO Checklist (for every article):
+
+- [ ] H1 = article `title` (only one H1)
+- [ ] H2s contain secondary/supporting keywords
+- [ ] H3s used for subsections under H2s — never skip heading levels
+- [ ] Primary keyword appears in: title, first 100 words, one H2, meta description, URL slug
+- [ ] Internal links: minimum 2 links to other blog articles + 1 link to /features or /pricing
+- [ ] External links: 1-2 links to reputable sources where relevant (research, data)
+- [ ] Image alt text is descriptive and includes keywords where natural
+- [ ] Article length matches spec (never thin content under 1,500 words)
+- [ ] CTA at the end: links to /pricing or "Start free trial"
+- [ ] `hreflang` alternates set in metadata (EN ↔ FR)
+- [ ] Article schema via JSON-LD in the page component
+
+---
+
+## 7. Translation Keys (EN/FR)
+
+Add these to `src/messages/en.json` and `src/messages/fr.json`. These cover the blog infrastructure, comparison pages, and SEO metadata for all static pages.
+
+### EN — `src/messages/en.json` (additions)
+
+```json
+{
+  "metadata": {
+    "home": {
+      "title": "CelebBoard — Team Celebration Software for Office TVs",
+      "description": "Automatically celebrate team wins on your office TV. Confetti, sounds, team photos, live leaderboards. Connect HubSpot, Slack, or any tool. Set up in 10 minutes."
+    },
+    "features": {
+      "title": "Features — Celebrations, Leaderboards, KPIs & More | CelebBoard",
+      "description": "Automated celebrations with confetti and sounds, real-time leaderboards, live KPI cards, team photo sync, content feed, and custom themes. Everything your office TV needs."
+    },
+    "pricing": {
+      "title": "Pricing — Simple Plans, Unlimited Celebrations | CelebBoard",
+      "description": "Flat-rate pricing from $49/mo. No per-user fees. Unlimited TVs on every plan. Compare vs SalesScreen, Spinify, and Geckoboard. 14-day free trial."
+    },
+    "about": {
+      "title": "About CelebBoard — Built in Montreal | CelebBoard",
+      "description": "CelebBoard was born from a simple observation: teams that see their wins together, win more together. Built in Montreal."
+    },
+    "blog": {
+      "title": "Blog — Team Celebration Insights & Guides | CelebBoard",
+      "description": "Articles on team celebration, sales motivation, office TV displays, and building a culture of recognition. Guides, comparisons, and best practices."
+    }
+  },
+  "blog": {
+    "title": "CelebBoard Blog",
+    "subtitle": "Insights on team celebration, motivation, and making wins visible.",
+    "meta": {
+      "title": "Blog — Team Celebration Insights & Guides | CelebBoard",
+      "description": "Articles on team celebration, sales motivation, office TV displays, and building a culture of recognition."
+    },
+    "readMore": "Read article",
+    "minuteRead": "min read",
+    "publishedOn": "Published on",
+    "updatedOn": "Updated on",
+    "backToBlog": "← Back to blog",
+    "categories": {
+      "celebrations": "Celebrations",
+      "team-motivation": "Team Motivation",
+      "office-tv": "Office TV",
+      "integrations": "Integrations",
+      "comparisons": "Comparisons",
+      "tutorials": "Tutorials",
+      "use-cases": "Use Cases"
+    },
+    "cta": {
+      "title": "Ready to celebrate your team's wins?",
+      "subtitle": "Set up CelebBoard in under 10 minutes. No credit card required.",
+      "button": "Start free trial"
+    }
+  },
+  "vs": {
+    "meta": {
+      "geckoboard": {
+        "title": "CelebBoard vs Geckoboard — Data vs Energy | CelebBoard",
+        "description": "Geckoboard shows beautiful data. CelebBoard makes people care. Compare TV dashboard features, celebrations, pricing, and integrations."
+      },
+      "salesscreen": {
+        "title": "CelebBoard vs SalesScreen — Celebration Without Complexity | CelebBoard",
+        "description": "SalesScreen is a full gamification suite at $25-45/user. CelebBoard delivers celebrations at flat-rate pricing. Compare features and pricing."
+      },
+      "spinify": {
+        "title": "CelebBoard vs Spinify — Do You Need 20 Game Mechanics? | CelebBoard",
+        "description": "Spinify offers 250+ leaderboard designs and AI coaching. CelebBoard offers instant celebrations on your office TV. Compare pricing and features."
+      },
+      "hoopla": {
+        "title": "CelebBoard vs Hoopla — The TV Celebration Platform for 2026 | CelebBoard",
+        "description": "Hoopla was acquired by Raydiant. CelebBoard is the TV-first celebration platform Hoopla users have been searching for."
+      },
+      "plecto": {
+        "title": "CelebBoard vs Plecto — Team Energy vs Dashboard Analytics | CelebBoard",
+        "description": "Plecto starts at $200/mo for 10 users. CelebBoard starts at $49/mo with celebration-first TV displays. Compare the two."
+      },
+      "fugo": {
+        "title": "CelebBoard vs Fugo — Celebration Engine vs Digital Signage | CelebBoard",
+        "description": "Fugo is general-purpose digital signage. CelebBoard is purpose-built for team celebrations with deep CRM integration."
+      },
+      "ambition": {
+        "title": "CelebBoard vs Ambition — Instant Celebrations at a Fraction of the Price | CelebBoard",
+        "description": "Ambition charges $40-100/user with opaque pricing. CelebBoard delivers instant celebrations from $49/mo flat."
+      }
+    },
+    "comparisonTable": {
+      "feature": "Feature",
+      "celebboard": "CelebBoard",
+      "celebrations": "Celebrations",
+      "confetti": "Confetti & sounds",
+      "teamPhotos": "Team photos in celebrations",
+      "leaderboards": "Leaderboards",
+      "kpiCards": "KPI cards",
+      "tvOptimized": "TV-optimized display",
+      "hubspotIntegration": "HubSpot integration",
+      "slackIntegration": "Slack integration",
+      "unlimitedTvs": "Unlimited TVs",
+      "flatRatePricing": "Flat-rate pricing",
+      "setupTime": "Setup time",
+      "gamificationRequired": "Gamification overhead",
+      "yes": "✓",
+      "no": "✗",
+      "partial": "Partial",
+      "none": "None",
+      "high": "High",
+      "minutes": "~10 min",
+      "weeks": "Weeks",
+      "perTv": "Per-TV extra"
+    },
+    "sections": {
+      "quickComparison": "Quick comparison",
+      "whatTheyDoWell": "What {competitor} does well",
+      "whereFallsShort": "Where {competitor} falls short for celebration",
+      "howCelebBoardDifferent": "How CelebBoard is different",
+      "pricingComparison": "Pricing comparison",
+      "whoShouldChoose": "Who should choose {competitor}",
+      "whoShouldChooseCelebBoard": "Who should choose CelebBoard",
+      "faq": "Frequently asked questions"
+    },
+    "cta": {
+      "title": "Ready to try the celebration-first approach?",
+      "subtitle": "14-day free trial. No credit card required.",
+      "button": "Start free trial"
+    }
+  }
+}
+```
+
+### FR — `src/messages/fr.json` (additions)
+
+```json
+{
+  "metadata": {
+    "home": {
+      "title": "CelebBoard — Logiciel de célébration d'équipe pour écrans de bureau",
+      "description": "Célébrez automatiquement les victoires de votre équipe sur vos écrans de bureau. Confettis, sons, photos d'équipe, classements en direct. Connectez HubSpot, Slack ou n'importe quel outil."
+    },
+    "features": {
+      "title": "Fonctionnalités — Célébrations, classements, KPIs et plus | CelebBoard",
+      "description": "Célébrations automatisées avec confettis et sons, classements en temps réel, cartes KPI en direct, synchronisation des photos d'équipe, fil de contenu et thèmes personnalisés."
+    },
+    "pricing": {
+      "title": "Tarification — Forfaits simples, célébrations illimitées | CelebBoard",
+      "description": "Tarification forfaitaire à partir de 49 $/mois. Aucun frais par utilisateur. Écrans illimités sur chaque forfait. Essai gratuit de 14 jours."
+    },
+    "about": {
+      "title": "À propos de CelebBoard — Conçu à Montréal | CelebBoard",
+      "description": "CelebBoard est né d'une observation simple : les équipes qui voient leurs victoires ensemble gagnent plus ensemble. Conçu à Montréal."
+    },
+    "blog": {
+      "title": "Blogue — Conseils et guides sur la célébration d'équipe | CelebBoard",
+      "description": "Articles sur la célébration d'équipe, la motivation des ventes, les écrans de bureau et la construction d'une culture de reconnaissance."
+    }
+  },
+  "blog": {
+    "title": "Blogue CelebBoard",
+    "subtitle": "Conseils sur la célébration d'équipe, la motivation et la visibilité des victoires.",
+    "meta": {
+      "title": "Blogue — Conseils et guides sur la célébration d'équipe | CelebBoard",
+      "description": "Articles sur la célébration d'équipe, la motivation des ventes, les écrans de bureau et la construction d'une culture de reconnaissance."
+    },
+    "readMore": "Lire l'article",
+    "minuteRead": "min de lecture",
+    "publishedOn": "Publié le",
+    "updatedOn": "Mis à jour le",
+    "backToBlog": "← Retour au blogue",
+    "categories": {
+      "celebrations": "Célébrations",
+      "team-motivation": "Motivation d'équipe",
+      "office-tv": "Écran de bureau",
+      "integrations": "Intégrations",
+      "comparisons": "Comparaisons",
+      "tutorials": "Tutoriels",
+      "use-cases": "Cas d'utilisation"
+    },
+    "cta": {
+      "title": "Prêt à célébrer les victoires de votre équipe?",
+      "subtitle": "Configurez CelebBoard en moins de 10 minutes. Aucune carte de crédit requise.",
+      "button": "Commencer l'essai gratuit"
+    }
+  },
+  "vs": {
+    "meta": {
+      "geckoboard": {
+        "title": "CelebBoard vs Geckoboard — Données vs énergie | CelebBoard",
+        "description": "Geckoboard affiche de belles données. CelebBoard fait en sorte que les gens s'y intéressent. Comparez les fonctionnalités, célébrations et tarification."
+      },
+      "salesscreen": {
+        "title": "CelebBoard vs SalesScreen — Célébration sans complexité | CelebBoard",
+        "description": "SalesScreen est une suite de gamification complète à 25-45 $/utilisateur. CelebBoard offre les célébrations à tarif forfaitaire."
+      },
+      "spinify": {
+        "title": "CelebBoard vs Spinify — Avez-vous besoin de 20 mécaniques de jeu? | CelebBoard",
+        "description": "Spinify offre plus de 250 designs de classement et du coaching IA. CelebBoard offre des célébrations instantanées sur votre écran de bureau."
+      },
+      "hoopla": {
+        "title": "CelebBoard vs Hoopla — La plateforme de célébration TV pour 2026 | CelebBoard",
+        "description": "Hoopla a été acquis par Raydiant. CelebBoard est la plateforme de célébration TV que les utilisateurs de Hoopla cherchent."
+      },
+      "plecto": {
+        "title": "CelebBoard vs Plecto — Énergie d'équipe vs analytique de tableau de bord | CelebBoard",
+        "description": "Plecto commence à 200 $/mois pour 10 utilisateurs. CelebBoard commence à 49 $/mois avec des affichages TV centrés sur la célébration."
+      },
+      "fugo": {
+        "title": "CelebBoard vs Fugo — Moteur de célébration vs affichage numérique | CelebBoard",
+        "description": "Fugo est une plateforme d'affichage numérique générale. CelebBoard est conçu spécifiquement pour les célébrations d'équipe avec intégration CRM."
+      },
+      "ambition": {
+        "title": "CelebBoard vs Ambition — Célébrations instantanées à une fraction du prix | CelebBoard",
+        "description": "Ambition facture 40-100 $/utilisateur avec une tarification opaque. CelebBoard offre des célébrations instantanées à partir de 49 $/mois."
+      }
+    },
+    "comparisonTable": {
+      "feature": "Fonctionnalité",
+      "celebboard": "CelebBoard",
+      "celebrations": "Célébrations",
+      "confetti": "Confettis et sons",
+      "teamPhotos": "Photos d'équipe dans les célébrations",
+      "leaderboards": "Classements",
+      "kpiCards": "Cartes KPI",
+      "tvOptimized": "Affichage optimisé TV",
+      "hubspotIntegration": "Intégration HubSpot",
+      "slackIntegration": "Intégration Slack",
+      "unlimitedTvs": "Écrans illimités",
+      "flatRatePricing": "Tarification forfaitaire",
+      "setupTime": "Temps de configuration",
+      "gamificationRequired": "Charge de gamification",
+      "yes": "✓",
+      "no": "✗",
+      "partial": "Partiel",
+      "none": "Aucune",
+      "high": "Élevée",
+      "minutes": "~10 min",
+      "weeks": "Semaines",
+      "perTv": "Extra par écran"
+    },
+    "sections": {
+      "quickComparison": "Comparaison rapide",
+      "whatTheyDoWell": "Ce que {competitor} fait bien",
+      "whereFallsShort": "Où {competitor} est limité pour la célébration",
+      "howCelebBoardDifferent": "En quoi CelebBoard est différent",
+      "pricingComparison": "Comparaison des prix",
+      "whoShouldChoose": "Qui devrait choisir {competitor}",
+      "whoShouldChooseCelebBoard": "Qui devrait choisir CelebBoard",
+      "faq": "Questions fréquentes"
+    },
+    "cta": {
+      "title": "Prêt à essayer l'approche célébration?",
+      "subtitle": "Essai gratuit de 14 jours. Aucune carte de crédit requise.",
+      "button": "Commencer l'essai gratuit"
+    }
+  }
+}
+```
+
+> **Note**: These JSON blocks should be MERGED into the existing `en.json` and `fr.json` files — they contain only the new keys. Do not replace the existing content.
+
+---
+
+## 8. Schema Markup Specs
+
+### Homepage — SoftwareApplication + Organization
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CelebBoard",
+  "applicationCategory": "BusinessApplication",
+  "description": "Team celebration software that automatically displays wins on office TVs with confetti, sounds, team photos, and live leaderboards.",
+  "operatingSystem": "Web browser",
+  "offers": {
+    "@type": "AggregateOffer",
+    "priceCurrency": "USD",
+    "lowPrice": "49",
+    "highPrice": "149",
+    "offerCount": "2"
+  },
+  "aggregateRating": null,
+  "author": {
+    "@type": "Organization",
+    "name": "CelebBoard",
+    "url": "https://celebboard.com",
+    "foundingLocation": {
+      "@type": "Place",
+      "name": "Montreal, Quebec, Canada"
+    }
+  }
+}
+```
+
+### Pricing Page — Product + Offers + FAQPage
+
+```json
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "CelebBoard",
+    "description": "Team celebration software for office TVs",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Starter",
+        "price": "49",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2027-01-01",
+        "availability": "https://schema.org/InStock"
+      },
+      {
+        "@type": "Offer",
+        "name": "Growth",
+        "price": "149",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2027-01-01",
+        "availability": "https://schema.org/InStock"
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can I put CelebBoard on as many TVs as I want?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Every plan includes unlimited screens. One office or twenty — same price."
+        }
+      }
+    ]
+  }
+]
+```
+
+### Comparison Pages — FAQPage
+
+Each `/vs/` page includes FAQPage schema with 4-6 comparison-specific questions.
+
+### Blog Articles — Article
+
+Handled via the `jsonLd` object in the blog article page component (see Section 1).
+
+### Tutorial Articles — HowTo (additional)
+
+For articles with `category: "tutorials"`, add HowTo schema alongside Article:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Set Up a Team Celebration Display in 10 Minutes",
+  "description": "Step-by-step guide to getting CelebBoard running on your office TV.",
+  "totalTime": "PT10M",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Connect your tools",
+      "text": "Sign up and connect HubSpot, Slack, or any webhook-based tool."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Define what's worth celebrating",
+      "text": "Pick from pre-built celebration templates or create your own."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Put it on any TV",
+      "text": "Open the display URL on any screen with a browser. Full-screen it. Done."
+    }
+  ]
+}
+```
+
+---
+
+## 9. Internal Linking Map
+
+### From Static Pages → Blog
+
+| Static Page | Links TO these articles |
+|---|---|
+| Homepage | Article 1 (What is celebration software), Article 4 (Setup tutorial) |
+| Features | Article 1, Article 9 (Science of recognition), Article 8 (Metrics to display) |
+| Pricing | Article 5 (Real cost of gamification), Article 11 (Buyer's guide) |
+| About | Article 1, Article 9 |
+
+### From Blog → Blog (cross-linking)
+
+| Article | Links TO |
+|---|---|
+| Article 1 (Pillar) | Articles 2, 3, 4, 7, 9 (hub-and-spoke) |
+| Article 2 | Articles 1, 5 |
+| Article 3 | Articles 1, 8 |
+| Article 5 | Articles 1, 11 |
+| Article 6 | Articles 4, 15 |
+| Article 9 | Articles 1, 14, 17 |
+| Article 11 (Pillar) | Articles 1, 3, 5, all /vs/ pages |
+
+### From Blog → Comparison Pages
+
+| Article | Links TO /vs/ pages |
+|---|---|
+| Article 1 | /vs/geckoboard, /vs/salesscreen, /vs/hoopla |
+| Article 2 | /vs/salesscreen, /vs/spinify |
+| Article 3 | /vs/geckoboard |
+| Article 5 | /vs/salesscreen, /vs/spinify, /vs/ambition |
+| Article 11 | ALL /vs/ pages |
+| Article 16 | ALL /vs/ pages |
+
+### From Comparison Pages → Blog
+
+Every /vs/ page links to: Article 1, Article 5, Article 11, and the most relevant vertical article.
+
+---
+
+## 10. Implementation Sequence for Cursor
+
+### Phase 1: Infrastructure (do first)
+
+1. Install dependencies: `pnpm add next-mdx-remote gray-matter reading-time`
+2. Create `src/lib/content.ts` (content loading utility)
+3. Create `src/app/sitemap.ts` and `src/app/robots.ts`
+4. Create empty content directory structure: `src/content/blog/{en,fr}/` and `src/content/vs/{en,fr}/`
+5. Merge new translation keys into `en.json` and `fr.json`
+
+### Phase 2: Blog Pages
+
+1. Create `src/app/[locale]/(marketing)/blog/page.tsx` (blog index)
+2. Create `src/app/[locale]/(marketing)/blog/[slug]/page.tsx` (article page)
+3. Style the blog article layout with Tailwind `prose` classes
+4. Add article end-CTA component (reusable across all articles)
+5. Add `@tailwindcss/typography` plugin if not already installed: `pnpm add -D @tailwindcss/typography`
+
+### Phase 3: Comparison Pages
+
+1. Create `src/app/[locale]/(marketing)/vs/[competitor]/page.tsx`
+2. Create `src/components/marketing/sections/comparison-table.tsx` (reusable)
+3. Create `src/components/marketing/sections/vs-cta.tsx` (reusable)
+
+### Phase 4: Static Page SEO Updates
+
+1. Update `generateMetadata` in every existing marketing page.tsx to use the metadata translation keys
+2. Add `hreflang` alternates to every page's metadata
+3. Add JSON-LD structured data to homepage, features, pricing, about
+4. Create or add static OG image at `public/og-default.png`
+
+### Phase 5: Content (I'll generate these in separate chats)
+
+1. Write `.mdx` files for each article (EN first, then FR)
+2. Write `.mdx` files for each comparison page (EN first, then FR)
+3. Add featured images to `public/blog/`
+
+---
+
+**Cursor prompt to get started (paste into Composer):**
+
+```
+Build the blog infrastructure for CelebBoard's marketing site. Reference @CelebBoard-Content-Plan-and-SEO-Spec.md for the full spec.
+
+Phase 1 — install dependencies and create the content loading system:
+1. Run: pnpm add next-mdx-remote gray-matter reading-time @tailwindcss/typography
+2. Create src/lib/content.ts with the getArticles, getArticle, getComparisonPage, getComparisonSlugs functions from the spec
+3. Create the directory structure: src/content/blog/en/, src/content/blog/fr/, src/content/vs/en/, src/content/vs/fr/
+4. Create src/app/sitemap.ts and src/app/robots.ts from the spec
+5. Merge the new blog, vs, and metadata keys into src/messages/en.json and src/messages/fr.json (DO NOT replace existing keys — merge alongside them)
+
+Reference @MARKETING-ARCHITECTURE.md for the i18n patterns and @.cursorrules for coding conventions.
+```
+
+---
+
+*This document is the single source of truth for CelebBoard's content strategy and on-page SEO implementation. Update it as articles are published and priorities shift.*

@@ -25,20 +25,20 @@ export function QrCodeCard({ orgId, compact = false }: Props) {
 
   if (compact) {
     return (
-      <div className="flex h-full flex-col items-center justify-center rounded-lg border border-border bg-card p-2">
-        <div className="rounded-lg bg-white p-1.5 shadow-inner">
+      <div className="flex h-full flex-col items-center justify-center rounded-lg border border-border bg-card p-3 shadow-card">
+        <div className="rounded-lg bg-white p-2 shadow-inner">
           <QRCodeSVG
             value={submitUrl}
-            size={60}
+            size={100}
             level="M"
             includeMargin={false}
             bgColor="#ffffff"
             fgColor="#000000"
           />
         </div>
-        <div className="mt-1.5 text-center">
+        <div className="mt-2 text-center">
           <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-foreground">
-            <QrCode className="size-3.5 text-primary" />
+            <QrCode className="size-3 text-primary" />
             Share with Team
           </div>
           <p className="text-xs text-muted-foreground">Scan to post</p>
