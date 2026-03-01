@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2026-03-01 (Lovable design system revamp)
+**Last updated:** 2026-02-28 (KPI leaderboards)
 
 ## What's Built (Current Capabilities)
 
@@ -15,7 +15,7 @@
 
 - Integrations: Add/connect HubSpot, Slack, GA4, generic webhook (credentials stored)
 - Celebrations: Templates and triggers with field mapping and conditions
-- KPIs: Definitions with manual or integration source type (presets for HubSpot)
+- KPIs: Definitions with manual, integration, or celebration_aggregate; leaderboard (top 3), goal/pace (PaceKPICard)
 - Team: Team member management, bulk upload, external_ids for CRM mapping
 - Display: Settings (theme, feed rotation), preview, display URL
 - History: Celebration log with status filter (pending/displayed/skipped)
@@ -25,7 +25,7 @@
 
 - **Lovable design system**: Theme tokens (Dark/Light/Vibrant), gradients, shadows, Inter font, animations
 - Header: Logo (gradient-primary + Sparkles when no org logo), theme switcher, fullscreen, Replay, Refresh, connection status (green Live)
-- KPI carousel: Auto-rotates every 5s, pause on hover; gradient-primary/success/celebration icon variants; shadow-card
+- KPI carousel: KpiCard, LeaderKPICard (value + top 3 contributors), PaceKPICard (count/goal + progress bar + leaders); Lovable design
 - 12-column grid layout: Feed (col-span-4), Chart (col-span-5), Recent Wins (col-span-3), QR (col-span-3)
 - Celebration overlay: bg-black/95, gold gradient title, primary-bordered photos, GIF, bouncing dots
 - Confetti: 50 pieces, 8 HSL colors, 4 shapes
@@ -66,7 +66,7 @@
 
 - Celebrations: Webhook → conditions + field mapping → insert into celebrations → Realtime
 - Feed: QR submission + manual inserts; Realtime for new posts
-- KPIs: Manual value or seed; display reads cached_value
+- KPIs: Manual value or seed; celebration_aggregate computes value + leaders from celebrations; display reads cached_value or computed; leader_overrides for manual KPIs
 
 ---
 

@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { KpiCard } from './kpi-card'
+import { LeaderKpiCard } from './leader-kpi-card'
+import { PaceKpiCard } from './pace-kpi-card'
+
+type Leader = {
+  id: string
+  name: string
+  photo_url: string | null
+  value: number
+}
 
 type Kpi = {
   id: string
@@ -9,11 +18,26 @@ type Kpi = {
   format: string
   currency: string
   value: number | null
+  goal?: number | null
+  leaders?: Leader[]
   refresh_seconds?: number | null
 }
 
 type Props = {
   kpis: Kpi[]
+}
+
+function KpiCardVariant({ kpi, variantIndex }: { kpi: Kpi; variantIndex: number }) {
+  const hasLeaders = (kpi.leaders?.length ?? 0) > 0
+  const hasGoal = kpi.goal != null && kpi.goal > 0
+
+  if (hasGoal) {
+    return <PaceKpiCard kpi={kpi} variantIndex={variantIndex} />
+  }
+  if (hasLeaders) {
+    return <LeaderKpiCard kpi={kpi} variantIndex={variantIndex} />
+  }
+  return <KpiCard kpi={kpi} variantIndex={variantIndex} />
 }
 
 const AUTO_SCROLL_INTERVAL_MS = 5000
@@ -72,7 +96,11 @@ export function KpiCarousel({ kpis }: Props) {
       onMouseLeave={() => setIsPaused(false)}
     >
       {visibleKpis.map((kpi, i) => (
-        <KpiCard key={kpi.id} kpi={kpi} variantIndex={(currentIndex + i) % kpis.length} />
+        <KpiCardVariant
+          key={kpi.id}
+          kpi={kpi}
+          variantIndex={(currentIndex + i) % kpis.length}
+        />
       ))}
     </div>
   )

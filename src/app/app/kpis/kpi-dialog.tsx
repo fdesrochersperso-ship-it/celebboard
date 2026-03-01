@@ -73,6 +73,8 @@ type KpiRow = {
 
 type Integration = { id: string; name: string; type: string }
 type Template = { id: string; name: string }
+type TeamMember = { id: string; name: string }
+type LeaderOverride = { team_member_id: string; value: number }
 
 type PresetInput = {
   name: string
@@ -102,6 +104,7 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
 
   const [integrations, setIntegrations] = useState<Integration[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [name, setName] = useState('')
   const [label, setLabel] = useState('')
   const [sourceType, setSourceType] = useState<string>('integration')
@@ -118,6 +121,9 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
   const [trendPeriod, setTrendPeriod] = useState('quarter')
   const [sortOrder, setSortOrder] = useState(0)
   const [refreshSeconds, setRefreshSeconds] = useState(300)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [goal, setGoal] = useState<number | ''>('')
+  const [leaderOverrides, setLeaderOverrides] = useState<LeaderOverride[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -135,6 +141,12 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
         .select('id, name')
         .eq('org_id', orgId)
         .then(({ data }) => setTemplates((data as unknown as Template[]) ?? []))
+      supabase
+        .from('team_members')
+        .select('id, name')
+        .eq('org_id', orgId)
+        .order('name')
+        .then(({ data }) => setTeamMembers((data as unknown as TeamMember[]) ?? []))
     }
   }, [open, orgId])
 
@@ -162,6 +174,9 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
         setAggregateOp(String(qc?.aggregate ?? 'sum'))
         setAggregatePeriod(String(qc?.period ?? 'quarter'))
         setManualValue(String((kpi.cached_value as { value?: number })?.value ?? kpi.cached_value ?? ''))
+        setShowLeaderboard(Boolean((qc.show_leaderboard as boolean) ?? false))
+        setGoal((qc.goal as number) ?? '')
+        setLeaderOverrides((qc.leader_overrides as LeaderOverride[]) ?? [])
         setFormat(kpi.format)
         setCurrency(kpi.currency)
         setShowTrend(kpi.show_trend)
@@ -187,6 +202,10 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
         setAggregateOp('sum')
         setAggregatePeriod('quarter')
         setManualValue('')
+        const pqc = preset.query_config ?? {}
+        setShowLeaderboard(Boolean((pqc as Record<string, unknown>).show_leaderboard ?? false))
+        setGoal(((pqc as Record<string, unknown>).goal as number) ?? '')
+        setLeaderOverrides(((pqc as Record<string, unknown>).leader_overrides as LeaderOverride[]) ?? [])
         setFormat(preset.format)
         setCurrency(preset.currency)
         setShowTrend(preset.show_trend)
@@ -204,6 +223,9 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
         setAggregateOp('sum')
         setAggregatePeriod('quarter')
         setManualValue('')
+        setShowLeaderboard(false)
+        setGoal('')
+        setLeaderOverrides([])
         setFormat('number')
         setCurrency('CAD')
         setShowTrend(true)
@@ -237,6 +259,26 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
     )
   }
 
+  const addLeaderOverride = () => {
+    const used = new Set(leaderOverrides.map((l) => l.team_member_id))
+    const next = teamMembers.find((m) => !used.has(m.id))
+    if (next) {
+      setLeaderOverrides((prev) => [...prev, { team_member_id: next.id, value: 0 }])
+    }
+  }
+
+  const updateLeaderOverride = (idx: number, field: keyof LeaderOverride, value: string | number) => {
+    setLeaderOverrides((prev) => {
+      const next = [...prev]
+      next[idx] = { ...next[idx]!, [field]: value }
+      return next
+    })
+  }
+
+  const removeLeaderOverride = (idx: number) => {
+    setLeaderOverrides((prev) => prev.filter((_, i) => i !== idx))
+  }
+
   const buildQueryConfig = (): Record<string, unknown> => {
     if (sourceType === 'integration') {
       const obj: Record<string, unknown> = {}
@@ -258,15 +300,27 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
           }
         }
       }
+      if (showLeaderboard) obj.show_leaderboard = true
+      if (goal !== '' && !isNaN(Number(goal))) obj.goal = Number(goal)
       return obj
     }
     if (sourceType === 'celebration_aggregate') {
-      return {
+      const cfg: Record<string, unknown> = {
         template_ids: templateIds,
         field: aggregateField,
         aggregate: aggregateOp,
         period: aggregatePeriod,
+        show_leaderboard: showLeaderboard,
       }
+      if (goal !== '' && !isNaN(Number(goal))) cfg.goal = Number(goal)
+      return cfg
+    }
+    if (sourceType === 'manual') {
+      const cfg: Record<string, unknown> = {}
+      if (showLeaderboard) cfg.show_leaderboard = true
+      if (goal !== '' && !isNaN(Number(goal))) cfg.goal = Number(goal)
+      if (leaderOverrides.length > 0) cfg.leader_overrides = leaderOverrides
+      return cfg
     }
     return {}
   }
@@ -560,6 +614,79 @@ export function KpiDialog({ open, onOpenChange, orgId, onSuccess, kpi, preset }:
                 <Label>Show trend</Label>
                 <Switch checked={showTrend} onCheckedChange={setShowTrend} />
               </div>
+              <div className="flex items-center justify-between">
+                <Label>Show leaderboard (top 3 contributors)</Label>
+                <Switch checked={showLeaderboard} onCheckedChange={setShowLeaderboard} />
+              </div>
+              <div className="space-y-2">
+                <Label>Goal (for pace/progress bar)</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 220"
+                  value={goal === '' ? '' : goal}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const v = e.target.value
+                    setGoal(v === '' ? '' : parseInt(v, 10) || '')
+                  }}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Optional. When set, shows count/goal with progress bar (PaceKPICard).
+                </p>
+              </div>
+              {showLeaderboard && sourceType === 'manual' && (
+                <div className="space-y-2">
+                  <Label>Leaderboard (team member + value)</Label>
+                  <p className="text-muted-foreground text-xs">
+                    Add up to 3 team members with their attributed value.
+                  </p>
+                  {leaderOverrides.map((lo, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Select
+                        value={lo.team_member_id}
+                        onValueChange={(v) => updateLeaderOverride(i, 'team_member_id', v)}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select member" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {teamMembers.map((m) => (
+                            <SelectItem key={m.id} value={m.id}>
+                              {m.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="Value"
+                        className="w-24"
+                        value={lo.value}
+                        onChange={(e) =>
+                          updateLeaderOverride(i, 'value', parseFloat(e.target.value) || 0)
+                        }
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeLeaderOverride(i)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {leaderOverrides.length < 3 && (
+                    <Button variant="outline" size="sm" onClick={addLeaderOverride}>
+                      <Plus className="mr-1 size-3.5" />
+                      Add leader
+                    </Button>
+                  )}
+                </div>
+              )}
+              {showLeaderboard && sourceType === 'celebration_aggregate' && (
+                <p className="text-muted-foreground text-xs">
+                  Leaders are computed from celebrations (aggregated by team member).
+                </p>
+              )}
               {showTrend && (
                 <div className="space-y-2">
                   <Label>Trend period</Label>

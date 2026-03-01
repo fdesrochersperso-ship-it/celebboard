@@ -19,12 +19,21 @@ type OrgData = {
   logo_url?: string | null
 }
 
+type Leader = {
+  id: string
+  name: string
+  photo_url: string | null
+  value: number
+}
+
 type Kpi = {
   id: string
   label: string
   format: string
   currency: string
   value: number | null
+  goal?: number | null
+  leaders?: Leader[]
   refresh_seconds?: number
 }
 

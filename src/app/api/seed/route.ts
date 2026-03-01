@@ -282,6 +282,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const dealWonTemplateId = templateIds['Deal Won']
+    if (dealWonTemplateId) {
+      const { data: existingLeader } = await supabase
+        .from('kpi_definitions')
+        .select('id')
+        .eq('org_id', orgId)
+        .eq('name', 'Deals Won - Leaders')
+        .maybeSingle()
+
+      if (!existingLeader) {
+        await supabase.from('kpi_definitions').insert({
+          org_id: orgId,
+          name: 'Deals Won - Leaders',
+          label: 'Deals Won This Quarter',
+          source_type: 'celebration_aggregate',
+          format: 'currency',
+          currency: 'CAD',
+          query_config: {
+            template_ids: [dealWonTemplateId],
+            field: 'amount',
+            aggregate: 'sum',
+            period: 'quarter',
+            show_leaderboard: true,
+          },
+          show_trend: false,
+          trend_period: 'quarter',
+          is_active: true,
+          refresh_seconds: 300,
+        })
+        summary.kpis++
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       message: 'Seed completed',
