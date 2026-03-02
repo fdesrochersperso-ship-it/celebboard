@@ -3,10 +3,10 @@ import { AnimatedOnScroll } from "./AnimatedOnScroll";
 
 interface FeatureSectionProps {
   title: string;
-  description: string;
+  description: ReactNode;
   visual: ReactNode;
   reversed?: boolean;
-  badge?: string;
+  badge?: ReactNode;
   children?: ReactNode;
 }
 
@@ -30,16 +30,16 @@ export function FeatureSection({
           className="flex-1 space-y-6"
         >
           {badge && (
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               {badge}
             </span>
           )}
           <h2 className="text-3xl lg:text-5xl font-bold text-foreground leading-tight">
             {title}
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
+          <div className="text-lg text-muted-foreground leading-relaxed max-w-xl">
             {description}
-          </p>
+          </div>
           {children}
         </AnimatedOnScroll>
         <AnimatedOnScroll

@@ -1,4 +1,5 @@
 import { MockupFrame } from "./MockupFrame";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
 
 const confettiColors = [
   "hsl(195,100%,50%)",
@@ -58,13 +59,7 @@ export function AnimatedCelebrationMockup() {
                   animation: `photo-bounce 0.7s ease-out ${0.5 + i * 0.3}s forwards`,
                 }}
               >
-                <div
-                  className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-4 border-background animate-pulse-glow`}
-                >
-                  <span className="text-sm lg:text-base font-bold text-white">
-                    {a.initials}
-                  </span>
-                </div>
+                <EmployeeAvatar initials={a.initials} size="xl" className="animate-pulse-glow" borderClassName="border-4 border-background" />
                 <div className="mt-1">
                   <span className="text-xs font-semibold text-foreground block">
                     {a.name}

@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2026-03-02 (Dev server lock fix)
+**Last updated:** 2026-03-01 (Integration logo placement)
 
 ## What's Built (Current Capabilities)
 
@@ -49,12 +49,13 @@
 - Bilingual marketing pages (EN/FR) with next-intl; all copy from `docs/marketing-copy-reference.md` and `src/messages/{en,fr}.json`
 - Routes: `/`, `/features`, `/celebrations`, `/dashboard`, `/engagement`, `/admin`, `/pricing`, `/about`, `/blog`, `/legal/terms`, `/legal/privacy` — French at `/fr/*`
 - Navbar (Celebrations, Dashboard, Engagement, Admin, Pricing, About, Blog; Live Demo, Get Started), Footer (3-column Lovable style), LanguageSwitcher
-- Home: Hero with FloatingParticles, AnimatedDashboardMockup, integration logos, 4 FeatureCards, How It Works (3 steps), MarketingAnimatedCounter stats, CTA
+- Home: Hero with FloatingParticles, AnimatedDashboardMockup, integration logos (HubSpot, Slack, GA4, Spotify), 4 FeatureCards, How It Works (3 steps) with employee photos, MarketingAnimatedCounter stats, CTA
 - Feature pages: Celebrations, Dashboard, Engagement, Admin — each with Lovable structure; Features hub links to all four
 - Pricing: PricingCards (3 plans), PricingComparison table, PricingFaq accordion
 - About: Story (4 paragraphs), Values (6 items), Location (lang switch); Blog: MDX-based articles in `src/content/blog/{en,fr}/`, index + article pages, sitemap
 - Middleware: i18n for marketing routes only; Supabase auth for `/app`, `/login`, `/signup` unchanged
 - **Dev server**: `scripts/pre-dev.js` removes stale `.next/dev/lock` before `next dev` to avoid "Unable to acquire lock" after crash/kill
+- **Marketing assets**: Employee face photos in leaderboards, mockups, avatar stacks; integration logos (standalone, larger) in integrations bar and dashboard bottom; plain text in feature descriptions; assets in `public/images/employees/` and `public/images/logos/`
 - **On-site SEO** (per `docs/seo-content-plan-website.md`): metadataBase, robots, sitemap.xml, robots.txt; canonical + hreflang on all marketing pages; JSON-LD schema (SoftwareApplication, Product, FAQPage, Organization) on home, features, pricing, about; Open Graph image generation; SEO-optimized metadata (title, description) EN/FR; H1/H2 hierarchy aligned with spec; pricing teaser section on homepage
 
 ### Static Website + Dual Vercel

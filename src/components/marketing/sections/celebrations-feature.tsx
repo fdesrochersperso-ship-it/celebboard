@@ -9,6 +9,7 @@ import {
   AnimatedCelebrationMockup,
   AudioWaveform,
 } from "@/components/marketing/lovable";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
 import { PartyPopper, Volume2, Users, AlertTriangle, UtensilsCrossed } from "lucide-react";
 
 const avatars = [
@@ -54,7 +55,11 @@ export function CelebrationsFeaturePage() {
       <FeatureSection
         badge="Core"
         title="Full-screen celebration popups"
-        description="When a deal closes in HubSpot, a webhook fires and the dashboard erupts. Employee photos bounce in, confetti rains down, the goal horn blasts, and an animated counter rolls up to the deal value."
+        description={
+          <>
+            When a deal closes in HubSpot, a webhook fires and the dashboard erupts. Employee photos bounce in, confetti rains down, the goal horn blasts, and an animated counter rolls up to the deal value.
+          </>
+        }
         visual={<AnimatedCelebrationMockup />}
       >
         <div className="flex flex-wrap gap-3 mt-4">
@@ -167,11 +172,7 @@ export function CelebrationsFeaturePage() {
                       className="text-center opacity-0"
                       style={{ animation: `photo-bounce 0.7s ease-out ${i * 0.2}s forwards` }}
                     >
-                      <div
-                        className={`w-14 h-14 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-2 border-background animate-pulse-glow`}
-                      >
-                        <span className="text-xs font-bold text-white">{a.initials}</span>
-                      </div>
+                      <EmployeeAvatar initials={a.initials} size="lg" className="animate-pulse-glow" />
                       <span className="text-[10px] text-muted-foreground mt-1 block">{a.name}</span>
                     </div>
                   ))}

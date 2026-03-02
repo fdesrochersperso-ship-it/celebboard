@@ -6,6 +6,8 @@ import {
   AnimatedOnScroll,
   AnimatedKPICarousel,
 } from "@/components/marketing/lovable";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
+import { IntegrationLogo } from "@/components/marketing/IntegrationLogo";
 import {
   BarChart3,
   Activity,
@@ -90,8 +92,7 @@ export function DashboardFeaturePage() {
           </AnimatedOnScroll>
           <AnimatedOnScroll delay={200}>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Auto-refreshing KPI cards, leaderboards, charts, and real-time Google Analytics — all
-              on one beautiful screen.
+              Auto-refreshing KPI cards, leaderboards, charts, and real-time Google Analytics — all on one beautiful screen.
             </p>
           </AnimatedOnScroll>
         </div>
@@ -135,11 +136,7 @@ export function DashboardFeaturePage() {
                           }}
                         >
                           <span className="text-base">{p.rank}</span>
-                          <div
-                            className={`w-8 h-8 rounded-full bg-gradient-to-br ${p.gradient} flex items-center justify-center border border-background`}
-                          >
-                            <span className="text-[9px] font-bold text-white">{p.initials}</span>
-                          </div>
+                          <EmployeeAvatar initials={p.initials} size="sm" borderClassName="border border-background" />
                           <div>
                             <div className="text-xs font-medium text-foreground">{p.name}</div>
                             <div className="text-[10px] text-muted-foreground">{p.value}</div>
@@ -252,7 +249,9 @@ export function DashboardFeaturePage() {
           <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <AnimatedOnScroll>
               <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 text-center space-y-3">
-                <div className="text-4xl font-black text-foreground">HubSpot</div>
+                <div className="flex justify-center">
+                  <IntegrationLogo name="hubspot" size={80} />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Deals, owners, pipeline stages, acceptation metrics
                 </p>
@@ -260,7 +259,9 @@ export function DashboardFeaturePage() {
             </AnimatedOnScroll>
             <AnimatedOnScroll delay={100}>
               <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 text-center space-y-3">
-                <div className="text-4xl font-black text-foreground">GA4</div>
+                <div className="flex justify-center">
+                  <IntegrationLogo name="ga4" size={80} />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Real-time active users with live pulsing indicator
                 </p>

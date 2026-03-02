@@ -5,7 +5,7 @@ import { AnimatedOnScroll } from "./AnimatedOnScroll";
 interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
-  description: string;
+  description: React.ReactNode;
   href: string;
   delay?: number;
   gradient?: "primary" | "celebration" | "success";
@@ -37,7 +37,7 @@ export function FeatureCard({
           <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="text-muted-foreground leading-relaxed">{description}</p>
+          <div className="text-muted-foreground leading-relaxed">{description}</div>
         </div>
       </Link>
     </AnimatedOnScroll>

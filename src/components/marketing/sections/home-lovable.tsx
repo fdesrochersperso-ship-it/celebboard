@@ -21,6 +21,8 @@ import {
   AnimatedDashboardMockup,
   MarketingAnimatedCounter,
 } from "@/components/marketing/lovable";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
+import { IntegrationLogo } from "@/components/marketing/IntegrationLogo";
 
 const teamAvatars = [
   { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]" },
@@ -130,15 +132,11 @@ export function HomeLovable() {
           <p className="text-sm text-muted-foreground uppercase tracking-wider font-medium mb-6">
             {tIntegrations("title")}
           </p>
-          <div className="flex items-center justify-center gap-10 lg:gap-16 flex-wrap">
-            {["HubSpot", "Slack", "Google Analytics", "Spotify"].map((name) => (
-              <span
-                key={name}
-                className="text-lg font-semibold text-muted-foreground/60"
-              >
-                {name}
-              </span>
-            ))}
+          <div className="flex items-center justify-center gap-12 lg:gap-16 flex-wrap">
+            <IntegrationLogo name="hubspot" size={56} className="opacity-80 hover:opacity-100 transition-opacity" />
+            <IntegrationLogo name="slack" size={56} className="opacity-80 hover:opacity-100 transition-opacity" />
+            <IntegrationLogo name="google-analytics" size={56} className="opacity-80 hover:opacity-100 transition-opacity" />
+            <IntegrationLogo name="spotify" size={56} className="opacity-80 hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </section>
@@ -216,12 +214,12 @@ export function HomeLovable() {
                       {teamAvatars.map((a, ai) => (
                         <div
                           key={a.initials}
-                          className={`w-10 h-10 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-2 border-background text-xs font-bold text-white opacity-0`}
+                          className="opacity-0"
                           style={{
                             animation: `slide-in-from-left 0.4s ease-out ${ai * 0.1}s forwards`,
                           }}
                         >
-                          {a.initials}
+                          <EmployeeAvatar initials={a.initials} size="md" />
                         </div>
                       ))}
                     </div>

@@ -5,6 +5,7 @@ import {
   FeatureSection,
   AnimatedOnScroll,
 } from "@/components/marketing/lovable";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
 import { Settings, Volume2, Users, History } from "lucide-react";
 
 const themes = [
@@ -217,19 +218,18 @@ export function AdminFeaturePage() {
                 </div>
                 <h3 className="text-2xl font-bold text-foreground">Employee Management</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Add team members manually or sync from HubSpot. Upload photos, map HubSpot owner
-                  IDs, and bulk-sync employee photos via an edge function.
+                  Add team members manually or sync from HubSpot. Upload photos, map HubSpot owner IDs, and bulk-sync employee photos via an edge function.
                 </p>
                 <div className="flex -space-x-3 mt-4">
                   {avatarStack.map((a, i) => (
                     <div
                       key={a.initials}
-                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${a.gradient} border-2 border-background flex items-center justify-center text-xs font-bold text-white opacity-0`}
+                      className="opacity-0"
                       style={{
                         animation: `slide-in-from-left 0.4s ease-out ${i * 0.1}s forwards`,
                       }}
                     >
-                      {a.initials}
+                      <EmployeeAvatar initials={a.initials} size="md" />
                     </div>
                   ))}
                   <div

@@ -8,6 +8,7 @@ import {
   MockupFrame,
   CSSEqualizer,
 } from "@/components/marketing/lovable";
+import { EmployeeAvatar } from "@/components/marketing/EmployeeAvatar";
 import { MessageSquare, Music, Quote, QrCode, Hash } from "lucide-react";
 
 const slackMessages = [
@@ -90,7 +91,11 @@ export function EngagementFeaturePage() {
 
       {/* Slack Feed */}
       <FeatureSection
-        badge="Slack Integration"
+        badge={
+          <span className="inline-flex items-center gap-1.5">
+            Slack Integration
+          </span>
+        }
         title="Live content from your team"
         description="Photos, messages, and reactions posted in designated Slack channels automatically appear in a rotating feed on the dashboard. Images show full-bleed with gradient overlays; text posts get colorful backgrounds."
         visual={
@@ -106,10 +111,8 @@ export function EngagementFeaturePage() {
                     transform: activeMsg === i ? "translateY(0)" : "translateY(-10px)",
                   }}
                 >
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${msg.avatar} flex items-center justify-center mx-auto mb-3 border-2 border-background`}
-                  >
-                    <span className="text-xs font-bold text-white">{msg.initials}</span>
+                  <div className="mx-auto mb-3 flex justify-center">
+                    <EmployeeAvatar initials={msg.initials} size="md" />
                   </div>
                   <p className="text-foreground font-medium">{msg.text}</p>
                   <div className="flex items-center justify-center gap-2 mt-3">
@@ -125,9 +128,7 @@ export function EngagementFeaturePage() {
                   📸 Team photo
                 </div>
                 <div className="p-3 bg-card flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)] flex items-center justify-center">
-                    <span className="text-[7px] font-bold text-white">MP</span>
-                  </div>
+                  <EmployeeAvatar initials="MP" size="xs" />
                   <span className="text-xs text-muted-foreground">
                     Mike • <Hash className="w-3 h-3 inline" />photos
                   </span>
@@ -143,7 +144,11 @@ export function EngagementFeaturePage() {
         reversed
         badge="Spotify"
         title="Now Playing on the office speakers"
-        description="Songs shared in a dedicated Slack channel display as a compact 'Now Playing' card with album art, track name, artist, and who shared it. The pulsing green dot adds life to the dashboard."
+        description={
+          <>
+            Songs shared in a dedicated Slack channel display as a compact 'Now Playing' card with album art, track name, artist, and who shared it. The pulsing green dot adds life to the dashboard.
+          </>
+        }
         visual={
           <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden max-w-sm mx-auto">
             <div className="flex">
@@ -160,9 +165,7 @@ export function EngagementFeaturePage() {
                 <div className="text-sm font-bold text-foreground">Bohemian Rhapsody</div>
                 <div className="text-xs text-muted-foreground">Queen</div>
                 <div className="flex items-center gap-1.5 mt-3">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)] flex items-center justify-center">
-                    <span className="text-[7px] font-bold text-white">AK</span>
-                  </div>
+                  <EmployeeAvatar initials="AK" size="xs" />
                   <span className="text-[11px] text-muted-foreground">Shared by Alex</span>
                 </div>
               </div>
@@ -229,12 +232,7 @@ export function EngagementFeaturePage() {
                 >
                   <div className="flex -space-x-2">
                     {win.avatars.map((a) => (
-                      <div
-                        key={a}
-                        className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarGradients[a]} border-2 border-background flex items-center justify-center`}
-                      >
-                        <span className="text-[7px] font-bold text-white">{a}</span>
-                      </div>
+                      <EmployeeAvatar key={a} initials={a} size="sm" />
                     ))}
                   </div>
                   <div className="flex-1 min-w-0">
