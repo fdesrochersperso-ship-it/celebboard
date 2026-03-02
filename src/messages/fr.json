@@ -32,11 +32,16 @@
 
   "nav": {
     "features": "Fonctionnalités",
+    "celebrations": "Célébrations",
+    "dashboard": "Tableau de bord",
+    "engagement": "Engagement",
+    "admin": "Admin",
     "pricing": "Tarifs",
     "about": "À propos",
     "blog": "Blogue",
     "login": "Connexion",
     "cta": "Essayer gratuitement",
+    "liveDemo": "Démo en direct",
     "menuOpen": "Ouvrir le menu",
     "menuClose": "Fermer le menu"
   },
@@ -80,12 +85,29 @@
 
   "home": {
     "hero": {
-      "title": "Les victoires arrivent. Faites-les voir à votre équipe.",
+      "badge": "Tableaux de bord en temps réel",
+      "title": "Les victoires arrivent. Faites-les",
+      "titleHighlight": "voir à votre équipe.",
       "subtitle": "Connectez votre CRM ou vos outils de travail. Quand un objectif est atteint, votre écran de bureau célèbre automatiquement — confettis, sons, photos d'équipe, classements en direct. Prêt en quelques minutes.",
       "cta": "Essayer gratuitement",
       "ctaSecondary": "Voir en action",
+      "ctaSeeFeatures": "Voir les fonctionnalités",
       "noCard": "Essai gratuit de 14 jours · Aucune carte de crédit requise"
     },
+    "integrations": {
+      "title": "Propulsé par les intégrations que vous utilisez déjà",
+      "logos": ["HubSpot", "Slack", "Google Analytics", "Spotify"]
+    },
+    "featureGrid": {
+      "lovableTitle": "Tout ce dont votre équipe a besoin",
+      "lovableSubtitle": "Des célébrations en direct aux tableaux de bord KPI, gardez votre équipe motivée et informée."
+    },
+    "stats": [
+      { "value": "500+", "label": "Célébrations déclenchées" },
+      { "value": "4", "label": "Thèmes disponibles" },
+      { "value": "6", "label": "Intégrations" },
+      { "value": "24/7", "label": "Mises à jour en direct" }
+    ],
 
     "logoBar": {
       "title": "Des équipes performantes nous font confiance"
@@ -148,6 +170,10 @@
     },
 
     "howItWorks": {
+      "lovableTitle": "Opérationnel en 3 étapes",
+      "step1": { "title": "Connectez HubSpot", "desc": "Liez votre CRM. Les webhooks se déclenchent automatiquement quand les ventes passent en closed-won." },
+      "step2": { "title": "Installez un écran", "desc": "Ouvrez l'URL du tableau de bord sur n'importe quel écran. Rafraîchissement et boucle KPI automatiques." },
+      "step3": { "title": "Célébrez!", "desc": "Chaque vente conclue déclenche confettis, effets sonores et applaudissements en temps réel." },
       "title": "Comment CelebBoard fonctionne",
       "steps": [
         {
@@ -228,8 +254,11 @@
     "cta": {
       "title": "La prochaine victoire de votre équipe vous attend.",
       "subtitle": "Commencez à célébrer en quelques minutes. Gratuit pendant 14 jours.",
+      "lovableTitleBefore": "Prêt à ",
+      "lovableTitleHighlight": "célébrer",
+      "lovableSubtitle": "Configurez le tableau de bord de célébration de votre équipe en quelques minutes. Aucune carte de crédit requise.",
       "cta": "Essayer gratuitement",
-      "ctaSecondary": "Réserver une démo",
+      "ctaSecondary": "Essayer la démo",
       "noCard": "Aucune carte de crédit requise"
     }
   },
@@ -576,7 +605,13 @@
       "subtitle": "Réflexions sur la célébration d'équipe, la culture de bureau et la visibilité des victoires."
     },
     "comingSoon": "De nouveaux articles arrivent bientôt. En attendant, lancez votre essai gratuit et célébrez quelque chose.",
-    "cta": "Essayer gratuitement"
+    "noArticles": "Aucun article pour le moment. Ajoutez des fichiers .mdx dans src/content/blog/en/ et src/content/blog/fr/.",
+    "cta": "Essayer gratuitement",
+    "readMore": "Lire l'article",
+    "minuteRead": "min de lecture",
+    "publishedOn": "Publié le",
+    "updatedOn": "Mis à jour le",
+    "backToBlog": "← Retour au blogue"
   },
 
   "legal": {

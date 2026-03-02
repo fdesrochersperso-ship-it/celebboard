@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
       type="button"
       onClick={toggle}
       aria-label={t("switchTo")}
-      className="inline-flex h-9 items-center justify-center border border-white/[0.15] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors hover:border-white/30"
+      className="inline-flex h-9 items-center justify-center border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/50"
     >
       {locale === "en" ? t("fr") : t("en")}
     </button>

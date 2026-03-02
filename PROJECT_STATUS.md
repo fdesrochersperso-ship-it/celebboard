@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2026-02-28 (KPI leaderboards)
+**Last updated:** 2026-03-02 (Dev server lock fix)
 
 ## What's Built (Current Capabilities)
 
@@ -43,18 +43,19 @@
 - **Slack connector**: `syncTeamMembers` — sync users from Slack API
 - No GA4 connector logic
 
-### Marketing Site (i18n + Design System)
+### Marketing Site (i18n + Lovable Design)
 
-- **Cinematic Split** design system per `docs/design-system-website`: true black (#0A0A0A) dark sections, warm cream (#FAF9F7) light sections, amber (#F59E0B) accents, 0px border radius, Sora font, overline pattern, asymmetric splits
+- **Lovable design system** per `docs/website-lovable-documentation`: 4 themes (dark default), CSS variables, Inter font, gradient-primary/celebration/success, glass-morphism cards, CSS-only animations
 - Bilingual marketing pages (EN/FR) with next-intl; all copy from `docs/marketing-copy-reference.md` and `src/messages/{en,fr}.json`
-- Routes: `/`, `/features`, `/pricing`, `/about`, `/blog`, `/legal/terms`, `/legal/privacy` — French at `/fr/*`
-- Navbar (cta, menu labels), Footer (4-column: product, company, legal, connect), LanguageSwitcher (aria-label)
-- Home: Hero, LogoBar, Problem (before/after), FeaturesGrid (6 cards), HowItWorks, Testimonials, Verticals, CTA
-- Features: CelebrationEngine, IntegrationsDetail, DashboardFeatures, AdminFeatures; page-specific CTA
+- Routes: `/`, `/features`, `/celebrations`, `/dashboard`, `/engagement`, `/admin`, `/pricing`, `/about`, `/blog`, `/legal/terms`, `/legal/privacy` — French at `/fr/*`
+- Navbar (Celebrations, Dashboard, Engagement, Admin, Pricing, About, Blog; Live Demo, Get Started), Footer (3-column Lovable style), LanguageSwitcher
+- Home: Hero with FloatingParticles, AnimatedDashboardMockup, integration logos, 4 FeatureCards, How It Works (3 steps), MarketingAnimatedCounter stats, CTA
+- Feature pages: Celebrations, Dashboard, Engagement, Admin — each with Lovable structure; Features hub links to all four
 - Pricing: PricingCards (3 plans), PricingComparison table, PricingFaq accordion
-- About: Story (4 paragraphs), Values (6 items), Location (lang switch); Blog scaffold with CTA
+- About: Story (4 paragraphs), Values (6 items), Location (lang switch); Blog: MDX-based articles in `src/content/blog/{en,fr}/`, index + article pages, sitemap
 - Middleware: i18n for marketing routes only; Supabase auth for `/app`, `/login`, `/signup` unchanged
-- **On-site SEO** (per `docs/seo-content-plan-website`): metadataBase, robots, sitemap.xml, robots.txt; canonical + hreflang on all marketing pages; JSON-LD schema (SoftwareApplication, Product, FAQPage, Organization) on home, features, pricing, about; Open Graph image generation; SEO-optimized metadata (title, description) EN/FR; H1/H2 hierarchy aligned with spec; pricing teaser section on homepage
+- **Dev server**: `scripts/pre-dev.js` removes stale `.next/dev/lock` before `next dev` to avoid "Unable to acquire lock" after crash/kill
+- **On-site SEO** (per `docs/seo-content-plan-website.md`): metadataBase, robots, sitemap.xml, robots.txt; canonical + hreflang on all marketing pages; JSON-LD schema (SoftwareApplication, Product, FAQPage, Organization) on home, features, pricing, about; Open Graph image generation; SEO-optimized metadata (title, description) EN/FR; H1/H2 hierarchy aligned with spec; pricing teaser section on homepage
 
 ### Static Website + Dual Vercel
 

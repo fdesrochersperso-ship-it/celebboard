@@ -6,7 +6,7 @@
 > 3. Create 18 blog articles + 7 comparison pages over 4 months
 > 4. Add all required translation keys (EN/FR)
 >
-> **For Cursor**: Reference `@MARKETING-ARCHITECTURE.md` and `@.cursorrules` alongside this document.
+> **For Cursor**: Reference `@website-architecture.md` and `@.cursorrules` alongside this document.
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## 1. Blog Infrastructure Setup
 
-The blog does NOT exist yet — only a scaffold `blog/page.tsx`. Build a lightweight MDX-based blog system using local content files (no CMS needed for v1).
+**Status:** Blog infrastructure is built. Articles live in `src/content/blog/{en,fr}/`. Add `.mdx` files to publish. Comparison pages (`/vs/[competitor]`) use `src/content/vs/{en,fr}/` — add `getComparisonPage`/`getComparisonSlugs` and vs route when ready.
 
 ### Approach: MDX + Content Collections
 
@@ -191,10 +191,10 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "blog" });
+  const t = await getTranslations({ locale, namespace: "metadata.blog" });
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
+    title: t("title"),
+    description: t("description"),
     alternates: {
       canonical: locale === "en" ? "/blog" : "/fr/blog",
       languages: { en: "/blog", fr: "/fr/blog" },
@@ -209,8 +209,8 @@ export default async function BlogIndex({ params }: Props) {
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-4">{t("title")}</h1>
-      <p className="text-lg text-muted-foreground mb-12">{t("subtitle")}</p>
+      <h1 className="text-4xl font-bold mb-4">{t("hero.title")}</h1>
+      <p className="text-lg text-muted-foreground mb-12">{t("hero.subtitle")}</p>
 
       <div className="grid gap-8">
         {articles.map((article) => (
@@ -388,45 +388,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: "/blog", priority: 0.8, changeFrequency: "weekly" as const },
   ];
 
-  // Blog articles (both locales)
+  // Blog articles (both locales) — lastModified must be Date
   const enArticles = getArticles("en").map((a) => ({
-    url: `/blog/${a.slug}`,
-    lastModified: a.updatedAt || a.publishedAt,
-    changeFrequency: "monthly" as const,
+    url: `${baseUrl}/blog/${a.slug}`,
+    lastModified: new Date(a.updatedAt ?? a.publishedAt),
+    changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
   const frArticles = getArticles("fr").map((a) => ({
-    url: `/fr/blog/${a.slug}`,
-    lastModified: a.updatedAt || a.publishedAt,
-    changeFrequency: "monthly" as const,
+    url: `${baseUrl}/fr/blog/${a.slug}`,
+    lastModified: new Date(a.updatedAt ?? a.publishedAt),
+    changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
-  // Comparison pages
+  // Comparison pages (when vs/ content exists)
   const enComparisons = getComparisonSlugs("en").map((slug) => ({
-    url: `/vs/${slug}`,
+    url: `${baseUrl}/vs/${slug}`,
+    lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
   const frComparisons = getComparisonSlugs("fr").map((slug) => ({
-    url: `/fr/vs/${slug}`,
+    url: `${baseUrl}/fr/vs/${slug}`,
+    lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
 
-  // Build full sitemap with both locales for static pages
+  // Static pages (EN and FR)
   const allStatic = staticPages.flatMap((page) => [
-    { ...page, url: `${baseUrl}${page.url}` },
-    { ...page, url: `${baseUrl}/fr${page.url}` },
+    { url: `${baseUrl}${page.url}`, lastModified: new Date(), changeFrequency: page.changeFrequency, priority: page.priority },
+    { url: `${baseUrl}/fr${page.url}`, lastModified: new Date(), changeFrequency: page.changeFrequency, priority: page.priority },
   ]);
 
-  return [
-    ...allStatic,
-    ...enArticles.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
-    ...frArticles.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
-    ...enComparisons.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
-    ...frComparisons.map((a) => ({ ...a, url: `${baseUrl}${a.url}` })),
-  ];
+  return [...allStatic, ...enArticles, ...frArticles, ...enComparisons, ...frComparisons];
 }
 ```
 
@@ -1537,7 +1533,7 @@ Every /vs/ page links to: Article 1, Article 5, Article 11, and the most relevan
 **Cursor prompt to get started (paste into Composer):**
 
 ```
-Build the blog infrastructure for CelebBoard's marketing site. Reference @CelebBoard-Content-Plan-and-SEO-Spec.md for the full spec.
+Build the blog infrastructure for CelebBoard's marketing site. Reference @docs/seo-content-plan-website for the full spec.
 
 Phase 1 — install dependencies and create the content loading system:
 1. Run: pnpm add next-mdx-remote gray-matter reading-time @tailwindcss/typography
@@ -1546,7 +1542,7 @@ Phase 1 — install dependencies and create the content loading system:
 4. Create src/app/sitemap.ts and src/app/robots.ts from the spec
 5. Merge the new blog, vs, and metadata keys into src/messages/en.json and src/messages/fr.json (DO NOT replace existing keys — merge alongside them)
 
-Reference @MARKETING-ARCHITECTURE.md for the i18n patterns and @.cursorrules for coding conventions.
+Reference @website-architecture.md for the i18n patterns and @.cursorrules for coding conventions.
 ```
 
 ---

@@ -1,13 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Hero } from "@/components/marketing/sections/hero";
-import { LogoBar } from "@/components/marketing/sections/logo-bar";
-import { Problem } from "@/components/marketing/sections/problem";
-import { FeaturesGrid } from "@/components/marketing/sections/features-grid";
-import { HowItWorks } from "@/components/marketing/sections/how-it-works";
-import { Testimonials } from "@/components/marketing/sections/testimonials";
-import { Verticals } from "@/components/marketing/sections/verticals";
-import { PricingTeaser } from "@/components/marketing/sections/pricing-teaser";
-import { Cta } from "@/components/marketing/sections/cta";
+import { HomeLovable } from "@/components/marketing/sections/home-lovable";
 
 export async function generateMetadata({
   params,
@@ -59,15 +51,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchema) }}
       />
-      <Hero />
-      <LogoBar />
-      <Problem />
-      <FeaturesGrid />
-      <HowItWorks />
-      <Testimonials />
-      <Verticals />
-      <PricingTeaser />
-      <Cta />
+      <HomeLovable />
     </>
   );
 }

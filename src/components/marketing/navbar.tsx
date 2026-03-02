@@ -1,123 +1,110 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const navLinks = [
+  { href: "/celebrations", key: "celebrations" },
+  { href: "/dashboard", key: "dashboard" },
+  { href: "/engagement", key: "engagement" },
+  { href: "/admin", key: "admin" },
+  { href: "/pricing", key: "pricing" },
+  { href: "/about", key: "about" },
+  { href: "/blog", key: "blog" },
+];
 
 export function Navbar() {
   const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 h-14 w-full border-b border-white/[0.06] bg-[#0A0A0A]/90 backdrop-blur-md">
-      <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-        <Link
-          href="/"
-          className="text-base font-bold tracking-[0.15em] uppercase text-[#FAFAFA]"
-        >
-          CelebBoard
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold text-foreground">CelebBoard</span>
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <Link
-            href="/features"
-            className="text-[13px] font-medium text-[#888] transition-colors hover:text-[#FAFAFA]"
-          >
-            {t("features")}
-          </Link>
-          <Link
-            href="/pricing"
-            className="text-[13px] font-medium text-[#888] transition-colors hover:text-[#FAFAFA]"
-          >
-            {t("pricing")}
-          </Link>
-          <Link
-            href="/about"
-            className="text-[13px] font-medium text-[#888] transition-colors hover:text-[#FAFAFA]"
-          >
-            {t("about")}
-          </Link>
-          <Link
-            href="/blog"
-            className="text-[13px] font-medium text-[#888] transition-colors hover:text-[#FAFAFA]"
-          >
-            {t("blog")}
-          </Link>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname === link.href
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`}
+            >
+              {t(link.key)}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="hidden md:flex items-center gap-3">
           <LanguageSwitcher />
-          <Link
-            href="/login"
-            className="text-[13px] font-medium text-[#888] transition-colors hover:text-[#FAFAFA]"
-          >
-            {t("login")}
-          </Link>
-          <Link
-            href="/signup"
-            className="inline-flex h-9 items-center justify-center bg-[#F59E0B] px-4 py-2 text-xs font-semibold text-[#0F172A] shadow-[0_4px_16px_rgba(245,158,11,0.2)] transition-all hover:translate-y-[-1px] hover:bg-[#D97706]"
-          >
-            {t("cta")}
-          </Link>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/login">{t("login")}</Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/app">{t("liveDemo")}</Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link href="/signup">{t("cta")}</Link>
+          </Button>
         </div>
 
+        {/* Mobile toggle */}
         <button
           type="button"
-          className="flex h-11 w-11 items-center justify-center text-[#FAFAFA] md:hidden"
+          className="md:hidden p-2 text-foreground"
           onClick={() => setOpen(!open)}
           aria-label={open ? t("menuClose") : t("menuOpen")}
         >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-      </nav>
+      </div>
 
+      {/* Mobile menu */}
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#0A0A0A] px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-1">
+        <div className="md:hidden border-t border-border bg-background px-6 py-4 space-y-2">
+          {navLinks.map((link) => (
             <Link
-              href="/features"
+              key={link.href}
+              href={link.href}
               onClick={() => setOpen(false)}
-              className="flex h-12 items-center text-[13px] font-medium text-[#888] hover:text-[#FAFAFA]"
+              className="block px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
-              {t("features")}
+              {t(link.key)}
             </Link>
-            <Link
-              href="/pricing"
-              onClick={() => setOpen(false)}
-              className="flex h-12 items-center text-[13px] font-medium text-[#888] hover:text-[#FAFAFA]"
-            >
-              {t("pricing")}
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setOpen(false)}
-              className="flex h-12 items-center text-[13px] font-medium text-[#888] hover:text-[#FAFAFA]"
-            >
-              {t("about")}
-            </Link>
-            <Link
-              href="/blog"
-              onClick={() => setOpen(false)}
-              className="flex h-12 items-center text-[13px] font-medium text-[#888] hover:text-[#FAFAFA]"
-            >
-              {t("blog")}
-            </Link>
-            <div className="flex h-12 items-center">
+          ))}
+          <div className="pt-3 flex flex-col gap-2">
+            <div className="px-4 py-2">
               <LanguageSwitcher />
             </div>
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="flex h-12 items-center text-[13px] font-medium text-[#888] hover:text-[#FAFAFA]"
-            >
-              {t("login")}
-            </Link>
-            <Link
-              href="/signup"
-              onClick={() => setOpen(false)}
-              className="mt-2 flex h-11 items-center justify-center bg-[#F59E0B] text-xs font-semibold text-[#0F172A]"
-            >
-              {t("cta")}
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/login" onClick={() => setOpen(false)}>
+                {t("login")}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/app" onClick={() => setOpen(false)}>
+                {t("liveDemo")}
+              </Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/signup" onClick={() => setOpen(false)}>
+                {t("cta")}
+              </Link>
+            </Button>
           </div>
         </div>
       )}

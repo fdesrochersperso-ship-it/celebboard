@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getArticles, getComparisonSlugs } from "@/lib/content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://celebboard.com";
@@ -17,19 +18,57 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
   for (const page of staticPages) {
-    // English (no prefix)
     entries.push({
       url: `${baseUrl}${page.path}`,
       lastModified: new Date(),
       changeFrequency: page.changeFrequency,
       priority: page.priority,
     });
-    // French
     entries.push({
       url: `${baseUrl}/fr${page.path}`,
       lastModified: new Date(),
       changeFrequency: page.changeFrequency,
       priority: page.priority,
+    });
+  }
+
+  // Blog articles (EN and FR)
+  const enArticles = getArticles("en");
+  const frArticles = getArticles("fr");
+  for (const a of enArticles) {
+    entries.push({
+      url: `${baseUrl}/blog/${a.slug}`,
+      lastModified: new Date(a.updatedAt ?? a.publishedAt),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    });
+  }
+  for (const a of frArticles) {
+    entries.push({
+      url: `${baseUrl}/fr/blog/${a.slug}`,
+      lastModified: new Date(a.updatedAt ?? a.publishedAt),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    });
+  }
+
+  // Comparison pages (when vs/ content exists)
+  const enComparisons = getComparisonSlugs("en");
+  const frComparisons = getComparisonSlugs("fr");
+  for (const slug of enComparisons) {
+    entries.push({
+      url: `${baseUrl}/vs/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    });
+  }
+  for (const slug of frComparisons) {
+    entries.push({
+      url: `${baseUrl}/fr/vs/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     });
   }
 

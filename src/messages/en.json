@@ -32,11 +32,16 @@
 
   "nav": {
     "features": "Features",
+    "celebrations": "Celebrations",
+    "dashboard": "Dashboard",
+    "engagement": "Engagement",
+    "admin": "Admin",
     "pricing": "Pricing",
     "about": "About",
     "blog": "Blog",
     "login": "Log in",
     "cta": "Get started free",
+    "liveDemo": "Live Demo",
     "menuOpen": "Open menu",
     "menuClose": "Close menu"
   },
@@ -80,12 +85,29 @@
 
   "home": {
     "hero": {
-      "title": "Wins happen. Make sure your team sees them.",
+      "badge": "Real-time office dashboards",
+      "title": "Wins happen. Make sure your team",
+      "titleHighlight": "sees them.",
       "subtitle": "Connect your CRM or business tools. When milestones hit, your office TV celebrates automatically — confetti, sounds, team photos, live leaderboards. Set up in minutes.",
       "cta": "Get started free",
       "ctaSecondary": "See it in action",
+      "ctaSeeFeatures": "See Features",
       "noCard": "Free 14-day trial · No credit card required"
     },
+    "integrations": {
+      "title": "Powered by integrations you already use",
+      "logos": ["HubSpot", "Slack", "Google Analytics", "Spotify"]
+    },
+    "featureGrid": {
+      "lovableTitle": "Everything your team needs",
+      "lovableSubtitle": "From live celebrations to KPI dashboards, keep your team motivated and informed."
+    },
+    "stats": [
+      { "value": "500+", "label": "Celebrations triggered" },
+      { "value": "4", "label": "Themes available" },
+      { "value": "6", "label": "Integrations" },
+      { "value": "24/7", "label": "Live updates" }
+    ],
 
     "logoBar": {
       "title": "Trusted by activity-driven teams"
@@ -148,6 +170,10 @@
     },
 
     "howItWorks": {
+      "lovableTitle": "Up and running in 3 steps",
+      "step1": { "title": "Connect HubSpot", "desc": "Link your CRM. Webhooks fire automatically when deals move to closed-won." },
+      "step2": { "title": "Mount a TV", "desc": "Open the dashboard URL on any screen. It auto-refreshes and loops KPIs." },
+      "step3": { "title": "Celebrate!", "desc": "Every closed deal triggers confetti, sound effects, and team cheers in real time." },
       "title": "How CelebBoard works",
       "steps": [
         {
@@ -228,8 +254,11 @@
     "cta": {
       "title": "Your team's next win is waiting.",
       "subtitle": "Start celebrating in minutes. Free for 14 days.",
+      "lovableTitleBefore": "Ready to ",
+      "lovableTitleHighlight": "celebrate",
+      "lovableSubtitle": "Set up your team's celebration dashboard in minutes. No credit card required.",
       "cta": "Get started free",
-      "ctaSecondary": "Book a demo",
+      "ctaSecondary": "Try the Demo",
       "noCard": "No credit card required"
     }
   },
@@ -576,7 +605,13 @@
       "subtitle": "Insights on team celebration, office culture, and making wins visible."
     },
     "comingSoon": "New posts coming soon. In the meantime, start your free trial and celebrate something.",
-    "cta": "Get started free"
+    "noArticles": "No articles yet. Add .mdx files to src/content/blog/en/ and src/content/blog/fr/.",
+    "cta": "Get started free",
+    "readMore": "Read article",
+    "minuteRead": "min read",
+    "publishedOn": "Published on",
+    "updatedOn": "Updated on",
+    "backToBlog": "← Back to blog"
   },
 
   "legal": {

@@ -1,10 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { FeaturesHero } from "@/components/marketing/sections/features-hero";
-import { CelebrationEngine } from "@/components/marketing/sections/celebration-engine";
-import { IntegrationsDetail } from "@/components/marketing/sections/integrations-detail";
-import { DashboardFeatures } from "@/components/marketing/sections/dashboard-features";
-import { AdminFeatures } from "@/components/marketing/sections/admin-features";
-import { Cta } from "@/components/marketing/sections/cta";
+import { FeaturesHubPage } from "@/components/marketing/sections/features-hub";
 
 export async function generateMetadata({
   params,
@@ -54,12 +49,7 @@ export default function FeaturesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(featuresSchema) }}
       />
-      <FeaturesHero />
-      <CelebrationEngine />
-      <IntegrationsDetail />
-      <DashboardFeatures />
-      <AdminFeatures />
-      <Cta namespace="features.cta" />
+      <FeaturesHubPage />
     </>
   );
 }

@@ -1,0 +1,2510 @@
+# Marketing Site (`/site/`) — Exhaustive Reconstruction Documentation
+
+> **Purpose**: This file contains every detail needed to reconstruct the CelebrationTV marketing website from scratch. It covers architecture, routing, every component (with full source code), every page (with full source code and verbatim content), the complete design system (4 themes), all CSS animations, the avatar system, dependencies, and responsive behavior.
+
+---
+
+## Table of Contents
+
+1. [Architecture Overview](#1-architecture-overview)
+2. [Routing Table](#2-routing-table)
+3. [Dependencies & Icons](#3-dependencies--icons)
+4. [Design System](#4-design-system)
+5. [CSS Animations (All Keyframes)](#5-css-animations-all-keyframes)
+6. [Avatar System](#6-avatar-system)
+7. [Shared Component Inventory (14 components)](#7-shared-component-inventory)
+8. [Page: Home (`/site`)](#8-page-home)
+9. [Page: Celebrations (`/site/celebrations`)](#9-page-celebrations)
+10. [Page: Dashboard (`/site/dashboard`)](#10-page-dashboard)
+11. [Page: Engagement (`/site/engagement`)](#11-page-engagement)
+12. [Page: Admin (`/site/admin`)](#12-page-admin)
+13. [Responsive Behavior](#13-responsive-behavior)
+14. [External Links & CTAs](#14-external-links--ctas)
+
+---
+
+## 1. Architecture Overview
+
+| Aspect | Detail |
+|---|---|
+| **Framework** | React 18 + TypeScript |
+| **Build tool** | Vite |
+| **Styling** | Tailwind CSS v3 + custom CSS in `index.css` |
+| **Routing** | React Router v6 (`react-router-dom`) |
+| **Auth** | None — all routes are public |
+| **Backend** | None — pure frontend static pages |
+| **Animation library** | None — all animations are CSS-only (no framer-motion) |
+| **State management** | None for marketing pages (one `useState` for mobile menu, one for Slack message cycling) |
+| **Shared layout** | `MarketingLayout` component wraps every page (sticky navbar + footer) |
+| **Route prefix** | All marketing routes live under `/site/*` |
+| **Font** | `Inter` (loaded via system stack: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`) |
+
+---
+
+## 2. Routing Table
+
+| Route | Component File | Description |
+|---|---|---|
+| `/site` | `src/pages/marketing/Home.tsx` | Landing page with hero, feature grid, how-it-works, stats, CTA |
+| `/site/celebrations` | `src/pages/marketing/CelebrationsFeature.tsx` | Celebrations feature deep-dive |
+| `/site/dashboard` | `src/pages/marketing/DashboardFeature.tsx` | Dashboard & KPI feature deep-dive |
+| `/site/engagement` | `src/pages/marketing/EngagementFeature.tsx` | Engagement features (Slack, Spotify, QR, quotes) |
+| `/site/admin` | `src/pages/marketing/AdminFeature.tsx` | Admin & customization feature deep-dive |
+
+**Route registration** in `src/App.tsx`:
+```tsx
+<Route path="/site" element={<MarketingHome />} />
+<Route path="/site/celebrations" element={<CelebrationsFeature />} />
+<Route path="/site/dashboard" element={<DashboardFeature />} />
+<Route path="/site/engagement" element={<EngagementFeature />} />
+<Route path="/site/admin" element={<AdminFeature />} />
+```
+
+---
+
+## 3. Dependencies & Icons
+
+### NPM Dependencies (only these are needed)
+- `react` ^18.3.1
+- `react-dom` ^18.3.1
+- `react-router-dom` ^6.30.1
+- `lucide-react` ^0.462.0
+- `tailwindcss` (with `tailwindcss-animate` plugin)
+- `class-variance-authority` (used by shared `Button` component)
+- `clsx` + `tailwind-merge` (used by `cn()` utility)
+
+### Lucide Icons Used Across Marketing Pages
+```
+PartyPopper, BarChart3, MessageSquare, Settings, ArrowRight, Plug, Monitor, 
+Sparkles, Volume2, Users, AlertTriangle, Crown, UtensilsCrossed, Activity, 
+TrendingUp, Trophy, ClipboardList, Music, Quote, QrCode, Hash, Palette, 
+History, Menu, X
+```
+
+---
+
+## 4. Design System
+
+### 4.1 Theme Architecture
+
+Themes are applied via `data-theme` attribute on `<html>`. CSS custom properties change per theme. Four themes exist:
+
+### 4.2 Theme: Dark (Default)
+
+```css
+:root,
+[data-theme="dark"] {
+  --background: 220 26% 14%;
+  --foreground: 210 40% 98%;
+  --card: 220 20% 18%;
+  --card-foreground: 210 40% 98%;
+  --popover: 220 26% 14%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 195 100% 50%;
+  --primary-foreground: 220 26% 14%;
+  --secondary: 220 20% 25%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 220 20% 20%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 38 95% 55%;
+  --accent-foreground: 220 26% 14%;
+  --success: 142 76% 45%;
+  --success-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 220 20% 25%;
+  --input: 220 20% 25%;
+  --ring: 195 100% 50%;
+  --radius: 0.75rem;
+  --gradient-primary: linear-gradient(135deg, hsl(195 100% 50%) 0%, hsl(210 100% 60%) 100%);
+  --gradient-celebration: linear-gradient(135deg, hsl(38 95% 55%) 0%, hsl(45 100% 60%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(150 80% 50%) 100%);
+  --shadow-card: 0 4px 20px hsl(220 26% 8% / 0.4);
+  --shadow-elevated: 0 8px 40px hsl(220 26% 8% / 0.6);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+### 4.3 Theme: Light
+
+```css
+[data-theme="light"] {
+  --background: 40 33% 97%;
+  --foreground: 220 14% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 14% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 14% 15%;
+  --primary: 270 91% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 220 14% 15%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 48 96% 53%;
+  --accent-foreground: 220 14% 15%;
+  --success: 160 84% 39%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 270 91% 65%;
+  --radius: 0.75rem;
+  --gradient-primary: linear-gradient(135deg, hsl(270 91% 65%) 0%, hsl(280 85% 55%) 100%);
+  --gradient-celebration: linear-gradient(135deg, hsl(48 96% 53%) 0%, hsl(45 100% 60%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(150 80% 45%) 100%);
+  --shadow-card: 0 4px 20px hsl(220 14% 15% / 0.08);
+  --shadow-elevated: 0 8px 40px hsl(220 14% 15% / 0.12);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+### 4.4 Theme: Vibrant
+
+```css
+[data-theme="vibrant"] {
+  --background: 260 30% 12%;
+  --foreground: 60 100% 97%;
+  --card: 260 25% 16%;
+  --card-foreground: 60 100% 97%;
+  --popover: 260 30% 12%;
+  --popover-foreground: 60 100% 97%;
+  --primary: 330 100% 60%;
+  --primary-foreground: 260 30% 12%;
+  --secondary: 260 25% 22%;
+  --secondary-foreground: 60 100% 97%;
+  --muted: 260 25% 20%;
+  --muted-foreground: 260 20% 70%;
+  --accent: 45 100% 55%;
+  --accent-foreground: 260 30% 12%;
+  --success: 150 100% 45%;
+  --success-foreground: 260 30% 12%;
+  --destructive: 0 90% 60%;
+  --destructive-foreground: 60 100% 97%;
+  --border: 260 25% 25%;
+  --input: 260 25% 25%;
+  --ring: 330 100% 60%;
+  --radius: 0.75rem;
+  --gradient-primary: linear-gradient(135deg, hsl(330 100% 60%) 0%, hsl(280 100% 65%) 100%);
+  --gradient-celebration: linear-gradient(135deg, hsl(45 100% 55%) 0%, hsl(30 100% 60%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(150 100% 45%) 0%, hsl(120 100% 50%) 100%);
+  --shadow-card: 0 4px 20px hsl(260 30% 5% / 0.5);
+  --shadow-elevated: 0 8px 40px hsl(260 30% 5% / 0.7);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+### 4.5 Theme: helloDarwin
+
+```css
+[data-theme="hellodarwin"] {
+  --background: 40 30% 96%;
+  --foreground: 0 0% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 300 60% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 20% 92%;
+  --secondary-foreground: 0 0% 13%;
+  --muted: 40 20% 94%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 52 100% 50%;
+  --accent-foreground: 0 0% 13%;
+  --success: 168 76% 42%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 40 15% 88%;
+  --input: 40 15% 88%;
+  --ring: 300 60% 45%;
+  --radius: 0.75rem;
+  --gradient-primary: linear-gradient(135deg, hsl(300 60% 45%) 0%, hsl(280 55% 50%) 100%);
+  --gradient-celebration: linear-gradient(135deg, hsl(52 100% 50%) 0%, hsl(45 100% 55%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(168 76% 42%) 0%, hsl(160 70% 45%) 100%);
+  --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.06);
+  --shadow-elevated: 0 8px 40px hsl(0 0% 0% / 0.1);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+### 4.6 Tailwind Config Color Mapping
+
+```ts
+// tailwind.config.ts — colors extend block
+colors: {
+  border: "hsl(var(--border))",
+  input: "hsl(var(--input))",
+  ring: "hsl(var(--ring))",
+  background: "hsl(var(--background))",
+  foreground: "hsl(var(--foreground))",
+  primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+  secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+  destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
+  muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+  accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+  success: { DEFAULT: "hsl(var(--success))", foreground: "hsl(var(--success-foreground))" },
+  popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
+  card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+}
+```
+
+### 4.7 Utility CSS Classes
+
+```css
+/* Gradient utilities — applied via class names */
+.gradient-primary { background: var(--gradient-primary); }
+.gradient-celebration { background: var(--gradient-celebration); }
+.gradient-success { background: var(--gradient-success); }
+
+/* Shadow utilities */
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-elevated { box-shadow: var(--shadow-elevated); }
+
+/* Transition utility */
+.transition-smooth { transition: var(--transition-smooth); }
+```
+
+### 4.8 Design Patterns
+
+- **Glass-morphism**: `bg-card/50 backdrop-blur-sm` on cards
+- **Section spacing**: `py-20 lg:py-28` for content sections
+- **Container**: `max-w-7xl mx-auto px-6 lg:px-8`
+- **Border radius**: `0.75rem` base (`rounded-xl` = 0.75rem)
+- **Typography scale**: `text-5xl lg:text-7xl` for hero h1, `text-3xl lg:text-5xl` for section h2
+
+---
+
+## 5. CSS Animations (All Keyframes)
+
+All keyframes are defined in `src/index.css` inside `@layer utilities`:
+
+```css
+@keyframes confetti-enhanced {
+  0% { transform: translateY(-20vh) rotate(0deg) scale(1); opacity: 1; }
+  25% { transform: translateY(20vh) rotate(180deg) scale(1.2) translateX(20px); }
+  50% { transform: translateY(50vh) rotate(360deg) scale(0.8) translateX(-20px); }
+  75% { transform: translateY(75vh) rotate(540deg) scale(1.1) translateX(10px); opacity: 0.8; }
+  100% { transform: translateY(110vh) rotate(720deg) scale(0.5) translateX(-10px); opacity: 0; }
+}
+
+@keyframes celebration-entrance {
+  0% { transform: scale(0.3) translateY(50px); opacity: 0; }
+  50% { transform: scale(1.1) translateY(-10px); }
+  70% { transform: scale(0.95) translateY(5px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes photo-bounce {
+  0% { transform: scale(0) translateY(30px); opacity: 0; }
+  60% { transform: scale(1.15) translateY(-15px); }
+  80% { transform: scale(0.95) translateY(5px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes title-glow {
+  0%, 100% { text-shadow: 0 0 30px hsl(38 95% 55% / 0.5), 0 0 60px hsl(38 95% 55% / 0.3); filter: brightness(1); }
+  50% { text-shadow: 0 0 50px hsl(38 95% 55% / 0.8), 0 0 100px hsl(38 95% 55% / 0.5); filter: brightness(1.2); }
+}
+
+@keyframes gif-entrance {
+  0% { transform: scale(0.5) translateY(30px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.6); }
+}
+
+@keyframes epic-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes epic-glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(251,191,36,0.4), 0 0 80px rgba(251,191,36,0.3), 0 0 120px rgba(251,191,36,0.2); }
+  50% { box-shadow: 0 0 60px rgba(251,191,36,0.6), 0 0 120px rgba(251,191,36,0.5), 0 0 180px rgba(251,191,36,0.4); }
+}
+
+@keyframes slide-up-card {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-card-loop {
+  0%, 15% { opacity: 1; }
+  20%, 45% { opacity: 0.3; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes celebration-mockup-cycle {
+  0%, 15% { opacity: 0; transform: scale(0.8); }
+  25%, 55% { opacity: 1; transform: scale(1); }
+  65%, 100% { opacity: 0; transform: scale(0.8); }
+}
+
+@keyframes float-particle {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translateY(-50vh) translateX(15px); }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(0); opacity: 0; }
+}
+
+@keyframes slide-left-loop {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes count-up-glow {
+  0% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+
+@keyframes equalizer-bar {
+  0%, 100% { height: 20%; }
+  25% { height: 80%; }
+  50% { height: 40%; }
+  75% { height: 100%; }
+}
+
+@keyframes slide-in-from-left {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes feed-cycle {
+  0%, 25% { opacity: 1; transform: translateY(0); }
+  30%, 100% { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes scroll-up-loop {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes pulse-border-marketing {
+  0%, 100% { border-color: hsl(var(--primary) / 0.2); }
+  50% { border-color: hsl(var(--primary) / 0.6); }
+}
+
+@keyframes flip-card {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(180deg); }
+}
+```
+
+### Animation Utility Classes
+
+```css
+.animate-confetti-enhanced { animation: confetti-enhanced 4s cubic-bezier(0.25,0.46,0.45,0.94) infinite; }
+.animate-celebration-entrance { animation: celebration-entrance 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-photo-bounce { animation: photo-bounce 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity: 0; }
+.animate-title-glow { animation: title-glow 2s ease-in-out infinite; }
+.animate-gif-entrance { animation: gif-entrance 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.5s forwards; opacity: 0; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-epic-shake { animation: epic-shake 0.5s ease-in-out; }
+.animate-epic-glow { animation: epic-glow 2s ease-in-out infinite; }
+```
+
+### Reduced Motion Support
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .marketing-animated,
+  .marketing-animated * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+```
+
+---
+
+## 6. Avatar System
+
+Five recurring avatar identities are used across all marketing pages:
+
+| Initials | Name | Gradient (Tailwind classes) | Color |
+|---|---|---|---|
+| JD | John D. | `from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]` | Blue |
+| SM | Sarah M. | `from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]` | Pink |
+| AK | Alex K. | `from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]` | Green |
+| LR | Lisa R. | `from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]` | Purple |
+| MP | Mike P. | `from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]` | Orange |
+
+### Avatar rendering pattern
+
+```tsx
+<div className={`w-10 h-10 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center border-2 border-background text-xs font-bold text-white`}>
+  {initials}
+</div>
+```
+
+### Stacking pattern (overlapping avatars)
+
+```tsx
+<div className="flex -space-x-2">  {/* or -space-x-3 */}
+  {avatars.map(a => <AvatarCircle ... />)}
+</div>
+```
+
+---
+
+## 7. Shared Component Inventory
+
+### 7.1 MarketingLayout
+
+**File**: `src/components/Marketing/MarketingLayout.tsx`
+
+**Description**: Wraps every marketing page. Contains a sticky navbar with logo, 4 nav links, two CTA buttons, mobile hamburger menu, and a 3-column footer.
+
+**Full source**:
+
+```tsx
+import { ReactNode, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Sparkles, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const navLinks = [
+  { label: "Celebrations", href: "/site/celebrations" },
+  { label: "Dashboard", href: "/site/dashboard" },
+  { label: "Engagement", href: "/site/engagement" },
+  { label: "Admin", href: "/site/admin" },
+];
+
+export const MarketingLayout = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
+          <Link to="/site" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-bold text-foreground">CelebrationTV</span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname === link.href
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="hidden md:flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/">Live Demo</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <a href="mailto:contact@hellodarwin.com">Get Started</a>
+            </Button>
+          </div>
+
+          {/* Mobile toggle */}
+          <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-border bg-background px-6 py-4 space-y-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-3 flex flex-col gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/" onClick={() => setMobileOpen(false)}>Live Demo</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <a href="mailto:contact@hellodarwin.com">Get Started</a>
+              </Button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Content */}
+      <main className="flex-1">{children}</main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-secondary/10 py-12">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <span className="font-bold text-foreground">CelebrationTV</span>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                Real-time celebration dashboards for teams that close deals and ship features.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider">Features</h4>
+              <ul className="space-y-2">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider">Integrations</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>HubSpot CRM</li>
+                <li>Slack</li>
+                <li>Google Analytics</li>
+                <li>Spotify</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-10 pt-6 border-t border-border text-center text-xs text-muted-foreground">
+            © {new Date().getFullYear()} helloDarwin. Built with ❤️ for teams that celebrate.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+```
+
+---
+
+### 7.2 AnimatedOnScroll
+
+**File**: `src/components/Marketing/AnimatedOnScroll.tsx`
+
+**Props**: `children: ReactNode`, `className?: string`, `delay?: number` (ms), `direction?: "up" | "left" | "right" | "scale"`
+
+**Behavior**: Uses IntersectionObserver (threshold 0.15, rootMargin "0px 0px -50px 0px") to trigger a one-time fade+translate animation. Once visible, element stays visible.
+
+```tsx
+import { useEffect, useRef, useState, ReactNode } from "react";
+
+interface AnimatedOnScrollProps {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+  direction?: "up" | "left" | "right" | "scale";
+}
+
+export const AnimatedOnScroll = ({
+  children,
+  className = "",
+  delay = 0,
+  direction = "up",
+}: AnimatedOnScrollProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -50px 0px" }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const transforms = {
+    up: "translate-y-8",
+    left: "translate-x-8",
+    right: "-translate-x-8",
+    scale: "scale-95",
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? "opacity-100 translate-y-0 translate-x-0 scale-100" : `opacity-0 ${transforms[direction]}`
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+```
+
+---
+
+### 7.3 GradientText
+
+**File**: `src/components/Marketing/GradientText.tsx`
+
+**Props**: `children: ReactNode`, `className?: string`, `gradient?: "primary" | "celebration" | "success" | "hero"`
+
+```tsx
+import { ReactNode } from "react";
+
+interface GradientTextProps {
+  children: ReactNode;
+  className?: string;
+  gradient?: "primary" | "celebration" | "success" | "hero";
+}
+
+export const GradientText = ({
+  children,
+  className = "",
+  gradient = "hero",
+}: GradientTextProps) => {
+  const gradients = {
+    primary: "from-[hsl(195,100%,50%)] to-[hsl(210,100%,60%)]",
+    celebration: "from-[hsl(38,95%,55%)] to-[hsl(45,100%,60%)]",
+    success: "from-[hsl(142,76%,45%)] to-[hsl(150,80%,50%)]",
+    hero: "from-[hsl(195,100%,50%)] via-[hsl(270,91%,65%)] to-[hsl(38,95%,55%)]",
+  };
+
+  return (
+    <span
+      className={`bg-gradient-to-r ${gradients[gradient]} bg-clip-text text-transparent ${className}`}
+    >
+      {children}
+    </span>
+  );
+};
+```
+
+---
+
+### 7.4 FeatureCard
+
+**File**: `src/components/Marketing/FeatureCard.tsx`
+
+**Props**: `icon: LucideIcon`, `title: string`, `description: string`, `href: string`, `delay?: number`, `gradient?: "primary" | "celebration" | "success"`
+
+```tsx
+import { LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AnimatedOnScroll } from "./AnimatedOnScroll";
+
+interface FeatureCardProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  href: string;
+  delay?: number;
+  gradient?: "primary" | "celebration" | "success";
+}
+
+export const FeatureCard = ({ icon: Icon, title, description, href, delay = 0, gradient = "primary" }: FeatureCardProps) => {
+  const gradientClasses = {
+    primary: "gradient-primary",
+    celebration: "gradient-celebration",
+    success: "gradient-success",
+  };
+
+  return (
+    <AnimatedOnScroll delay={delay}>
+      <Link to={href} className="group block h-full">
+        <div className="h-full rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 transition-all duration-300 hover:border-primary/50 hover:shadow-elevated hover:-translate-y-1">
+          <div className={`w-14 h-14 rounded-xl ${gradientClasses[gradient]} flex items-center justify-center mb-6`}>
+            <Icon className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">{title}</h3>
+          <p className="text-muted-foreground leading-relaxed">{description}</p>
+        </div>
+      </Link>
+    </AnimatedOnScroll>
+  );
+};
+```
+
+---
+
+### 7.5 FeatureSection
+
+**File**: `src/components/Marketing/FeatureSection.tsx`
+
+**Props**: `title: string`, `description: string`, `visual: ReactNode`, `reversed?: boolean`, `badge?: string`, `children?: ReactNode`
+
+```tsx
+import { ReactNode } from "react";
+import { AnimatedOnScroll } from "./AnimatedOnScroll";
+
+interface FeatureSectionProps {
+  title: string;
+  description: string;
+  visual: ReactNode;
+  reversed?: boolean;
+  badge?: string;
+  children?: ReactNode;
+}
+
+export const FeatureSection = ({ title, description, visual, reversed = false, badge, children }: FeatureSectionProps) => {
+  return (
+    <section className="py-20 lg:py-28">
+      <div className={`max-w-7xl mx-auto px-6 lg:px-8 flex flex-col ${reversed ? "lg:flex-row-reverse" : "lg:flex-row"} items-center gap-12 lg:gap-20`}>
+        <AnimatedOnScroll direction={reversed ? "right" : "left"} className="flex-1 space-y-6">
+          {badge && (
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+              {badge}
+            </span>
+          )}
+          <h2 className="text-3xl lg:text-5xl font-bold text-foreground leading-tight">{title}</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">{description}</p>
+          {children}
+        </AnimatedOnScroll>
+        <AnimatedOnScroll direction={reversed ? "left" : "right"} className="flex-1 w-full">
+          {visual}
+        </AnimatedOnScroll>
+      </div>
+    </section>
+  );
+};
+```
+
+---
+
+### 7.6 StatsBar
+
+**File**: `src/components/Marketing/StatsBar.tsx`
+
+**Props**: `stats: { value: string; label: string }[]`
+
+```tsx
+import { AnimatedOnScroll } from "./AnimatedOnScroll";
+
+interface Stat { value: string; label: string; }
+interface StatsBarProps { stats: Stat[]; }
+
+export const StatsBar = ({ stats }: StatsBarProps) => {
+  return (
+    <section className="py-16 border-y border-border bg-secondary/20">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat, i) => (
+            <AnimatedOnScroll key={stat.label} delay={i * 100} className="text-center">
+              <div className="text-4xl lg:text-5xl font-black text-foreground mb-2">{stat.value}</div>
+              <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">{stat.label}</div>
+            </AnimatedOnScroll>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+```
+
+> **Note**: The Home page uses `MarketingAnimatedCounter` instead of `StatsBar` for animated counting. `StatsBar` is available but not currently used on any page.
+
+---
+
+### 7.7 MockupFrame
+
+**File**: `src/components/Marketing/MockupFrame.tsx`
+
+**Props**: `children: ReactNode`, `className?: string`, `variant?: "monitor" | "browser"`
+
+```tsx
+import { ReactNode } from "react";
+
+interface MockupFrameProps {
+  children: ReactNode;
+  className?: string;
+  variant?: "monitor" | "browser";
+}
+
+export const MockupFrame = ({ children, className = "", variant = "browser" }: MockupFrameProps) => {
+  return (
+    <div className={`rounded-xl border border-border overflow-hidden shadow-elevated ${className}`}>
+      {/* Title bar */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-secondary/80 border-b border-border">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-[hsl(0,84%,60%)]" />
+          <div className="w-3 h-3 rounded-full bg-[hsl(45,100%,60%)]" />
+          <div className="w-3 h-3 rounded-full bg-[hsl(142,76%,45%)]" />
+        </div>
+        {variant === "browser" && (
+          <div className="flex-1 mx-4">
+            <div className="h-6 rounded-md bg-muted flex items-center px-3">
+              <span className="text-[10px] text-muted-foreground">dashboard.hellodarwin.com</span>
+            </div>
+          </div>
+        )}
+      </div>
+      {/* Content */}
+      <div className="bg-background">{children}</div>
+    </div>
+  );
+};
+```
+
+---
+
+### 7.8 FloatingParticles
+
+**File**: `src/components/Marketing/FloatingParticles.tsx`
+
+**Description**: 10 gradient circles that float upward with random sizes (4–12px), random horizontal positions, random delays (0–6s), and random durations (6–12s).
+
+```tsx
+const particles = Array.from({ length: 10 }, (_, i) => ({
+  id: i,
+  size: 4 + Math.random() * 8,
+  left: Math.random() * 100,
+  delay: Math.random() * 6,
+  duration: 6 + Math.random() * 6,
+  opacity: 0.1 + Math.random() * 0.2,
+}));
+
+export const FloatingParticles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {particles.map((p) => (
+      <div
+        key={p.id}
+        className="absolute rounded-full bg-primary"
+        style={{
+          width: p.size,
+          height: p.size,
+          left: `${p.left}%`,
+          bottom: `-${p.size}px`,
+          opacity: p.opacity,
+          animation: `float-particle ${p.duration}s ease-in-out ${p.delay}s infinite`,
+        }}
+      />
+    ))}
+  </div>
+);
+```
+
+---
+
+### 7.9 AnimatedDashboardMockup
+
+**File**: `src/components/Marketing/AnimatedDashboardMockup.tsx`
+
+**Description**: Self-playing demo inside a MockupFrame. Shows 4 KPI cards that slide in, then a celebration popup overlay with confetti + avatars cycles every 8 seconds.
+
+```tsx
+import { MockupFrame } from "./MockupFrame";
+
+const avatars = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", name: "John D." },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", name: "Sarah M." },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", name: "Alex K." },
+];
+
+const kpis = [
+  { label: "Deals Closed", value: "42", gradient: "gradient-primary" },
+  { label: "Revenue", value: "$128K", gradient: "gradient-celebration" },
+  { label: "Active Users", value: "1,247", gradient: "gradient-primary" },
+  { label: "Subscribers", value: "89", gradient: "gradient-success" },
+];
+
+export const AnimatedDashboardMockup = () => (
+  <MockupFrame>
+    <div className="aspect-video bg-gradient-to-br from-background via-card to-background p-6 lg:p-10 relative overflow-hidden">
+      {/* KPI Cards slide in */}
+      <div className="grid grid-cols-4 gap-3 w-full">
+        {kpis.map((kpi, i) => (
+          <div
+            key={kpi.label}
+            className="rounded-lg border border-border bg-card p-3 space-y-1.5 opacity-0"
+            style={{
+              animation: `slide-up-card 0.6s ease-out ${i * 0.2}s forwards, fade-card-loop 8s ease-in-out ${i * 0.2}s infinite`,
+            }}
+          >
+            <div className={`w-7 h-7 rounded-md ${kpi.gradient}`} />
+            <div className="text-[9px] text-muted-foreground">{kpi.label}</div>
+            <div className="text-base font-bold text-foreground">{kpi.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Celebration popup that appears after delay */}
+      <div
+        className="absolute inset-0 flex items-center justify-center opacity-0"
+        style={{ animation: "celebration-mockup-cycle 8s ease-in-out 1.5s infinite" }}
+      >
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+        <div className="relative z-10 text-center space-y-3">
+          {/* Confetti particles */}
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1.5 h-1.5 rounded-full"
+              style={{
+                left: `${15 + Math.random() * 70}%`,
+                top: `${Math.random() * 100}%`,
+                backgroundColor: [
+                  "hsl(195,100%,50%)", "hsl(38,95%,55%)", "hsl(142,76%,45%)",
+                  "hsl(340,82%,52%)", "hsl(45,100%,60%)",
+                ][i % 5],
+                animation: `confetti-enhanced 3s ease-in-out ${Math.random() * 2}s infinite`,
+              }}
+            />
+          ))}
+
+          {/* Person avatar */}
+          <div className="flex justify-center gap-3">
+            {avatars.slice(0, 2).map((a, i) => (
+              <div key={a.initials} className="text-center opacity-0" style={{ animation: `photo-bounce 0.7s ease-out ${2 + i * 0.3}s forwards` }}>
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-2 border-background animate-pulse-glow`}>
+                  <span className="text-xs font-bold text-white">{a.initials}</span>
+                </div>
+                <span className="text-[9px] text-muted-foreground mt-1 block">{a.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-lg font-black text-foreground">New Deal Closed! 🎉</div>
+          <div className="text-base font-bold text-[hsl(142,76%,45%)]">$25,000 CAD</div>
+        </div>
+      </div>
+    </div>
+  </MockupFrame>
+);
+```
+
+---
+
+### 7.10 AnimatedCelebrationMockup
+
+**File**: `src/components/Marketing/AnimatedCelebrationMockup.tsx`
+
+**Description**: Looping celebration with 20 confetti particles, 2 bouncing avatars, glowing title, amount counter, and bouncing dots.
+
+```tsx
+import { MockupFrame } from "./MockupFrame";
+
+const confettiColors = [
+  "hsl(195,100%,50%)", "hsl(38,95%,55%)", "hsl(142,76%,45%)",
+  "hsl(340,82%,52%)", "hsl(45,100%,60%)", "hsl(270,80%,65%)",
+];
+
+const avatars = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", name: "John D.", role: "Deal Owner" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", name: "Sarah M.", role: "Account Manager" },
+];
+
+export const AnimatedCelebrationMockup = () => (
+  <MockupFrame>
+    <div className="aspect-video bg-gradient-to-b from-[hsl(220,26%,8%)] to-background relative overflow-hidden flex items-center justify-center">
+      {/* Confetti rain */}
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-sm"
+          style={{
+            width: 6 + Math.random() * 4,
+            height: 6 + Math.random() * 4,
+            left: `${5 + Math.random() * 90}%`,
+            backgroundColor: confettiColors[i % confettiColors.length],
+            animation: `confetti-enhanced ${3 + Math.random() * 2}s ease-in-out ${Math.random() * 3}s infinite`,
+          }}
+        />
+      ))}
+
+      {/* Center content */}
+      <div className="relative z-10 text-center space-y-4" style={{ animation: "celebration-mockup-cycle 8s ease-in-out infinite" }}>
+        {/* Avatars */}
+        <div className="flex justify-center gap-4">
+          {avatars.map((a, i) => (
+            <div key={a.initials} className="text-center opacity-0" style={{ animation: `photo-bounce 0.7s ease-out ${0.5 + i * 0.3}s forwards` }}>
+              <div className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-3 border-background animate-pulse-glow`}>
+                <span className="text-sm lg:text-base font-bold text-white">{a.initials}</span>
+              </div>
+              <div className="mt-1">
+                <span className="text-xs font-semibold text-foreground block">{a.name}</span>
+                <span className="text-[9px] text-muted-foreground">{a.role}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-2xl lg:text-3xl font-black text-foreground animate-title-glow">
+          New Deal Closed! 🎉
+        </div>
+
+        {/* Counting amount */}
+        <div className="text-xl lg:text-2xl font-bold text-[hsl(142,76%,45%)]" style={{ animation: "count-up-glow 2s ease-out forwards" }}>
+          $25,000 CAD
+        </div>
+
+        {/* Bouncing dots */}
+        <div className="flex justify-center gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2 h-2 rounded-full bg-primary"
+              style={{ animation: `bounce-dot 1.4s ease-in-out ${i * 0.2}s infinite` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  </MockupFrame>
+);
+```
+
+---
+
+### 7.11 AnimatedKPICarousel
+
+**File**: `src/components/Marketing/AnimatedKPICarousel.tsx`
+
+**Description**: 6 KPI cards duplicated (12 total) for seamless infinite horizontal scroll over 20s.
+
+```tsx
+const cards = [
+  { label: "Acceptations", value: "42", gradient: "gradient-primary", icon: "📊" },
+  { label: "Revenue", value: "$128K", gradient: "gradient-celebration", icon: "💰" },
+  { label: "Active Users", value: "1,247", gradient: "gradient-success", icon: "👥", live: true },
+  { label: "Subscribers", value: "89", gradient: "gradient-primary", icon: "📈" },
+  { label: "MRR", value: "$4.2K", gradient: "gradient-celebration", icon: "🔄" },
+  { label: "Churn", value: "2.1%", gradient: "gradient-success", icon: "📉" },
+];
+
+// Duplicate for seamless loop
+const allCards = [...cards, ...cards];
+
+export const AnimatedKPICarousel = () => (
+  <div className="rounded-xl border border-border overflow-hidden shadow-elevated">
+    <div className="bg-background p-6 overflow-hidden">
+      <div
+        className="flex gap-4"
+        style={{ animation: "slide-left-loop 20s linear infinite", width: `${allCards.length * 180}px` }}
+      >
+        {allCards.map((card, i) => (
+          <div
+            key={`${card.label}-${i}`}
+            className="flex-shrink-0 w-40 rounded-lg border border-border bg-card p-4 space-y-2"
+          >
+            <div className="flex items-center justify-between">
+              <div className={`w-8 h-8 rounded-md ${card.gradient} flex items-center justify-center text-sm`}>
+                {card.icon}
+              </div>
+              {card.live && (
+                <span className="flex items-center gap-1">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(0,84%,60%)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(0,84%,60%)]" />
+                  </span>
+                  <span className="text-[9px] font-bold text-[hsl(0,84%,60%)]">LIVE</span>
+                </span>
+              )}
+            </div>
+            <div className="text-[10px] text-muted-foreground">{card.label}</div>
+            <div className="text-xl font-bold text-foreground">{card.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+```
+
+---
+
+### 7.12 MarketingAnimatedCounter
+
+**File**: `src/components/Marketing/MarketingAnimatedCounter.tsx`
+
+**Description**: Scroll-triggered count-up animation. Extracts leading numeric part from value string, animates from 0 to target over 2s with easeOutCubic.
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+
+interface MarketingAnimatedCounterProps {
+  value: string; // e.g. "500+", "4", "24/7"
+  className?: string;
+}
+
+export const MarketingAnimatedCounter = ({ value, className = "" }: MarketingAnimatedCounterProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [display, setDisplay] = useState(value);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const numMatch = value.match(/^(\d+)/);
+  const numericValue = numMatch ? parseInt(numMatch[1], 10) : null;
+  const suffix = numMatch ? value.slice(numMatch[1].length) : value;
+
+  useEffect(() => {
+    if (numericValue === null) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          const duration = 2000;
+          const start = performance.now();
+
+          const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+            const current = Math.floor(numericValue * eased);
+            setDisplay(`${current}${suffix}`);
+            if (progress < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [numericValue, suffix, hasAnimated]);
+
+  return (
+    <div ref={ref} className={`tabular-nums ${className}`}>
+      {display}
+    </div>
+  );
+};
+```
+
+---
+
+### 7.13 CSSEqualizer
+
+**File**: `src/components/Marketing/CSSEqualizer.tsx`
+
+**Description**: 4 bars bouncing at different heights, simulating an audio equalizer.
+
+```tsx
+export const CSSEqualizer = ({ className = "" }: { className?: string }) => (
+  <div className={`flex items-end gap-0.5 h-4 ${className}`}>
+    {[0, 1, 2, 3].map((i) => (
+      <div
+        key={i}
+        className="w-1 bg-[hsl(142,76%,45%)] rounded-full"
+        style={{
+          animation: `equalizer-bar 1.2s ease-in-out ${i * 0.15}s infinite`,
+          height: "100%",
+        }}
+      />
+    ))}
+  </div>
+);
+```
+
+---
+
+### 7.14 AudioWaveform
+
+**File**: `src/components/Marketing/AudioWaveform.tsx`
+
+**Description**: 12 bars bouncing (wider audio visualization).
+
+```tsx
+export const AudioWaveform = ({ className = "" }: { className?: string }) => (
+  <div className={`flex items-center gap-0.5 h-8 ${className}`}>
+    {Array.from({ length: 12 }).map((_, i) => (
+      <div
+        key={i}
+        className="w-1 rounded-full bg-primary/60"
+        style={{
+          animation: `equalizer-bar 1.5s ease-in-out ${i * 0.1}s infinite`,
+          height: "100%",
+        }}
+      />
+    ))}
+  </div>
+);
+```
+
+---
+
+## 8. Page: Home (`/site`)
+
+**File**: `src/pages/marketing/Home.tsx`
+
+### Data Arrays
+
+```tsx
+const teamAvatars = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]" },
+  { initials: "LR", gradient: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]" },
+  { initials: "MP", gradient: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]" },
+];
+
+const stats = [
+  { value: "500+", label: "Celebrations triggered" },
+  { value: "4", label: "Themes available" },
+  { value: "6", label: "Integrations" },
+  { value: "24/7", label: "Live updates" },
+];
+```
+
+### Page Sections (top to bottom)
+
+1. **Hero** (`marketing-animated` class for reduced-motion support)
+   - FloatingParticles background
+   - Two blurred gradient orbs (bg-primary/5, bg-accent/5)
+   - Badge: `<Sparkles>` icon + "Real-time office dashboards"
+   - H1: `Celebrate Every Win. In Real Time.` (last 3 words use `<GradientText>`)
+   - Subtitle: "Mount a TV. Connect HubSpot. Watch your team light up with every closed deal, new subscriber, and milestone hit."
+   - Two CTAs: "See Features" (links to `/site/celebrations`) + "Live Demo" (links to `/`)
+   - `<AnimatedDashboardMockup />` below
+
+2. **Integration Logos** (border-y section)
+   - Text: "Powered by integrations you already use"
+   - 4 text logos: HubSpot, Slack, Google Analytics, Spotify
+
+3. **Feature Grid** (4 cards)
+   - Header: "Everything your team needs" / "From live celebrations to KPI dashboards, keep your team motivated and informed."
+   - Cards (md:grid-cols-2 lg:grid-cols-4):
+     - `PartyPopper` / "Real-time Celebrations" / celebration gradient
+     - `BarChart3` / "Live KPI Dashboard" / primary gradient
+     - `MessageSquare` / "Team Engagement" / success gradient
+     - `Settings` / "Admin & Themes" / primary gradient
+
+4. **How It Works** (3 steps)
+   - Header: "Up and running in 3 steps"
+   - Step 01: `Plug` / "Connect HubSpot" / "Link your CRM. Webhooks fire automatically when deals move to closed-won."
+   - Step 02: `Monitor` / "Mount a TV" / "Open the dashboard URL on any screen. It auto-refreshes and loops KPIs."
+   - Step 03: `PartyPopper` / "Celebrate!" / "Every closed deal triggers confetti, sound effects, and team cheers in real time." + animated avatar stack
+
+5. **Stats** (with `MarketingAnimatedCounter`)
+   - 500+ Celebrations triggered
+   - 4 Themes available
+   - 6 Integrations
+   - 24/7 Live updates
+
+6. **CTA**
+   - H2: `Ready to celebrate?` ("celebrate" uses `<GradientText gradient="celebration">`)
+   - Subtitle: "Set up your team's celebration dashboard in minutes. No credit card required."
+   - "Get Started" (mailto) + "Try the Demo" (link to `/`)
+
+### Full Source
+
+```tsx
+import { MarketingLayout } from "@/components/Marketing/MarketingLayout";
+import { GradientText } from "@/components/Marketing/GradientText";
+import { FeatureCard } from "@/components/Marketing/FeatureCard";
+import { AnimatedOnScroll } from "@/components/Marketing/AnimatedOnScroll";
+import { FloatingParticles } from "@/components/Marketing/FloatingParticles";
+import { AnimatedDashboardMockup } from "@/components/Marketing/AnimatedDashboardMockup";
+import { MarketingAnimatedCounter } from "@/components/Marketing/MarketingAnimatedCounter";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import {
+  PartyPopper, BarChart3, MessageSquare, Settings,
+  ArrowRight, Plug, Monitor, Sparkles,
+} from "lucide-react";
+
+const teamAvatars = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]" },
+  { initials: "LR", gradient: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]" },
+  { initials: "MP", gradient: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]" },
+];
+
+const stats = [
+  { value: "500+", label: "Celebrations triggered" },
+  { value: "4", label: "Themes available" },
+  { value: "6", label: "Integrations" },
+  { value: "24/7", label: "Live updates" },
+];
+
+const Home = () => {
+  return (
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden marketing-animated">
+        <FloatingParticles />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute bottom-20 right-1/4 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-24 lg:pt-32 lg:pb-36">
+          <div className="text-center max-w-4xl mx-auto">
+            <AnimatedOnScroll>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Real-time office dashboards</span>
+              </div>
+            </AnimatedOnScroll>
+
+            <AnimatedOnScroll delay={100}>
+              <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
+                Celebrate Every Win.{" "}
+                <GradientText>In Real Time.</GradientText>
+              </h1>
+            </AnimatedOnScroll>
+
+            <AnimatedOnScroll delay={200}>
+              <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+                Mount a TV. Connect HubSpot. Watch your team light up with every closed deal, new subscriber, and milestone hit.
+              </p>
+            </AnimatedOnScroll>
+
+            <AnimatedOnScroll delay={300}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button size="lg" className="text-base px-8 h-12" asChild>
+                  <Link to="/site/celebrations">
+                    See Features <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="text-base px-8 h-12" asChild>
+                  <Link to="/">Live Demo</Link>
+                </Button>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+
+          <AnimatedOnScroll delay={400} direction="scale" className="mt-16 lg:mt-24 max-w-5xl mx-auto">
+            <AnimatedDashboardMockup />
+          </AnimatedOnScroll>
+        </div>
+      </section>
+
+      {/* Integration logos */}
+      <section className="py-12 border-y border-border bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <p className="text-sm text-muted-foreground uppercase tracking-wider font-medium mb-6">Powered by integrations you already use</p>
+          <div className="flex items-center justify-center gap-10 lg:gap-16 flex-wrap">
+            {["HubSpot", "Slack", "Google Analytics", "Spotify"].map((name) => (
+              <span key={name} className="text-lg font-semibold text-muted-foreground/60">{name}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Feature grid */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <AnimatedOnScroll className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">Everything your team needs</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              From live celebrations to KPI dashboards, keep your team motivated and informed.
+            </p>
+          </AnimatedOnScroll>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <FeatureCard icon={PartyPopper} title="Real-time Celebrations" description="Full-screen confetti, sound effects, and employee photos every time a deal closes." href="/site/celebrations" delay={0} gradient="celebration" />
+            <FeatureCard icon={BarChart3} title="Live KPI Dashboard" description="Auto-refreshing metrics from HubSpot and Google Analytics on your office TV." href="/site/dashboard" delay={100} gradient="primary" />
+            <FeatureCard icon={MessageSquare} title="Team Engagement" description="Slack feed, Spotify integration, quotes, and a QR submission system." href="/site/engagement" delay={200} gradient="success" />
+            <FeatureCard icon={Settings} title="Admin & Themes" description="4 themes, custom sounds, employee management, and full celebration control." href="/site/admin" delay={300} gradient="primary" />
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 lg:py-28 bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <AnimatedOnScroll className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">Up and running in 3 steps</h2>
+          </AnimatedOnScroll>
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            {[
+              { icon: Plug, step: "01", title: "Connect HubSpot", desc: "Link your CRM. Webhooks fire automatically when deals move to closed-won.", showAvatars: false },
+              { icon: Monitor, step: "02", title: "Mount a TV", desc: "Open the dashboard URL on any screen. It auto-refreshes and loops KPIs.", showAvatars: false },
+              { icon: PartyPopper, step: "03", title: "Celebrate!", desc: "Every closed deal triggers confetti, sound effects, and team cheers in real time.", showAvatars: true },
+            ].map((item, i) => (
+              <AnimatedOnScroll key={item.step} delay={i * 150}>
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-2">
+                    <item.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="text-sm font-bold text-primary uppercase tracking-wider">{item.step}</div>
+                  <h3 className="text-xl font-bold text-foreground">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+                  {item.showAvatars && (
+                    <div className="flex justify-center -space-x-2 pt-2">
+                      {teamAvatars.map((a, ai) => (
+                        <div
+                          key={a.initials}
+                          className={`w-10 h-10 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-2 border-background text-xs font-bold text-white opacity-0`}
+                          style={{ animation: `slide-in-from-left 0.4s ease-out ${ai * 0.1}s forwards` }}
+                        >
+                          {a.initials}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </AnimatedOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats with animated counters */}
+      <section className="py-16 border-y border-border bg-secondary/20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, i) => (
+              <AnimatedOnScroll key={stat.label} delay={i * 100} className="text-center">
+                <MarketingAnimatedCounter value={stat.value} className="text-4xl lg:text-5xl font-black text-foreground mb-2" />
+                <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">{stat.label}</div>
+              </AnimatedOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
+              Ready to <GradientText gradient="celebration">celebrate</GradientText>?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
+              Set up your team's celebration dashboard in minutes. No credit card required.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" className="text-base px-8 h-12" asChild>
+                <a href="mailto:contact@hellodarwin.com">Get Started</a>
+              </Button>
+              <Button size="lg" variant="outline" className="text-base px-8 h-12" asChild>
+                <Link to="/">Try the Demo</Link>
+              </Button>
+            </div>
+          </AnimatedOnScroll>
+        </div>
+      </section>
+    </MarketingLayout>
+  );
+};
+
+export default Home;
+```
+
+---
+
+## 9. Page: Celebrations (`/site/celebrations`)
+
+**File**: `src/pages/marketing/CelebrationsFeature.tsx`
+
+### Page Sections
+
+1. **Hero**: Badge "Real-time Celebrations" (`PartyPopper` icon, accent color). H1: `Every deal deserves a standing ovation` ("standing ovation" = `<GradientText gradient="celebration">`). Subtitle about confetti, sound effects, employee photos.
+
+2. **FeatureSection: Full-screen celebration popups** (badge "Core"). Visual: `<AnimatedCelebrationMockup />`. Tags: Confetti, Sound FX, Employee Photos, Animated Counter.
+
+3. **FeatureSection: Epic Mode** (reversed, badge "Epic Mode"). Description about subscription deals triggering golden gradient, massive photos, bouncing crown, screen shake. Visual: custom golden-bordered mockup with crown emoji, avatar "TL" (Thomas L.), "EPIC SUBSCRIPTION!", "$2,400/yr MRR".
+
+4. **Not just celebrations** section: Two side-by-side cards:
+   - **Churn Alerts** (red themed, `AlertTriangle` icon): "When a customer churns, the dashboard displays a red warning overlay with the lost revenue amount."
+   - **Plat du Jour** (orange themed, `UtensilsCrossed` icon): "Daily food specials show up as a special celebration card with the meal photo and description."
+
+5. **Sound + Photos** section (bg-secondary/10): Two columns:
+   - **Custom Sound Effects** (`Volume2` icon, gradient-primary): Description about configurable ringtones. Includes `<AudioWaveform />`.
+   - **Employee Photo System** (`Users` icon, gradient-success): Description about auto-sync. Includes 3 bouncing avatars (JD, SM, AK).
+
+### Full Source
+
+```tsx
+import { MarketingLayout } from "@/components/Marketing/MarketingLayout";
+import { GradientText } from "@/components/Marketing/GradientText";
+import { FeatureSection } from "@/components/Marketing/FeatureSection";
+import { AnimatedOnScroll } from "@/components/Marketing/AnimatedOnScroll";
+import { FloatingParticles } from "@/components/Marketing/FloatingParticles";
+import { AnimatedCelebrationMockup } from "@/components/Marketing/AnimatedCelebrationMockup";
+import { AudioWaveform } from "@/components/Marketing/AudioWaveform";
+import { PartyPopper, Volume2, Users, AlertTriangle, Crown, UtensilsCrossed } from "lucide-react";
+
+const CelebrationsFeature = () => {
+  return (
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 lg:py-32 marketing-animated">
+        <FloatingParticles />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 right-1/4 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
+          <div className="absolute bottom-10 left-1/3 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-8">
+              <PartyPopper className="w-4 h-4 text-accent" />
+              <span className="text-sm font-medium text-accent">Real-time Celebrations</span>
+            </div>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={100}>
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
+              Every deal deserves a{" "}
+              <GradientText gradient="celebration">standing ovation</GradientText>
+            </h1>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={200}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+              Full-screen celebrations with confetti, sound effects, employee photos, and animated counters — triggered instantly from HubSpot.
+            </p>
+          </AnimatedOnScroll>
+        </div>
+      </section>
+
+      {/* Animated Celebration Demo */}
+      <FeatureSection
+        badge="Core"
+        title="Full-screen celebration popups"
+        description="When a deal closes in HubSpot, a webhook fires and the dashboard erupts. Employee photos bounce in, confetti rains down, the goal horn blasts, and an animated counter rolls up to the deal value."
+        visual={<AnimatedCelebrationMockup />}
+      >
+        <div className="flex flex-wrap gap-3 mt-4">
+          {["Confetti", "Sound FX", "Employee Photos", "Animated Counter"].map((tag) => (
+            <span key={tag} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground border border-border">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </FeatureSection>
+
+      {/* Epic Mode */}
+      <FeatureSection
+        reversed
+        badge="Epic Mode"
+        title="Extra-large celebrations for milestones"
+        description="Subscription deals on the dev dashboard trigger Epic Mode: a golden gradient overlay, massive photos with triple-glow rings, a bouncing crown emoji, and screen shake. It's impossible to ignore."
+        visual={
+          <div className="rounded-xl border-2 border-[hsl(45,100%,50%)] overflow-hidden animate-epic-glow">
+            <div className="aspect-video bg-gradient-to-br from-[hsl(45,50%,10%)] via-[hsl(0,0%,5%)] to-[hsl(270,30%,10%)] flex items-center justify-center p-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-[hsl(45,80%,30%)/0.1] to-[hsl(270,60%,30%)/0.1]" />
+              <div className="text-center z-10 space-y-4">
+                <div className="text-4xl animate-bounce">👑</div>
+                <div className="w-32 h-32 rounded-full border-4 border-[hsl(45,100%,50%)] mx-auto bg-gradient-to-br from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)] flex items-center justify-center animate-pulse-glow">
+                  <span className="text-2xl font-bold text-white">TL</span>
+                </div>
+                <div className="text-xs text-muted-foreground">Thomas L.</div>
+                <div className="text-2xl font-black text-[hsl(45,100%,60%)] animate-title-glow">EPIC SUBSCRIPTION!</div>
+                <div className="text-lg font-bold text-[hsl(142,76%,45%)]">$2,400/yr MRR</div>
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      {/* Churn + Plat du Jour */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <AnimatedOnScroll className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">Not just celebrations</h2>
+            <p className="text-lg text-muted-foreground">Special modes for every occasion.</p>
+          </AnimatedOnScroll>
+          <div className="grid md:grid-cols-2 gap-8">
+            <AnimatedOnScroll>
+              <div className="rounded-xl border border-[hsl(0,84%,40%)/0.3] bg-[hsl(0,30%,8%)] p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl bg-[hsl(0,84%,60%)/0.15] flex items-center justify-center">
+                  <AlertTriangle className="w-7 h-7 text-[hsl(0,84%,60%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(0,84%,60%)]">Churn Alerts</h3>
+                <p className="text-muted-foreground">
+                  When a customer churns, the dashboard displays a red warning overlay with the lost revenue amount. A sobering reminder that fuels the team to retain.
+                </p>
+              </div>
+            </AnimatedOnScroll>
+            <AnimatedOnScroll delay={150}>
+              <div className="rounded-xl border border-[hsl(30,80%,40%)/0.3] bg-[hsl(30,20%,8%)] p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl bg-[hsl(30,80%,55%)/0.15] flex items-center justify-center">
+                  <UtensilsCrossed className="w-7 h-7 text-[hsl(30,80%,55%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(30,80%,55%)]">Plat du Jour</h3>
+                <p className="text-muted-foreground">
+                  Daily food specials show up as a special celebration card with the meal photo and description. A fun way to engage the office beyond metrics.
+                </p>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+        </div>
+      </section>
+
+      {/* Sound + Photos callout */}
+      <section className="py-20 lg:py-28 bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12">
+            <AnimatedOnScroll>
+              <div className="space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center">
+                  <Volume2 className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Custom Sound Effects</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Each celebration type gets its own ringtone. Standard deals play the Canadiens goal horn. High-value deals get a premium sound. All configurable per event type in admin.
+                </p>
+                <AudioWaveform className="mt-4" />
+              </div>
+            </AnimatedOnScroll>
+            <AnimatedOnScroll delay={150}>
+              <div className="space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-success flex items-center justify-center">
+                  <Users className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Employee Photo System</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Photos auto-sync from your team database. Each celebration shows the deal owner and account manager with spring-bounce animations and glowing borders.
+                </p>
+                <div className="flex gap-4 mt-4">
+                  {[
+                    { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", name: "John D." },
+                    { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", name: "Sarah M." },
+                    { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", name: "Alex K." },
+                  ].map((a, i) => (
+                    <div key={a.initials} className="text-center opacity-0" style={{ animation: `photo-bounce 0.7s ease-out ${i * 0.2}s forwards` }}>
+                      <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center border-2 border-background animate-pulse-glow`}>
+                        <span className="text-xs font-bold text-white">{a.initials}</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground mt-1 block">{a.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+        </div>
+      </section>
+    </MarketingLayout>
+  );
+};
+
+export default CelebrationsFeature;
+```
+
+---
+
+## 10. Page: Dashboard (`/site/dashboard`)
+
+**File**: `src/pages/marketing/DashboardFeature.tsx`
+
+### Data
+
+```tsx
+const leaderboardPeople = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", name: "John D.", value: "$45K", rank: "🥇" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", name: "Sarah M.", value: "$38K", rank: "🥈" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", name: "Alex K.", value: "$31K", rank: "🥉" },
+];
+```
+
+### Sections
+
+1. **Hero**: Badge "Live KPI Dashboard" (`BarChart3`). H1: `Your metrics, always live` ("always live" = `<GradientText gradient="primary">`). Subtitle.
+
+2. **4 KPI card types** (md:grid-cols-2):
+   - Standard KPI (`TrendingUp`, gradient-primary)
+   - Leaderboard KPI (`Trophy`, gradient-celebration) — shows 3 leaderboard people with rank emojis
+   - Pace KPI (`ClipboardList`, gradient-success) — shows progress bar "32 / 40 acceptations", "↑ Ahead of pace"
+   - Live KPI (`Activity`, gradient-primary) — shows pulsing red LIVE dot + "247 active visitors"
+
+3. **FeatureSection: Carousel** (badge "Auto-scroll"). Visual: `<AnimatedKPICarousel />`
+
+4. **FeatureSection: Dual Mode** (reversed, badge "Dual Mode"). Visual: two mode cards (Service Mode with primary dot / Dev Mode with success dot), each with tag pills.
+
+5. **Plug into your stack** (bg-secondary/10): Two integration cards — HubSpot and GA4.
+
+### Full Source
+
+```tsx
+import { MarketingLayout } from "@/components/Marketing/MarketingLayout";
+import { GradientText } from "@/components/Marketing/GradientText";
+import { FeatureSection } from "@/components/Marketing/FeatureSection";
+import { AnimatedOnScroll } from "@/components/Marketing/AnimatedOnScroll";
+import { AnimatedKPICarousel } from "@/components/Marketing/AnimatedKPICarousel";
+import { BarChart3, Activity, Users, TrendingUp, Trophy, ClipboardList } from "lucide-react";
+
+const leaderboardPeople = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", name: "John D.", value: "$45K", rank: "🥇" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", name: "Sarah M.", value: "$38K", rank: "🥈" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", name: "Alex K.", value: "$31K", rank: "🥉" },
+];
+
+const DashboardFeature = () => {
+  return (
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 lg:py-32">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Live KPI Dashboard</span>
+            </div>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={100}>
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
+              Your metrics,{" "}
+              <GradientText gradient="primary">always live</GradientText>
+            </h1>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={200}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Auto-refreshing KPI cards, leaderboards, charts, and real-time Google Analytics — all on one beautiful screen.
+            </p>
+          </AnimatedOnScroll>
+        </div>
+      </section>
+
+      {/* KPI Card Variants */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <AnimatedOnScroll className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">4 KPI card types</h2>
+            <p className="text-lg text-muted-foreground">Each designed for a different data story.</p>
+          </AnimatedOnScroll>
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                icon: TrendingUp, title: "Standard KPI", color: "gradient-primary",
+                desc: "Big number, trend indicator, icon. Shows the metric at a glance with green/red trend badges.",
+              },
+              {
+                icon: Trophy, title: "Leaderboard KPI", color: "gradient-celebration",
+                desc: "Same as standard, plus a podium section showing top 3 reps with avatars, rank emojis, and values.",
+                showLeaderboard: true,
+              },
+              {
+                icon: ClipboardList, title: "Pace KPI", color: "gradient-success",
+                desc: "Count vs. goal with a progress bar. Shows whether the team is ahead or behind pace with an arrow indicator.",
+                showProgress: true,
+              },
+              {
+                icon: Activity, title: "Live KPI", color: "gradient-primary",
+                desc: "Real-time number from Google Analytics with a pulsing red 'Live' dot. Animates on every value change.",
+                showLive: true,
+              },
+            ].map((card, i) => (
+              <AnimatedOnScroll key={card.title} delay={i * 100}>
+                <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 flex flex-col gap-4 hover:scale-[1.02] transition-transform duration-300" style={{ perspective: "1000px" }}>
+                  <div className="flex gap-6 items-start">
+                    <div className={`w-14 h-14 rounded-xl ${card.color} flex items-center justify-center shrink-0`}>
+                      <card.icon className="w-7 h-7 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground mb-2">{card.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{card.desc}</p>
+                    </div>
+                  </div>
+                  {card.showLeaderboard && (
+                    <div className="flex gap-3 mt-2">
+                      {leaderboardPeople.map((p, pi) => (
+                        <div key={p.initials} className="flex items-center gap-2 opacity-0" style={{ animation: `slide-in-from-left 0.4s ease-out ${pi * 0.15}s forwards` }}>
+                          <span className="text-base">{p.rank}</span>
+                          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${p.gradient} flex items-center justify-center border border-background`}>
+                            <span className="text-[9px] font-bold text-white">{p.initials}</span>
+                          </div>
+                          <div>
+                            <div className="text-xs font-medium text-foreground">{p.name}</div>
+                            <div className="text-[10px] text-muted-foreground">{p.value}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {card.showProgress && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>32 / 40 acceptations</span>
+                        <span className="text-[hsl(142,76%,45%)]">↑ Ahead of pace</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full rounded-full gradient-success" style={{ width: "80%", animation: "slide-up-card 1.5s ease-out forwards" }} />
+                      </div>
+                    </div>
+                  )}
+                  {card.showLive && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(0,84%,60%)] opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[hsl(0,84%,60%)]" />
+                      </span>
+                      <span className="text-xs font-bold text-[hsl(0,84%,60%)]">LIVE</span>
+                      <span className="text-lg font-bold text-foreground ml-2">247</span>
+                      <span className="text-xs text-muted-foreground">active visitors</span>
+                    </div>
+                  )}
+                </div>
+              </AnimatedOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Animated Carousel */}
+      <FeatureSection
+        badge="Auto-scroll"
+        title="Carousel that loops forever"
+        description="KPI cards auto-scroll in an Embla carousel every 5 seconds, looping infinitely. Hover to pause. Perfect for an office TV you never touch."
+        visual={<AnimatedKPICarousel />}
+      />
+
+      {/* Dual mode */}
+      <FeatureSection
+        reversed
+        badge="Dual Mode"
+        title="Service team & Dev team dashboards"
+        description="Toggle between two dashboard modes. Service mode shows acceptations, revenue, and client metrics. Dev mode tracks subscribers, MRR, signups, and GitHub activity. Different KPIs, same great experience."
+        visual={
+          <div className="space-y-4">
+            {[
+              { label: "Service Mode", color: "bg-primary", dotColor: "bg-primary", tags: ["Acceptations", "Revenue", "Churn Rate"], tagBg: "bg-primary/10 text-primary" },
+              { label: "Dev Mode", color: "bg-success", dotColor: "bg-success", tags: ["Subscribers", "MRR", "Signups"], tagBg: "bg-success/10 text-success" },
+            ].map((mode) => (
+              <div key={mode.label} className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6 space-y-3 hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${mode.dotColor}`} />
+                  <span className="text-sm font-semibold text-foreground">{mode.label}</span>
+                </div>
+                <div className="flex gap-3">
+                  {mode.tags.map((m) => (
+                    <span key={m} className={`px-3 py-1 rounded-full text-xs ${mode.tagBg}`}>{m}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+
+      {/* Integrations */}
+      <section className="py-20 lg:py-28 bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">Plug into your stack</h2>
+            <p className="text-lg text-muted-foreground mb-12 max-w-xl mx-auto">
+              HubSpot for CRM data, Google Analytics for real-time visitors. All synced via webhooks and edge functions.
+            </p>
+          </AnimatedOnScroll>
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            <AnimatedOnScroll>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 text-center space-y-3">
+                <div className="text-4xl font-black text-foreground">HubSpot</div>
+                <p className="text-sm text-muted-foreground">Deals, owners, pipeline stages, acceptation metrics</p>
+              </div>
+            </AnimatedOnScroll>
+            <AnimatedOnScroll delay={100}>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 text-center space-y-3">
+                <div className="text-4xl font-black text-foreground">GA4</div>
+                <p className="text-sm text-muted-foreground">Real-time active users with live pulsing indicator</p>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+        </div>
+      </section>
+    </MarketingLayout>
+  );
+};
+
+export default DashboardFeature;
+```
+
+---
+
+## 11. Page: Engagement (`/site/engagement`)
+
+**File**: `src/pages/marketing/EngagementFeature.tsx`
+
+### Data
+
+```tsx
+const slackMessages = [
+  { text: "\"Great team lunch today! 🍕\"", author: "Sarah", channel: "general", avatar: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", initials: "SM" },
+  { text: "\"Just closed the Acme deal! 🎉\"", author: "John", channel: "wins", avatar: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", initials: "JD" },
+  { text: "\"New office plants looking great 🌱\"", author: "Alex", channel: "random", avatar: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", initials: "AK" },
+];
+
+const recentWins = [
+  { company: "Acme Corp", amount: "$15,000", type: "Grant", avatars: ["JD", "SM"] },
+  { company: "TechStart Inc", amount: "$8,500", type: "Signature", avatars: ["AK", "LR"] },
+  { company: "DataFlow", amount: "$22,000", type: "Renewal", avatars: ["MP", "JD"] },
+  { company: "CloudBase", amount: "$11,200", type: "Grant", avatars: ["SM", "AK"] },
+];
+
+const avatarGradients: Record<string, string> = {
+  JD: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]",
+  SM: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]",
+  AK: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]",
+  LR: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]",
+  MP: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]",
+};
+```
+
+### Sections
+
+1. **Hero**: Badge "Team Engagement" (success color, `MessageSquare`). H1: `More than just numbers` ("numbers" = `<GradientText gradient="success">`).
+
+2. **FeatureSection: Slack Feed** (badge "Slack Integration"). Visual: MockupFrame with cycling Slack messages (3s interval, `useState`+`useEffect`). Shows rotating messages with avatars, plus a static team photo card with "MP" avatar.
+
+3. **FeatureSection: Spotify** (reversed, badge "Spotify"). Visual: compact "Now Playing" card with `<CSSEqualizer />`, song "Bohemian Rhapsody" by Queen, shared by Alex (AK avatar).
+
+4. **Quote + QR** section (md:grid-cols-2):
+   - **Quote of the Day** (`Quote` icon): Sample quote "The only way to do great work is to love what you do." — Steve Jobs
+   - **QR Submission System** (`QrCode` icon): Description + animated QR code placeholder
+
+5. **FeatureSection: Recent Wins** (badge "Auto-scroll"). Visual: scrolling wins ticker using `scroll-up-loop` animation (8s), duplicated data for seamless loop. Each win shows stacked avatars, company, type, amount.
+
+### Full Source
+
+```tsx
+import { useState, useEffect } from "react";
+import { MarketingLayout } from "@/components/Marketing/MarketingLayout";
+import { GradientText } from "@/components/Marketing/GradientText";
+import { FeatureSection } from "@/components/Marketing/FeatureSection";
+import { AnimatedOnScroll } from "@/components/Marketing/AnimatedOnScroll";
+import { MockupFrame } from "@/components/Marketing/MockupFrame";
+import { CSSEqualizer } from "@/components/Marketing/CSSEqualizer";
+import { MessageSquare, Music, Quote, QrCode, Trophy, Hash } from "lucide-react";
+
+const slackMessages = [
+  { text: "\"Great team lunch today! 🍕\"", author: "Sarah", channel: "general", avatar: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]", initials: "SM" },
+  { text: "\"Just closed the Acme deal! 🎉\"", author: "John", channel: "wins", avatar: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]", initials: "JD" },
+  { text: "\"New office plants looking great 🌱\"", author: "Alex", channel: "random", avatar: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]", initials: "AK" },
+];
+
+const recentWins = [
+  { company: "Acme Corp", amount: "$15,000", type: "Grant", avatars: ["JD", "SM"] },
+  { company: "TechStart Inc", amount: "$8,500", type: "Signature", avatars: ["AK", "LR"] },
+  { company: "DataFlow", amount: "$22,000", type: "Renewal", avatars: ["MP", "JD"] },
+  { company: "CloudBase", amount: "$11,200", type: "Grant", avatars: ["SM", "AK"] },
+];
+
+const avatarGradients: Record<string, string> = {
+  JD: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]",
+  SM: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]",
+  AK: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]",
+  LR: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]",
+  MP: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]",
+};
+
+const EngagementFeature = () => {
+  const [activeMsg, setActiveMsg] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setActiveMsg((p) => (p + 1) % slackMessages.length), 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 lg:py-32">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 right-1/3 w-80 h-80 rounded-full bg-success/5 blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/20 mb-8">
+              <MessageSquare className="w-4 h-4 text-success" />
+              <span className="text-sm font-medium text-success">Team Engagement</span>
+            </div>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={100}>
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
+              More than just{" "}
+              <GradientText gradient="success">numbers</GradientText>
+            </h1>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={200}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Slack feed, Spotify integration, daily quotes, QR submissions, and auto-scrolling wins keep your dashboard alive and personal.
+            </p>
+          </AnimatedOnScroll>
+        </div>
+      </section>
+
+      {/* Slack Feed */}
+      <FeatureSection
+        badge="Slack Integration"
+        title="Live content from your team"
+        description="Photos, messages, and reactions posted in designated Slack channels automatically appear in a rotating feed on the dashboard. Images show full-bleed with gradient overlays; text posts get colorful backgrounds."
+        visual={
+          <MockupFrame>
+            <div className="aspect-[4/3] bg-background p-4 space-y-3 relative overflow-hidden">
+              {slackMessages.map((msg, i) => (
+                <div
+                  key={msg.author}
+                  className="rounded-lg border border-border bg-gradient-to-br from-primary/10 to-secondary/10 p-5 text-center transition-all duration-500 absolute inset-x-4"
+                  style={{
+                    top: "1rem",
+                    opacity: activeMsg === i ? 1 : 0,
+                    transform: activeMsg === i ? "translateY(0)" : "translateY(-10px)",
+                  }}
+                >
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${msg.avatar} flex items-center justify-center mx-auto mb-3 border-2 border-background`}>
+                    <span className="text-xs font-bold text-white">{msg.initials}</span>
+                  </div>
+                  <p className="text-foreground font-medium">{msg.text}</p>
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    <span className="text-xs text-muted-foreground">{msg.author} • <Hash className="w-3 h-3 inline" />{msg.channel}</span>
+                  </div>
+                </div>
+              ))}
+              <div className="rounded-lg border border-border overflow-hidden mt-32">
+                <div className="h-24 bg-gradient-to-br from-muted to-secondary flex items-center justify-center text-muted-foreground text-sm">
+                  📸 Team photo
+                </div>
+                <div className="p-3 bg-card flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)] flex items-center justify-center`}>
+                    <span className="text-[7px] font-bold text-white">MP</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Mike • <Hash className="w-3 h-3 inline" />photos</span>
+                </div>
+              </div>
+            </div>
+          </MockupFrame>
+        }
+      />
+
+      {/* Spotify */}
+      <FeatureSection
+        reversed
+        badge="Spotify"
+        title="Now Playing on the office speakers"
+        description="Songs shared in a dedicated Slack channel display as a compact 'Now Playing' card with album art, track name, artist, and who shared it. The pulsing green dot adds life to the dashboard."
+        visual={
+          <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden max-w-sm mx-auto">
+            <div className="flex">
+              <div className="w-1/2 aspect-square bg-gradient-to-br from-success/20 to-primary/20 flex items-center justify-center">
+                <Music className="w-12 h-12 text-success" />
+              </div>
+              <div className="w-1/2 p-5 flex flex-col justify-center">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <CSSEqualizer />
+                  <span className="text-[10px] uppercase tracking-wider text-success font-semibold ml-1">Now Playing</span>
+                </div>
+                <div className="text-sm font-bold text-foreground">Bohemian Rhapsody</div>
+                <div className="text-xs text-muted-foreground">Queen</div>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)] flex items-center justify-center`}>
+                    <span className="text-[7px] font-bold text-white">AK</span>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">Shared by Alex</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      {/* Quote + QR */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-8">
+            <AnimatedOnScroll>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center">
+                  <Quote className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Quote of the Day</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  AI-generated motivational quotes rotate daily. Displayed with beautiful italic typography and author attribution.
+                </p>
+                <div className="rounded-lg bg-secondary/50 p-4 border border-border">
+                  <p className="text-lg italic text-foreground">"The only way to do great work is to love what you do."</p>
+                  <p className="text-sm text-muted-foreground mt-2">— Steve Jobs</p>
+                </div>
+              </div>
+            </AnimatedOnScroll>
+            <AnimatedOnScroll delay={150}>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-success flex items-center justify-center">
+                  <QrCode className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">QR Submission System</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  A QR code on the dashboard links to a mobile form. Team members can snap a photo or write a message that instantly appears in the feed.
+                </p>
+                <div className="flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-lg bg-foreground flex items-center justify-center animate-pulse-glow">
+                    <QrCode className="w-16 h-16 text-background" />
+                  </div>
+                </div>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Wins */}
+      <FeatureSection
+        badge="Auto-scroll"
+        title="Recent Wins ticker"
+        description="A continuously scrolling list of the latest closed deals, showing stacked avatars, company names, deal types, and amounts. Uses requestAnimationFrame for butter-smooth scrolling with duplicated content for a seamless loop."
+        visual={
+          <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-4 max-w-sm mx-auto h-48 overflow-hidden">
+            <div style={{ animation: "scroll-up-loop 8s linear infinite" }}>
+              {[...recentWins, ...recentWins].map((win, i) => (
+                <div key={`${win.company}-${i}`} className="flex items-center gap-3 rounded-lg bg-secondary/50 border border-border p-3 mb-3">
+                  <div className="flex -space-x-2">
+                    {win.avatars.map((a) => (
+                      <div key={a} className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarGradients[a]} border-2 border-background flex items-center justify-center`}>
+                        <span className="text-[7px] font-bold text-white">{a}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{win.company}</div>
+                    <div className="text-xs text-muted-foreground">{win.type}</div>
+                  </div>
+                  <span className="text-sm font-bold text-accent">{win.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      />
+    </MarketingLayout>
+  );
+};
+
+export default EngagementFeature;
+```
+
+---
+
+## 12. Page: Admin (`/site/admin`)
+
+**File**: `src/pages/marketing/AdminFeature.tsx`
+
+### Data
+
+```tsx
+const themes = [
+  { name: "Dark", bg: "hsl(220,26%,14%)", primary: "hsl(195,100%,50%)", accent: "hsl(38,95%,55%)" },
+  { name: "Light", bg: "hsl(40,33%,97%)", primary: "hsl(270,91%,65%)", accent: "hsl(48,96%,53%)" },
+  { name: "Vibrant", bg: "hsl(260,30%,12%)", primary: "hsl(330,100%,60%)", accent: "hsl(45,100%,55%)" },
+  { name: "helloDarwin", bg: "hsl(40,30%,96%)", primary: "hsl(300,60%,45%)", accent: "hsl(52,100%,50%)" },
+];
+
+const avatarStack = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]" },
+  { initials: "LR", gradient: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]" },
+  { initials: "MP", gradient: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]" },
+];
+
+const celebrationHistory = [
+  { company: "Acme Corp", amount: "$15K", time: "2 min ago" },
+  { company: "TechStart", amount: "$8.5K", time: "15 min ago" },
+  { company: "DataFlow", amount: "$22K", time: "1 hr ago" },
+  { company: "CloudBase", amount: "$11K", time: "3 hr ago" },
+];
+```
+
+### Sections
+
+1. **Hero**: Badge "Admin & Customization" (`Settings`). H1: `Make it yours` ("yours" = `<GradientText>`). Subtitle.
+
+2. **4 stunning themes** (grid-cols-2 lg:grid-cols-4): Each theme card has a front face showing color swatches and name, and a back face (CSS 3D flip on hover via `[perspective:600px]` and `group-hover:[transform:rotateY(180deg)]`) showing a mini dashboard preview with 4 KPI tiles.
+
+3. **FeatureSection: Sound Config** (badge "Audio"). Visual: 4 sound config rows (Deal Accepted/Goal Horn, New Subscriber/Cash Register, Churn Alert/Warning Siren, Plat du Jour/Dinner Bell) with toggle switches, animated slide-in.
+
+4. **Employee Management + History** (md:grid-cols-2):
+   - **Employee Management** (`Users`, gradient-primary): Description + animated avatar stack (5 avatars + "+12" counter)
+   - **Celebration History** (`History`, gradient-celebration): Description + animated history feed (4 entries with green dots)
+
+### Full Source
+
+```tsx
+import { MarketingLayout } from "@/components/Marketing/MarketingLayout";
+import { GradientText } from "@/components/Marketing/GradientText";
+import { FeatureSection } from "@/components/Marketing/FeatureSection";
+import { AnimatedOnScroll } from "@/components/Marketing/AnimatedOnScroll";
+import { Settings, Palette, Volume2, Users, History } from "lucide-react";
+
+const themes = [
+  { name: "Dark", bg: "hsl(220,26%,14%)", primary: "hsl(195,100%,50%)", accent: "hsl(38,95%,55%)" },
+  { name: "Light", bg: "hsl(40,33%,97%)", primary: "hsl(270,91%,65%)", accent: "hsl(48,96%,53%)" },
+  { name: "Vibrant", bg: "hsl(260,30%,12%)", primary: "hsl(330,100%,60%)", accent: "hsl(45,100%,55%)" },
+  { name: "helloDarwin", bg: "hsl(40,30%,96%)", primary: "hsl(300,60%,45%)", accent: "hsl(52,100%,50%)" },
+];
+
+const avatarStack = [
+  { initials: "JD", gradient: "from-[hsl(195,80%,50%)] to-[hsl(210,90%,60%)]" },
+  { initials: "SM", gradient: "from-[hsl(330,70%,55%)] to-[hsl(350,80%,60%)]" },
+  { initials: "AK", gradient: "from-[hsl(142,70%,45%)] to-[hsl(160,80%,50%)]" },
+  { initials: "LR", gradient: "from-[hsl(270,70%,55%)] to-[hsl(290,80%,60%)]" },
+  { initials: "MP", gradient: "from-[hsl(38,80%,50%)] to-[hsl(45,90%,55%)]" },
+];
+
+const celebrationHistory = [
+  { company: "Acme Corp", amount: "$15K", time: "2 min ago" },
+  { company: "TechStart", amount: "$8.5K", time: "15 min ago" },
+  { company: "DataFlow", amount: "$22K", time: "1 hr ago" },
+  { company: "CloudBase", amount: "$11K", time: "3 hr ago" },
+];
+
+const AdminFeature = () => {
+  return (
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 lg:py-32">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute bottom-20 right-1/4 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <AnimatedOnScroll>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+              <Settings className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Admin & Customization</span>
+            </div>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={100}>
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
+              Make it{" "}
+              <GradientText>yours</GradientText>
+            </h1>
+          </AnimatedOnScroll>
+          <AnimatedOnScroll delay={200}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              4 themes, configurable sounds per event type, employee management, and full celebration history.
+            </p>
+          </AnimatedOnScroll>
+        </div>
+      </section>
+
+      {/* Theme showcase with flip preview */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <AnimatedOnScroll className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">4 stunning themes</h2>
+            <p className="text-lg text-muted-foreground">Switch instantly. Every component adapts.</p>
+          </AnimatedOnScroll>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {themes.map((theme, i) => (
+              <AnimatedOnScroll key={theme.name} delay={i * 100}>
+                <div className="group [perspective:600px]">
+                  <div className="relative transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                    {/* Front */}
+                    <div className="rounded-xl border border-border overflow-hidden [backface-visibility:hidden]">
+                      <div className="aspect-[4/3] p-4 flex flex-col justify-between" style={{ backgroundColor: theme.bg }}>
+                        <div className="flex gap-2">
+                          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.primary }} />
+                          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.accent }} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="h-2 w-3/4 rounded" style={{ backgroundColor: theme.primary, opacity: 0.3 }} />
+                          <div className="h-2 w-1/2 rounded" style={{ backgroundColor: theme.accent, opacity: 0.3 }} />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-card text-center">
+                        <span className="text-sm font-semibold text-foreground">{theme.name}</span>
+                      </div>
+                    </div>
+                    {/* Back */}
+                    <div className="absolute inset-0 rounded-xl border border-border overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                      <div className="aspect-[4/3] p-3 flex flex-col gap-2" style={{ backgroundColor: theme.bg }}>
+                        <div className="grid grid-cols-2 gap-1.5 flex-1">
+                          {[1, 2, 3, 4].map((n) => (
+                            <div key={n} className="rounded p-1.5" style={{ backgroundColor: `${theme.primary}22` }}>
+                              <div className="h-1.5 w-1/2 rounded mb-1" style={{ backgroundColor: theme.primary, opacity: 0.5 }} />
+                              <div className="text-[8px] font-bold" style={{ color: theme.primary }}>{[42, "$12K", 89, "1.2K"][n - 1]}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-card text-center">
+                        <span className="text-xs text-muted-foreground">Dashboard Preview</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AnimatedOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Sound Config */}
+      <FeatureSection
+        badge="Audio"
+        title="Custom sounds for every event"
+        description="Configure unique ringtones per celebration type. Standard deals play the Canadiens goal horn. High-value deals above a configurable threshold get a premium sound. Each event type can be enabled/disabled independently."
+        visual={
+          <div className="space-y-3 max-w-sm mx-auto">
+            {[
+              { event: "Deal Accepted", sound: "Goal Horn", enabled: true },
+              { event: "New Subscriber", sound: "Cash Register", enabled: true },
+              { event: "Churn Alert", sound: "Warning Siren", enabled: true },
+              { event: "Plat du Jour", sound: "Dinner Bell", enabled: false },
+            ].map((item, i) => (
+              <div
+                key={item.event}
+                className="rounded-lg border border-border bg-card/50 backdrop-blur-sm p-4 flex items-center gap-4 opacity-0"
+                style={{ animation: `slide-in-from-left 0.5s ease-out ${i * 0.15}s forwards` }}
+              >
+                <Volume2 className={`w-5 h-5 ${item.enabled ? "text-primary" : "text-muted-foreground/40"}`} />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-foreground">{item.event}</div>
+                  <div className="text-xs text-muted-foreground">{item.sound}</div>
+                </div>
+                <div className={`w-9 h-5 rounded-full ${item.enabled ? "bg-primary" : "bg-muted"} relative transition-colors`}>
+                  <div
+                    className="w-4 h-4 rounded-full bg-foreground absolute top-0.5 transition-all duration-500"
+                    style={{
+                      left: item.enabled ? "18px" : "2px",
+                      animation: `slide-up-card 0.6s ease-out ${0.8 + i * 0.15}s both`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+
+      {/* Employee Management + History */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-8">
+            <AnimatedOnScroll>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center">
+                  <Users className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Employee Management</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Add team members manually or sync from HubSpot. Upload photos, map HubSpot owner IDs, and bulk-sync employee photos via an edge function.
+                </p>
+                <div className="flex -space-x-3 mt-4">
+                  {avatarStack.map((a, i) => (
+                    <div
+                      key={a.initials}
+                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${a.gradient} border-2 border-background flex items-center justify-center text-xs font-bold text-white opacity-0`}
+                      style={{ animation: `slide-in-from-left 0.4s ease-out ${i * 0.1}s forwards` }}
+                    >
+                      {a.initials}
+                    </div>
+                  ))}
+                  <div className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground opacity-0" style={{ animation: `slide-in-from-left 0.4s ease-out 0.5s forwards` }}>
+                    +12
+                  </div>
+                </div>
+              </div>
+            </AnimatedOnScroll>
+            <AnimatedOnScroll delay={150}>
+              <div className="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-8 h-full space-y-4">
+                <div className="w-14 h-14 rounded-xl gradient-celebration flex items-center justify-center">
+                  <History className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Celebration History</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Every celebration is logged. Browse the history, replay past celebrations, or mark false positives. Full audit trail with timestamps and deal details.
+                </p>
+                <div className="space-y-2 mt-4">
+                  {celebrationHistory.map((item, i) => (
+                    <div
+                      key={item.company}
+                      className="text-xs text-muted-foreground flex items-center gap-2 opacity-0"
+                      style={{ animation: `slide-in-from-left 0.4s ease-out ${i * 0.2}s forwards` }}
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                      {item.company} — {item.amount} — {item.time}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </AnimatedOnScroll>
+          </div>
+        </div>
+      </section>
+    </MarketingLayout>
+  );
+};
+
+export default AdminFeature;
+```
+
+---
+
+## 13. Responsive Behavior
+
+| Breakpoint | Behavior |
+|---|---|
+| Default (mobile) | Single column layouts, `text-5xl` hero, hamburger menu |
+| `md:` (768px+) | 2-column grids, desktop nav hidden toggle |
+| `lg:` (1024px+) | 4-column grids, `text-7xl` hero, larger padding (`lg:px-8`, `lg:py-28`) |
+
+Key responsive patterns:
+- Hero text: `text-5xl lg:text-7xl`
+- Feature grids: `md:grid-cols-2 lg:grid-cols-4`
+- Section padding: `py-20 lg:py-28`
+- Container: `max-w-7xl mx-auto px-6 lg:px-8`
+- Mobile menu: toggled via `useState`, shown only on `md:hidden`
+- Buttons stack vertically on mobile: `flex-col sm:flex-row`
+
+---
+
+## 14. External Links & CTAs
+
+| Element | Target | Type |
+|---|---|---|
+| "Get Started" button | `mailto:contact@hellodarwin.com` | External (email) |
+| "Live Demo" button | `/` (root of the app) | Internal link |
+| "Try the Demo" button | `/` (root of the app) | Internal link |
+| "See Features" button | `/site/celebrations` | Internal link |
+| Feature cards | `/site/celebrations`, `/site/dashboard`, `/site/engagement`, `/site/admin` | Internal links |
+| Nav links | `/site/celebrations`, `/site/dashboard`, `/site/engagement`, `/site/admin` | Internal links |
+| Logo | `/site` | Internal link |
+
+**Brand**: CelebrationTV  
+**Company**: helloDarwin  
+**Footer copyright**: `© {year} helloDarwin. Built with ❤️ for teams that celebrate.`
+
+---
+
+## 15. Shared UI Component: Button
+
+The marketing site uses shadcn's `Button` component. Key variants used:
+- Default (primary fill)
+- `variant="outline"`
+- `variant="ghost"`
+- `size="sm"` (navbar)
+- `size="lg"` (hero CTAs, `h-12 px-8`)
+- `asChild` prop to render as `<Link>` or `<a>`
+
+The `cn()` utility from `@/lib/utils` combines `clsx` + `tailwind-merge`:
+
+```ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
