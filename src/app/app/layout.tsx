@@ -42,6 +42,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       if (!membership?.org_id) {
         setLoading(false)
+        if (!pathname.startsWith('/app/setup')) {
+          router.replace('/app/setup')
+        }
         return
       }
 
@@ -56,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     loadOrg()
-  }, [router])
+  }, [router, pathname])
 
   const handleSignOut = async () => {
     const supabase = createClient()

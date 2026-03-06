@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-clients'
 import { useOrg } from '@/lib/hooks/use-org'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AddIntegrationDialog } from './add-integration-dialog'
+import { HubSpotConnectButton } from '@/components/admin/hubspot-connect-button'
 import { Plug, Plus, Pencil, Trash2, AlertCircle, CheckCircle, XCircle, RefreshCw, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -22,6 +23,7 @@ type Integration = {
   type: string
   status: string
   last_synced_at: string | null
+  config?: Record<string, unknown>
 }
 
 const STATUS_CONFIG = {
@@ -59,7 +61,7 @@ export default function IntegrationsPage() {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('integrations')
-      .select('id, name, type, status, last_synced_at')
+      .select('id, name, type, status, last_synced_at, config')
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
 
@@ -119,11 +121,24 @@ export default function IntegrationsPage() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {orgId && (
+          <Suspense fallback={<Card><CardContent className="pt-6"><div className="h-24 animate-pulse rounded bg-muted" /></CardContent></Card>}>
+            <HubSpotConnectButton
+              orgId={orgId}
+              existingIntegration={
+                integrations.find((i) => i.type === 'hubspot') ?? null
+              }
+              onRefresh={fetchIntegrations}
+            />
+          </Suspense>
+        )}
         {integrationsLoading ? (
           <p className="text-muted-foreground">Loading integrations...</p>
         ) : (
           <>
-            {integrations.map((integration) => {
+            {integrations
+              .filter((i) => i.type !== 'hubspot')
+              .map((integration) => {
               const statusCfg = STATUS_CONFIG[integration.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.disconnected
               const StatusIcon = statusCfg.icon
               const typeLabel = INTEGRATION_TYPES.find((t) => t.value === integration.type)?.label ?? integration.type
@@ -179,7 +194,9 @@ export default function IntegrationsPage() {
               )
             })}
 
-            {availableToAdd.map((t) => (
+            {availableToAdd
+              .filter((t) => t.value !== 'hubspot')
+              .map((t) => (
               <Card
                 key={t.value}
                 className="flex cursor-pointer flex-col items-center justify-center border-dashed py-8 transition-colors hover:border-primary/50 hover:bg-muted/30"

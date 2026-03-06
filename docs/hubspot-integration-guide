@@ -1,0 +1,1067 @@
+# CelebBoard — HubSpot Integration Implementation Guide
+
+> Step-by-step plan: from creating a HubSpot developer account to a fully working OAuth + webhook + KPI integration with a visual trigger builder in the admin UI.
+
+---
+
+## Part 1: HubSpot Developer Account & App Setup
+
+### Step 1 — Create a HubSpot Developer Account
+
+1. Go to https://developers.hubspot.com/
+2. Click "Create a developer account" (top right)
+3. Sign up with a new email (or your existing HubSpot login — it will create a separate developer workspace)
+4. You'll land in the developer portal — this is where you manage apps, not CRM data
+
+> **Important distinction**: A developer account is NOT a HubSpot CRM portal. It's a workspace for building apps. You'll also need a test CRM portal to actually test with deals, contacts, etc.
+
+### Step 2 — Create a Test Portal (Sandbox)
+
+1. In the developer portal, go to **Testing** → **Test accounts** (left sidebar)
+2. Click "Create app test account"
+3. This gives you a full HubSpot CRM portal with fake data — deals, contacts, companies, etc.
+4. Note the **Portal ID** (also called "Hub ID") — you'll see it in the top-right corner (e.g., `47329841`)
+5. Add some test data: create a few deals in different stages, contacts, companies with properties filled in
+
+### Step 3 — Create a HubSpot App
+
+1. In the developer portal, go to **Apps** (left sidebar)
+2. Click "Create app"
+3. Fill in:
+   - **App name**: `CelebBoard`
+   - **Description**: `Team celebration platform — turns CRM wins into office TV celebrations`
+   - **Logo**: Upload the CelebBoard logo
+   - **Support URL**: `https://celebboard.com` (or your staging URL)
+   - **Privacy policy URL**: `https://celebboard.com/legal/privacy`
+
+### Step 4 — Configure OAuth Scopes
+
+In your app settings, go to the **Auth** tab:
+
+1. **Redirect URL**: Add these (all environments you'll test on):
+   ```
+   http://localhost:3000/api/integrations/hubspot/callback
+   https://celebboard.vercel.app/api/integrations/hubspot/callback
+   https://app.celebboard.com/api/integrations/hubspot/callback
+   ```
+
+2. **Required Scopes** — these are the permissions CelebBoard needs:
+   ```
+   crm.objects.contacts.read
+   crm.objects.companies.read
+   crm.objects.deals.read
+   crm.objects.quotes.read
+   crm.objects.owners.read
+   crm.schemas.contacts.read
+   crm.schemas.companies.read
+   crm.schemas.deals.read
+   crm.schemas.quotes.read
+   crm.schemas.custom.read
+   ```
+
+   **Why each scope**:
+   - `crm.objects.*.read` — Read object records (deals, contacts, etc.) for enrichment when webhooks fire, and for KPI queries
+   - `crm.objects.owners.read` — Sync team members (owners) with photos
+   - `crm.schemas.*.read` — Fetch all properties/fields on each object type (powers the dynamic dropdown UI in trigger builder)
+
+3. Copy down your **Client ID** and **Client Secret** — you'll need these in your `.env`
+
+### Step 5 — Configure Webhook Subscriptions
+
+In your app settings, go to the **Webhooks** tab:
+
+1. **Target URL**: `https://celebboard.vercel.app/api/webhooks/hubspot`
+   - This is a SINGLE endpoint for ALL customers (HubSpot routes by portalId)
+   - For local dev, you'll need a tunnel (ngrok or similar)
+
+2. **Create subscriptions** for these events:
+
+   | Object | Event Type | Why |
+   |--------|-----------|-----|
+   | Deals | `deal.propertyChange` | Detects stage changes, amount changes, any deal property update |
+   | Deals | `deal.creation` | New deal created |
+   | Contacts | `contact.propertyChange` | Contact property updates |
+   | Contacts | `contact.creation` | New contact created |
+   | Companies | `company.propertyChange` | Company property updates |
+   | Companies | `company.creation` | New company created |
+   | Quotes | `deal.propertyChange` | Quote property updates (HubSpot treats quotes as deals internally for some webhook events) |
+   | Quotes | `deal.creation` | Quote created |
+
+   > **Note**: Custom object webhooks require the custom object's `objectTypeId`. You'll subscribe to these dynamically when a customer connects and has custom objects.
+
+3. Activate the subscriptions (they start paused)
+
+### Step 6 — Environment Variables
+
+Add these to your `.env.local` (and Vercel environment variables):
+
+```bash
+# HubSpot App (from developer portal → your app → Auth tab)
+HUBSPOT_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+HUBSPOT_CLIENT_SECRET=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+HUBSPOT_APP_ID=123456
+
+# Webhook verification
+HUBSPOT_WEBHOOK_SECRET=your-app-client-secret  
+# (HubSpot uses your Client Secret to sign webhook payloads)
+
+# OAuth redirect (match what you set in Step 4)
+HUBSPOT_REDIRECT_URI=http://localhost:3000/api/integrations/hubspot/callback
+```
+
+---
+
+## Part 2: Database Schema Changes
+
+### New: `integration_schemas` Table
+
+Caches each customer's HubSpot schema (object types + properties) so the trigger builder UI can show dynamic dropdowns without hitting HubSpot's API on every page load.
+
+```sql
+CREATE TABLE integration_schemas (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id          uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  integration_id  uuid REFERENCES integrations(id) ON DELETE CASCADE,
+  
+  -- Schema data
+  object_type     text NOT NULL,             -- 'deals', 'contacts', 'companies', 'quotes', '2-123456' (custom)
+  object_label    text NOT NULL,             -- 'Deals', 'Contacts', 'My Custom Object'
+  properties      jsonb NOT NULL DEFAULT '[]', 
+  -- Array of: { name, label, type, fieldType, options[], groupName, description }
+  -- type: 'string', 'number', 'date', 'datetime', 'enumeration', 'bool'
+  -- fieldType: 'text', 'textarea', 'select', 'checkbox', 'number', 'date', 'booleancheckbox'
+  -- options: [{ label, value }] for enumeration types (e.g., deal stages, dropdown properties)
+  
+  pipeline_stages jsonb DEFAULT '[]',        -- For deals/tickets: [{ pipelineId, pipelineName, stages: [{ id, label }] }]
+  
+  cached_at       timestamptz DEFAULT now(),
+  
+  UNIQUE(integration_id, object_type)
+);
+
+-- RLS
+ALTER TABLE integration_schemas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org_isolation" ON integration_schemas
+  USING (org_id = get_user_org_id());
+```
+
+### Updates to `integrations` Table
+
+Add HubSpot-specific fields to the `credentials` and `config` JSONB columns:
+
+```sql
+-- integrations.credentials for HubSpot will store:
+-- {
+--   "access_token": "...",
+--   "refresh_token": "...",
+--   "token_expires_at": "2026-03-06T12:00:00Z",
+--   "portal_id": "47329841",
+--   "hub_domain": "mycompany.hubspot.com"
+-- }
+
+-- integrations.config for HubSpot will store:
+-- {
+--   "portal_id": "47329841",          -- duplicated for quick lookup
+--   "subscribed_events": [             -- what webhook events are active
+--     "deal.propertyChange",
+--     "deal.creation",
+--     "contact.creation"
+--   ],
+--   "custom_object_ids": ["2-123456"], -- discovered custom objects
+--   "schema_last_synced": "2026-03-05T10:00:00Z",
+--   "owners_last_synced": "2026-03-05T10:00:00Z"
+-- }
+```
+
+### Updates to `celebration_triggers` Table
+
+Enhance to support the richer HubSpot trigger model:
+
+```sql
+-- Add columns to celebration_triggers:
+ALTER TABLE celebration_triggers ADD COLUMN object_type text;          -- 'deals', 'contacts', etc.
+ALTER TABLE celebration_triggers ADD COLUMN event_category text;       -- 'propertyChange', 'creation'
+ALTER TABLE celebration_triggers ADD COLUMN watched_property text;     -- for propertyChange: which property triggers this
+ALTER TABLE celebration_triggers ADD COLUMN condition_logic text DEFAULT 'AND'; -- 'AND' or 'OR'
+
+-- The existing `conditions` JSONB now holds structured conditions:
+-- [
+--   { "property": "dealstage", "operator": "eq", "value": "closedwon" },
+--   { "property": "amount", "operator": "gt", "value": 5000 },
+--   { "property": "pipeline", "operator": "in", "values": ["default", "enterprise"] }
+-- ]
+--
+-- Supported operators: eq, neq, gt, gte, lt, lte, in, not_in, contains, not_contains, is_empty, is_not_empty
+-- For propertyChange events, special operators:
+--   { "property": "dealstage", "operator": "changed_to", "value": "closedwon" }
+--   { "property": "dealstage", "operator": "changed_from_to", "from": "negotiation", "to": "closedwon" }
+```
+
+### Portal ID → Org Lookup Index
+
+For fast routing of incoming webhooks:
+
+```sql
+-- Create an index for quick portal_id lookups
+CREATE INDEX idx_integrations_hubspot_portal 
+  ON integrations ((config->>'portal_id')) 
+  WHERE type = 'hubspot' AND status = 'active';
+```
+
+---
+
+## Part 3: OAuth Flow Implementation
+
+### File: `src/app/api/integrations/hubspot/authorize/route.ts`
+
+**What it does**: When a user clicks "Connect HubSpot" in the admin UI, redirect them to HubSpot's OAuth consent screen.
+
+```
+Admin UI → GET /api/integrations/hubspot/authorize?org_id=xxx
+  → Generate state token (CSRF protection, encodes org_id)
+  → Store state in a short-lived cookie or DB record
+  → Redirect to: https://app.hubspot.com/oauth/authorize
+      ?client_id=HUBSPOT_CLIENT_ID
+      &redirect_uri=HUBSPOT_REDIRECT_URI
+      &scope=crm.objects.deals.read crm.schemas.deals.read ...
+      &state={encrypted_state_token}
+```
+
+### File: `src/app/api/integrations/hubspot/callback/route.ts`
+
+**What it does**: HubSpot redirects back here after the user authorizes. Exchange the code for tokens.
+
+```
+HubSpot redirects → GET /api/integrations/hubspot/callback?code=xxx&state=xxx
+  → Validate state token (CSRF check, extract org_id)
+  → POST https://api.hubapi.com/oauth/v1/token
+      grant_type=authorization_code
+      code={code}
+      redirect_uri={HUBSPOT_REDIRECT_URI}
+      client_id={HUBSPOT_CLIENT_ID}
+      client_secret={HUBSPOT_CLIENT_SECRET}
+  → Receive: { access_token, refresh_token, expires_in }
+  → GET https://api.hubapi.com/oauth/v1/access-tokens/{access_token}
+      → Returns: { hub_id, hub_domain, user, scopes }
+  → UPSERT into integrations table:
+      org_id, type='hubspot', name='HubSpot',
+      credentials: { access_token, refresh_token, token_expires_at, portal_id, hub_domain },
+      config: { portal_id },
+      status: 'active'
+  → Trigger initial sync (schema + owners) — fire-and-forget or queue
+  → Redirect to /app/integrations?connected=hubspot
+```
+
+### File: `src/lib/connectors/hubspot/auth.ts`
+
+**Token refresh helper** — called before any HubSpot API request:
+
+```
+getValidToken(integration):
+  → If token_expires_at > now() + 5 minutes: return access_token
+  → Else: POST https://api.hubapi.com/oauth/v1/token
+      grant_type=refresh_token
+      refresh_token={integration.credentials.refresh_token}
+      client_id, client_secret
+  → Update integration.credentials with new tokens
+  → Return fresh access_token
+```
+
+---
+
+## Part 4: Schema Discovery & Caching
+
+### File: `src/lib/connectors/hubspot/schema.ts`
+
+**What it does**: After OAuth completes (and periodically), fetch the customer's full HubSpot schema — every object type and every property — and cache it in `integration_schemas`.
+
+### Sync Flow
+
+```
+syncHubSpotSchema(integration, orgId, supabase):
+
+  1. Fetch standard object schemas:
+     GET /crm/v3/properties/deals       → all deal properties
+     GET /crm/v3/properties/contacts    → all contact properties
+     GET /crm/v3/properties/companies   → all company properties
+     GET /crm/v3/properties/quotes      → all quote properties
+     
+  2. Fetch deal pipelines (needed for stage dropdowns):
+     GET /crm/v3/pipelines/deals        → pipelines + stages
+     
+  3. Fetch custom objects (if any):
+     GET /crm/v3/schemas                → list of custom object schemas
+     For each custom object:
+       GET /crm/v3/properties/{objectType} → custom object properties
+
+  4. For each object type, UPSERT into integration_schemas:
+     - object_type: 'deals', 'contacts', 'companies', 'quotes', '2-123456'
+     - object_label: 'Deals', 'Contacts', 'Companies', 'Quotes', 'My Custom Object'
+     - properties: cleaned array of { name, label, type, fieldType, options, groupName }
+     - pipeline_stages: (for deals) [{ pipelineId, pipelineName, stages }]
+     - cached_at: now()
+```
+
+### Property Cleaning
+
+HubSpot returns a LOT of properties per object (100+). Filter and clean them:
+
+```
+For each property from HubSpot:
+  Keep: {
+    name:        property.name,              // 'dealstage', 'amount', 'closedate'
+    label:       property.label,             // 'Deal Stage', 'Amount', 'Close Date'
+    type:        property.type,              // 'enumeration', 'number', 'date', 'string'
+    fieldType:   property.fieldType,         // 'select', 'number', 'date', 'text'
+    groupName:   property.groupName,         // 'dealinformation', 'deal_revenue'
+    description: property.description,       // tooltip text for UI
+    options:     property.options?.map(o => ({  // for enumerations (dropdowns, deal stages)
+      label: o.label,
+      value: o.value
+    })) || []
+  }
+  
+  Skip: calculated properties, read-only system properties (hs_object_id, hs_createdate, etc.)
+         UNLESS they're commonly useful (like hs_deal_stage_probability)
+  
+  Sort: by groupName, then by label
+```
+
+### Admin API Endpoint
+
+**File: `src/app/api/integrations/hubspot/schema/route.ts`**
+
+```
+GET /api/integrations/hubspot/schema?org_id=xxx
+  → Returns cached schema from integration_schemas
+  → If stale (>24h) or empty: trigger background refresh
+  → Response: {
+      objects: [
+        { 
+          type: 'deals', 
+          label: 'Deals',
+          properties: [...],
+          pipelines: [...] 
+        },
+        { type: 'contacts', label: 'Contacts', properties: [...] },
+        ...
+      ]
+    }
+
+POST /api/integrations/hubspot/schema/refresh?org_id=xxx
+  → Force re-sync schema from HubSpot API
+  → Useful after customer adds new custom properties in HubSpot
+```
+
+---
+
+## Part 5: Webhook Processing Pipeline
+
+### Architecture: Single Shared Endpoint
+
+```
+HubSpot sends ALL events to:
+  POST /api/webhooks/hubspot
+
+Payload (array of events):
+[
+  {
+    "eventId": 1,
+    "subscriptionId": 12345,
+    "portalId": 47329841,
+    "appId": 123456,
+    "occurredAt": 1709654400000,
+    "subscriptionType": "deal.propertyChange",
+    "attemptNumber": 0,
+    "objectId": 7890,
+    "propertyName": "dealstage",
+    "propertyValue": "closedwon",
+    "changeSource": "CRM_UI",
+    "sourceId": "userId:12345"
+  }
+]
+```
+
+> **Key detail**: HubSpot sends an ARRAY of events per request, not a single event. You must process each one.
+
+### File: `src/app/api/webhooks/hubspot/route.ts`
+
+```
+POST /api/webhooks/hubspot
+
+Processing flow for each event in the array:
+
+  1. VERIFY SIGNATURE
+     HubSpot signs the entire request body with your Client Secret using SHA-256.
+     Header: X-HubSpot-Signature-v3
+     Verify: SHA256(client_secret + HTTP_METHOD + URL + request_body + timestamp)
+     Also check X-HubSpot-Request-Timestamp is within 5 minutes (replay attack prevention)
+
+  2. ROUTE BY PORTAL ID
+     event.portalId → look up integration where:
+       type = 'hubspot' AND config->>'portal_id' = portalId AND status = 'active'
+     If not found → log and skip (maybe they disconnected)
+     Get org_id from the integration
+
+  3. DEDUPLICATE
+     event.eventId is unique. Store recently processed eventIds in a short-lived cache
+     or check against celebrations.external_id = 'hs_event_{eventId}'
+
+  4. FIND MATCHING TRIGGERS
+     Load all active celebration_triggers for this org where:
+       integration_id = {this integration}
+       AND object_type = {event object type, e.g., 'deals'}
+       AND event_category matches:
+         - 'propertyChange' → subscriptionType ends with '.propertyChange'
+         - 'creation' → subscriptionType ends with '.creation'
+       AND (watched_property IS NULL OR watched_property = event.propertyName)
+
+  5. ENRICH THE OBJECT (fetch full record from HubSpot)
+     This is critical — the webhook only contains the changed property,
+     but trigger conditions might reference OTHER properties.
+     
+     GET /crm/v3/objects/{objectType}/{objectId}
+       ?properties={all properties referenced in matching triggers' conditions + field_mappings}
+       &associations=companies,contacts  (if deal, to get associated company name, etc.)
+     
+     Cache enriched objects briefly (60s) in case multiple triggers fire on same event.
+
+  6. EVALUATE CONDITIONS
+     For each matching trigger:
+       Load the enriched object
+       Evaluate each condition against the object's properties:
+         - eq:          object[property] == value
+         - neq:         object[property] != value
+         - gt/gte/lt/lte: numeric comparison
+         - in:          object[property] in [values]
+         - contains:    string includes
+         - is_empty:    null or ''
+         - changed_to:  event.propertyValue == value (use webhook data, not enriched)
+         - changed_from_to: need previousValue from webhook + current value
+       
+       Apply condition_logic (AND = all must pass, OR = any must pass)
+       
+       If conditions pass → trigger fires
+
+  7. BUILD CELEBRATION
+     For each fired trigger:
+       Apply field_mapping to the enriched object → extract display values
+       Resolve team_member references:
+         field_mapping might say "owner" → look at object's hubspot_owner_id
+         → match against team_members.external_ids->>'hubspot_owner_id'
+       Render title_pattern and subtitle_pattern (replace {{field}} placeholders)
+       
+       INSERT into celebrations:
+         org_id, template_id, trigger_id,
+         title (rendered), subtitle (rendered), amount,
+         metadata (all extracted fields),
+         team_member_ids (resolved),
+         status: 'pending',
+         external_id: 'hs_{objectType}_{objectId}_{eventId}'
+
+  8. RESPOND 200 QUICKLY
+     HubSpot expects a 200 within 5 seconds.
+     If you're slow, they retry (up to 10 times over 24 hours).
+     
+     Strategy: validate signature + parse immediately, 
+     then process asynchronously if needed.
+     For v1, synchronous is fine if you're fast 
+     (single DB query for triggers, single API call for enrichment).
+```
+
+### Webhook Signature Verification
+
+```typescript
+// src/lib/connectors/hubspot/webhook-verify.ts
+
+import crypto from 'crypto';
+
+export function verifyHubSpotWebhook(
+  clientSecret: string,
+  httpMethod: string,
+  url: string,   // full URL including https://
+  body: string,  // raw request body string
+  signatureHeader: string,
+  timestampHeader: string
+): boolean {
+  // Check timestamp freshness (within 5 minutes)
+  const timestamp = parseInt(timestampHeader, 10);
+  const now = Date.now();
+  if (Math.abs(now - timestamp) > 300000) return false;
+
+  // v3 signature: SHA-256 of concatenated string
+  const message = `${httpMethod}${url}${body}${timestampHeader}`;
+  const hash = crypto
+    .createHmac('sha256', clientSecret)
+    .update(message)
+    .digest('base64');
+
+  return hash === signatureHeader;
+}
+```
+
+---
+
+## Part 6: Object Enrichment Service
+
+### File: `src/lib/connectors/hubspot/enrichment.ts`
+
+```
+enrichObject(integration, objectType, objectId, requestedProperties):
+
+  token = await getValidToken(integration)
+  
+  // Build properties list from all triggers that might fire
+  // Plus standard useful fields (name, amount, owner, etc.)
+  properties = [...requestedProperties, ...getDefaultProperties(objectType)]
+  
+  GET https://api.hubapi.com/crm/v3/objects/{objectType}/{objectId}
+    ?properties={properties.join(',')}
+    &associations=companies,contacts,deals
+    Headers: Authorization: Bearer {token}
+  
+  Returns: {
+    id: '7890',
+    properties: {
+      dealname: 'Acme Corp Annual License',
+      dealstage: 'closedwon',
+      amount: '24500',
+      closedate: '2026-03-05',
+      hubspot_owner_id: '12345',
+      pipeline: 'default',
+      hs_deal_stage_probability: '1.0',
+      custom_field_x: 'some value',
+      ...
+    },
+    associations: {
+      companies: { results: [{ id: '456', type: 'deal_to_company' }] },
+      contacts: { results: [{ id: '789', type: 'deal_to_contact' }] }
+    }
+  }
+  
+  // If there are associations and the field_mapping references them,
+  // fetch associated objects too:
+  // e.g., company name from the associated company
+  if (needsAssociatedData) {
+    companyData = GET /crm/v3/objects/companies/{associatedCompanyId}?properties=name,domain
+    contactData = GET /crm/v3/objects/contacts/{associatedContactId}?properties=firstname,lastname,email
+  }
+  
+  return mergedEnrichedObject  // flat object with all properties + association data
+```
+
+### Association Field Mapping Convention
+
+For the field mapping system, use dot-notation to reference associated objects:
+
+```json
+{
+  "deal_name": "dealname",
+  "amount": "amount",
+  "company_name": "associations.companies.name",
+  "contact_email": "associations.contacts.email",
+  "owner_id": "hubspot_owner_id"
+}
+```
+
+The enrichment service resolves `associations.companies.name` by:
+1. Getting the associated company ID from the deal's associations
+2. Fetching the company record
+3. Extracting the `name` property
+
+---
+
+## Part 7: KPI Data Fetching
+
+### File: `src/lib/connectors/hubspot/kpis.ts`
+
+HubSpot's Search API (`POST /crm/v3/objects/{objectType}/search`) supports filters and is perfect for KPI aggregation.
+
+### KPI Types and Their Queries
+
+**Revenue This Quarter** (sum of closed deal amounts):
+```json
+{
+  "kpi_type": "hubspot_aggregate",
+  "query_config": {
+    "object_type": "deals",
+    "aggregate": "sum",
+    "aggregate_property": "amount",
+    "filters": [
+      { "propertyName": "dealstage", "operator": "EQ", "value": "closedwon" },
+      { "propertyName": "closedate", "operator": "GTE", "value": "2026-01-01" },
+      { "propertyName": "closedate", "operator": "LTE", "value": "2026-03-31" }
+    ]
+  }
+}
+```
+
+**Deal Count by Stage**:
+```json
+{
+  "kpi_type": "hubspot_count",
+  "query_config": {
+    "object_type": "deals",
+    "aggregate": "count",
+    "filters": [
+      { "propertyName": "dealstage", "operator": "EQ", "value": "closedwon" },
+      { "propertyName": "closedate", "operator": "GTE", "value": "2026-01-01" }
+    ]
+  }
+}
+```
+
+**Pipeline Value** (sum of open deal amounts):
+```json
+{
+  "kpi_type": "hubspot_aggregate",
+  "query_config": {
+    "object_type": "deals",
+    "aggregate": "sum",
+    "aggregate_property": "amount",
+    "filters": [
+      { "propertyName": "dealstage", "operator": "NEQ", "value": "closedwon" },
+      { "propertyName": "dealstage", "operator": "NEQ", "value": "closedlost" }
+    ]
+  }
+}
+```
+
+### Implementation Pattern
+
+```
+fetchHubSpotKPI(integration, kpiDefinition):
+
+  token = await getValidToken(integration)
+  config = kpiDefinition.query_config
+  
+  // HubSpot Search API doesn't support server-side aggregation.
+  // You must fetch matching records and aggregate client-side.
+  // (max 200 results per page, paginate if needed)
+  
+  allResults = []
+  after = undefined
+  
+  do:
+    response = POST /crm/v3/objects/{config.object_type}/search
+      body: {
+        filterGroups: [{ filters: config.filters }],
+        properties: [config.aggregate_property || 'hs_object_id'],
+        limit: 200,
+        after: after
+      }
+    
+    allResults.push(...response.results)
+    after = response.paging?.next?.after
+  while (after && allResults.length < 10000)  // safety cap
+  
+  // Aggregate
+  switch (config.aggregate):
+    'sum':   return allResults.reduce((sum, r) => sum + parseFloat(r.properties[config.aggregate_property] || '0'), 0)
+    'count': return allResults.length  // or response.total from first page
+    'avg':   return sum / count
+    'max':   return Math.max(...)
+    'min':   return Math.min(...)
+  
+  // For 'count', HubSpot returns total in the response, no need to paginate:
+  // response.total gives you the count directly
+```
+
+### KPI Refresh Strategy
+
+```
+File: src/lib/connectors/hubspot/kpi-refresher.ts
+
+refreshKPIs(orgId, supabase):
+  
+  // Load all active KPI definitions for this org that source from HubSpot
+  kpis = SELECT * FROM kpi_definitions 
+         WHERE org_id = orgId AND source_type = 'integration' AND is_active = true
+         AND (cached_at IS NULL OR cached_at < now() - interval '{refresh_seconds} seconds')
+  
+  integration = SELECT * FROM integrations 
+                WHERE org_id = orgId AND type = 'hubspot' AND status = 'active'
+  
+  for each kpi:
+    // Handle dynamic date filters (replace "current_quarter_start" etc.)
+    resolvedConfig = resolveDatePlaceholders(kpi.query_config)
+    
+    value = await fetchHubSpotKPI(integration, { ...kpi, query_config: resolvedConfig })
+    
+    UPDATE kpi_definitions SET 
+      cached_value = { value, previous_value, trend_percentage },
+      cached_at = now()
+    WHERE id = kpi.id
+
+// Called by:
+// 1. A cron/interval on the display page (every N minutes)
+// 2. An API route: GET /api/kpi/refresh?org_id=xxx
+// 3. After a celebration fires (to update counters immediately)
+```
+
+### Date Placeholder System
+
+KPI filters need dynamic dates. Use placeholders that resolve at query time:
+
+```
+Placeholders:
+  {{current_quarter_start}}  → '2026-01-01'
+  {{current_quarter_end}}    → '2026-03-31'
+  {{current_month_start}}    → '2026-03-01'
+  {{current_month_end}}      → '2026-03-31'
+  {{current_week_start}}     → '2026-03-02' (Monday)
+  {{current_year_start}}     → '2026-01-01'
+  {{today}}                  → '2026-03-05'
+  {{days_ago_30}}            → '2026-02-03'
+
+These resolve at query time using the org's timezone setting.
+```
+
+---
+
+## Part 8: Team Member Sync (Enhanced)
+
+### File: `src/lib/connectors/hubspot/owners.ts`
+
+```
+syncOwners(integration, orgId, supabase):
+
+  token = await getValidToken(integration)
+  
+  // Fetch all owners from HubSpot
+  GET /crm/v3/owners?limit=500
+  
+  Returns: [
+    {
+      id: '12345',
+      email: 'marie@company.com',
+      firstName: 'Marie-Ève',
+      lastName: 'Tremblay',
+      userId: 67890,
+      teams: [{ id: '1', name: 'Sales' }],
+      avatar: 'https://...'  // not always available
+    },
+    ...
+  ]
+  
+  For each owner:
+    UPSERT into team_members:
+      - Match by: org_id + external_ids->>'hubspot_owner_id' = owner.id
+        OR org_id + email = owner.email
+      - Set: name, email, photo_url (if avatar exists)
+      - Merge external_ids: { ...existing, hubspot_owner_id: owner.id }
+      
+  // Also track the owner→user mapping for webhook event resolution
+  // (webhooks reference hubspot_owner_id, which we map to team_members)
+```
+
+---
+
+## Part 9: Admin UI — Trigger Builder
+
+This is the structured form UI where admins configure celebration triggers using their actual HubSpot schema.
+
+### Component: `src/components/admin/trigger-builder.tsx`
+
+**Layout**:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Create Celebration Trigger                                      │
+│                                                                  │
+│  ┌─── Source ─────────────────────────────────────────────────┐  │
+│  │ Integration: [HubSpot ▼]                                   │  │
+│  │ Object:      [Deals ▼]  ← populated from integration_schemas│ │
+│  │ Event:       [Property Changed ▼] [Deal Stage ▼]           │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─── Conditions (ALL must be true) ────────────── [AND ▼] ──┐  │
+│  │                                                             │  │
+│  │  ┌──────────────────┐ ┌─────────────┐ ┌──────────────┐     │  │
+│  │  │ Deal Stage     ▼ │ │ changed to ▼│ │ Closed Won ▼ │ [×] │  │
+│  │  └──────────────────┘ └─────────────┘ └──────────────┘     │  │
+│  │                                                             │  │
+│  │  ┌──────────────────┐ ┌─────────────┐ ┌──────────────┐     │  │
+│  │  │ Amount         ▼ │ │ greater than│ │ 0            │ [×] │  │
+│  │  └──────────────────┘ └─────────────┘ └──────────────┘     │  │
+│  │                                                             │  │
+│  │  ┌──────────────────┐ ┌─────────────┐ ┌──────────────┐     │  │
+│  │  │ Pipeline       ▼ │ │ is one of  ▼│ │ [x]Default   │ [×] │  │
+│  │  │                  │ │             │ │ [x]Enterprise │     │  │
+│  │  └──────────────────┘ └─────────────┘ └──────────────┘     │  │
+│  │                                                             │  │
+│  │  [+ Add condition]                                          │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─── Celebration Template ───────────────────────────────────┐  │
+│  │ Template: [Deal Won 🎉 ▼]                                  │  │
+│  │   or [+ Create new template]                                │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─── Field Mapping ─────────────────────────────────────────┐  │
+│  │ Template uses these fields — map them to HubSpot properties │  │
+│  │                                                             │  │
+│  │  deal_name     →  [Deal Name (dealname) ▼]                  │  │
+│  │  amount        →  [Amount (amount) ▼]                       │  │
+│  │  company_name  →  [Associated Company → Name ▼]             │  │
+│  │  owner         →  [Deal Owner (hubspot_owner_id) ▼]         │  │
+│  │                                                             │  │
+│  │  [+ Add field mapping]                                      │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  [Test Trigger]  [Save Trigger]                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Dynamic Dropdown Behavior
+
+**Object selector** → fetches from `integration_schemas` for this org's HubSpot integration. Lists: Deals, Contacts, Companies, Quotes, plus any custom objects.
+
+**Property selector** (in conditions + field mapping) → loads `properties` array from the selected object's schema. Grouped by `groupName`. Shows label + (internal name) for clarity.
+
+**Operator selector** → changes based on property type:
+- `string` → equals, not equals, contains, not contains, is empty, is not empty
+- `number` → equals, not equals, greater than, greater than or equal, less than, less than or equal, is empty
+- `enumeration` → equals, not equals, is one of, is not one of (shows multi-select of options)
+- `date` → equals, before, after, between, is empty
+- `bool` → is true, is false
+
+**Value input** → changes based on property type + operator:
+- `enumeration` with `equals` → dropdown of options from schema
+- `enumeration` with `is one of` → multi-select checkboxes of options
+- `number` → number input
+- `date` → date picker
+- `string` → text input
+- `bool` → no value input needed (operator IS the value)
+
+**For `propertyChange` events**, add special operators:
+- `changed to` → value dropdown (what it changed TO)
+- `changed from ... to` → two value dropdowns
+
+### "Test Trigger" Feature
+
+```
+When admin clicks "Test Trigger":
+  1. Fetch 5 recent objects of the selected type from HubSpot
+     GET /crm/v3/objects/{objectType}?limit=5&properties={all condition properties}
+  2. Evaluate the trigger's conditions against each object
+  3. Show results:
+     ✅ "Acme Corp — $24,500 — Closed Won" → WOULD FIRE
+     ❌ "Beta Inc — $0 — Negotiation" → would not fire (amount = 0)
+     ✅ "Gamma Ltd — $12,000 — Closed Won" → WOULD FIRE
+     
+  This gives instant feedback that the conditions are correct
+  without waiting for a real webhook event.
+```
+
+---
+
+## Part 10: Admin UI — KPI Builder
+
+### Component: `src/components/admin/kpi-builder.tsx`
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Create KPI Card                                                 │
+│                                                                  │
+│  ┌─── Display ────────────────────────────────────────────────┐  │
+│  │ Label:    [Revenue This Quarter        ]                    │  │
+│  │ Format:   [Currency ▼]   Currency: [CAD ▼]                  │  │
+│  │ Show trend vs previous period: [✓]   Period: [Quarter ▼]   │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─── Data Source ────────────────────────────────────────────┐  │
+│  │ Source:     [HubSpot ▼]                                     │  │
+│  │ Object:     [Deals ▼]                                       │  │
+│  │ Aggregate:  [Sum ▼]  of  [Amount (amount) ▼]               │  │
+│  │                                                             │  │
+│  │ Filters:                                                    │  │
+│  │  ┌──────────────────┐ ┌──────────┐ ┌────────────────┐      │  │
+│  │  │ Deal Stage     ▼ │ │ equals  ▼│ │ Closed Won   ▼ │ [×]  │  │
+│  │  └──────────────────┘ └──────────┘ └────────────────┘      │  │
+│  │                                                             │  │
+│  │  ┌──────────────────┐ ┌──────────┐ ┌────────────────┐      │  │
+│  │  │ Close Date     ▼ │ │ is after▼│ │ [Quarter Start]│ [×]  │  │
+│  │  └──────────────────┘ └──────────┘ └────────────────┘      │  │
+│  │                                                             │  │
+│  │  [+ Add filter]                                             │  │
+│  │                                                             │  │
+│  │ Refresh every: [5 ▼] minutes                                │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─── Preview ────────────────────────────────────────────────┐  │
+│  │                                                             │  │
+│  │      $312,450                                               │  │
+│  │      Revenue This Quarter                                   │  │
+│  │      ▲ 18% vs last quarter                                  │  │
+│  │                                                             │  │
+│  │  (live preview — fetches real data from HubSpot)            │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  [Preview with real data]  [Save KPI]                            │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+The filter builder reuses the same condition UI from the trigger builder (same component, different context). Date filters include the special placeholder options: "Current quarter start," "Current month start," "Today," etc.
+
+---
+
+## Part 11: File Structure (New & Modified Files)
+
+```
+src/
+├── app/api/
+│   ├── integrations/hubspot/
+│   │   ├── authorize/route.ts        # NEW — OAuth initiation
+│   │   ├── callback/route.ts         # NEW — OAuth callback
+│   │   ├── schema/route.ts           # NEW — GET cached schema, POST refresh
+│   │   ├── disconnect/route.ts       # NEW — Revoke tokens, deactivate
+│   │   └── test/route.ts             # NEW — Test trigger against recent objects
+│   │
+│   └── webhooks/
+│       └── hubspot/route.ts          # NEW — Single shared webhook endpoint
+│
+├── lib/connectors/hubspot/
+│   ├── index.ts                      # MODIFIED — Main connector, re-exports
+│   ├── auth.ts                       # NEW — OAuth helpers, token refresh
+│   ├── schema.ts                     # NEW — Schema discovery + caching
+│   ├── enrichment.ts                 # NEW — Object enrichment on webhook
+│   ├── kpis.ts                       # NEW — KPI query execution
+│   ├── owners.ts                     # MODIFIED — Enhanced owner sync
+│   ├── webhook-verify.ts             # NEW — Signature verification
+│   └── types.ts                      # NEW — TypeScript types for HS objects
+│
+├── lib/webhooks/
+│   ├── condition-evaluator.ts        # MODIFIED — Add new operators (changed_to, etc.)
+│   └── enrichment-cache.ts           # NEW — Short-lived cache for enriched objects
+│
+├── components/admin/
+│   ├── trigger-builder.tsx           # NEW — Full trigger configuration UI
+│   ├── kpi-builder.tsx               # NEW — KPI definition UI
+│   ├── condition-row.tsx             # NEW — Single condition (property → operator → value)
+│   ├── property-selector.tsx         # NEW — Schema-aware property dropdown
+│   ├── operator-selector.tsx         # NEW — Type-aware operator dropdown
+│   ├── value-input.tsx               # NEW — Type-aware value input
+│   └── hubspot-connect-button.tsx    # NEW — OAuth connect/disconnect button
+│
+└── components/admin/shared/
+    └── schema-provider.tsx           # NEW — React context providing cached schema to child components
+```
+
+---
+
+## Part 12: Implementation Order
+
+### Phase 1 — Auth + Schema (build first, everything depends on this)
+
+1. Set up HubSpot developer account + app + OAuth config (Part 1 steps above)
+2. Create `integration_schemas` table migration
+3. Build OAuth flow: `authorize/route.ts` → `callback/route.ts` → `auth.ts`
+4. Build schema sync: `schema.ts` + `schema/route.ts`
+5. Build enhanced owner sync: `owners.ts`
+6. Build "Connect HubSpot" button in admin UI
+7. **Test**: Connect your test portal, verify schema + owners sync correctly
+
+### Phase 2 — Webhook Pipeline (the celebration engine)
+
+1. Build webhook signature verification: `webhook-verify.ts`
+2. Build shared webhook endpoint: `webhooks/hubspot/route.ts`
+3. Build object enrichment service: `enrichment.ts`
+4. Enhance condition evaluator with new operators
+5. Update trigger table columns (migration)
+6. **Test**: Create a trigger manually in DB → change a deal stage in test portal → verify celebration is created
+
+### Phase 3 — Trigger Builder UI (make it configurable)
+
+1. Build `property-selector.tsx` (schema-aware dropdown)
+2. Build `operator-selector.tsx` (type-aware operators)
+3. Build `value-input.tsx` (dynamic input based on type)
+4. Build `condition-row.tsx` (combines the three)
+5. Build `trigger-builder.tsx` (full form with all sections)
+6. Build "Test Trigger" endpoint + UI
+7. **Test**: Create a trigger entirely through UI → verify it fires on webhook
+
+### Phase 4 — KPI System
+
+1. Build KPI query execution: `kpis.ts`
+2. Build date placeholder resolution
+3. Build KPI refresh endpoint
+4. Build `kpi-builder.tsx` UI with live preview
+5. Wire KPI refresh into the display page
+6. **Test**: Create KPI through UI → verify it shows correct data on display
+
+### Phase 5 — Polish
+
+1. Token refresh edge cases (expired refresh tokens, revoked access)
+2. Error states in UI (disconnected, rate limited, invalid schema)
+3. Schema refresh button + staleness indicator
+4. Webhook retry handling (HubSpot retries failed deliveries)
+5. Rate limiting on HubSpot API calls (100 requests/10 seconds on free, 150 on paid)
+6. Logging + monitoring for webhook processing
+
+---
+
+## Part 13: HubSpot API Rate Limits & Gotchas
+
+### Rate Limits
+- **OAuth apps**: 100 requests / 10 seconds per portal (Starter/Free), 150/10s (Pro/Enterprise)
+- **Search API**: 4 requests / second per app
+- **Webhooks**: HubSpot batches events — you might get 1-50 events per request
+- **Schema/Properties API**: Subject to standard rate limits
+
+### Gotchas to Watch For
+1. **Webhook payloads are minimal** — only the changed property + new value. You MUST enrich to get the full object.
+2. **`propertyChange` fires for EVERY property change** — a single save in HubSpot might send 5+ events if multiple properties changed. Debounce or batch.
+3. **Association data requires separate API calls** — the object endpoint doesn't inline associated records by default. Use the `associations` parameter.
+4. **Deal amounts are strings** — `"24500.00"` not `24500`. Parse them.
+5. **Custom object IDs** look like `2-123456` (the `2-` prefix is the schema version).
+6. **HubSpot free accounts** have limited API access — some endpoints require paid plans.
+7. **Token refresh tokens don't expire** — but access tokens expire every 6 hours (30 minutes actually, but 6 hour refresh window). Always check before making API calls.
+8. **Webhook subscriptions are per-app, not per-portal** — when you subscribe to `deal.propertyChange`, you get it for ALL portals that install your app.
+9. **The Search API doesn't support true aggregation** — you get records back and must sum/count client-side. For large datasets, use pagination (max 10,000 total results).
+10. **Deleted objects still send webhook events** — check that the object still exists before enriching (handle 404 gracefully).
+
+---
+
+## Part 14: Local Development with HubSpot Webhooks
+
+HubSpot needs to reach your webhook endpoint. During local development:
+
+### Option A: ngrok (recommended)
+
+```bash
+# Install ngrok
+brew install ngrok  # or download from ngrok.com
+
+# Start your Next.js dev server
+pnpm dev  # runs on localhost:3000
+
+# In another terminal, start ngrok
+ngrok http 3000
+
+# You'll get a URL like: https://abc123.ngrok-free.app
+# Set this as your webhook target URL in HubSpot developer portal:
+# https://abc123.ngrok-free.app/api/webhooks/hubspot
+
+# Also update HUBSPOT_REDIRECT_URI in .env.local:
+# HUBSPOT_REDIRECT_URI=https://abc123.ngrok-free.app/api/integrations/hubspot/callback
+```
+
+### Option B: HubSpot CLI (webhook replay)
+
+```bash
+# HubSpot also offers a CLI that can replay webhook events
+# Useful for testing without waiting for real events
+npx @hubspot/cli webhook replay --app-id=123456
+```
+
+### Testing Without Webhooks
+
+For early development, you can skip webhooks entirely and test with:
+1. The simulation endpoint you already have (`/api/simulate`)
+2. Manually creating celebrations via the admin UI
+3. The "Test Trigger" feature that evaluates conditions against existing HubSpot objects
+
+---
+
+*This guide should be placed in the project root alongside ARCHITECTURE.md and referenced in .cursorrules for context in Cursor sessions.*
