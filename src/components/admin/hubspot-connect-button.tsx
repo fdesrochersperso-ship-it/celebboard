@@ -52,6 +52,7 @@ interface HubSpotConnectButtonProps {
 export function HubSpotConnectButton({
   orgId,
   existingIntegration,
+  onRefresh,
 }: HubSpotConnectButtonProps) {
   const searchParams = useSearchParams()
   const [disconnectOpen, setDisconnectOpen] = useState(false)

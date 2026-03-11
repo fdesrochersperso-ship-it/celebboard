@@ -133,14 +133,18 @@ export async function GET(request: NextRequest) {
     const integrationRecord = integration
     let ownersSynced = 0
     if (integrationRecord) {
+      const integrationForSync = {
+        id: integrationRecord.id,
+        credentials: (integrationRecord.credentials ?? {}) as Record<string, unknown>,
+      }
       try {
-        await syncHubSpotSchema(integrationRecord, orgId, supabase)
+        await syncHubSpotSchema(integrationForSync, orgId, supabase)
       } catch (schemaErr) {
         console.error('HubSpot schema sync error:', schemaErr)
       }
       try {
         const ownersResult = await syncHubSpotOwners(
-          integrationRecord,
+          integrationForSync,
           orgId,
           supabase
         )

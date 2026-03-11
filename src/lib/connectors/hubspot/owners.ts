@@ -46,7 +46,7 @@ export async function syncHubSpotOwners(
       .maybeSingle()
 
     if (byHubSpotId) {
-      existing = byHubSpotId as typeof existing
+      existing = byHubSpotId as { id: string; name: string; email: string | null; photo_url: string | null; external_ids: Record<string, string> }
     } else if (email) {
       const { data: byEmail } = await supabase
         .from('team_members')
@@ -55,7 +55,7 @@ export async function syncHubSpotOwners(
         .eq('email', email)
         .maybeSingle()
       if (byEmail) {
-        existing = byEmail as typeof existing
+        existing = byEmail as { id: string; name: string; email: string | null; photo_url: string | null; external_ids: Record<string, string> }
       }
     }
 
