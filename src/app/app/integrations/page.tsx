@@ -134,6 +134,19 @@ export default function IntegrationsPage() {
         )}
         {integrationsLoading ? (
           <p className="text-muted-foreground">Loading integrations...</p>
+        ) : integrations.length === 0 ? (
+          <div className="col-span-full flex flex-1 flex-col items-center justify-center py-16">
+            <div className="mx-auto flex max-w-md flex-col items-center text-center">
+              <Plug className="mb-4 size-12 text-muted-foreground" />
+              <h2 className="mb-2 text-lg font-semibold">No integrations connected yet</h2>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Connect HubSpot, Slack, or a custom webhook to start receiving events.
+              </p>
+              <Button onClick={() => { setAddType(null); setDialogOpen(true) }}>
+                Connect your first integration
+              </Button>
+            </div>
+          </div>
         ) : (
           <>
             {integrations

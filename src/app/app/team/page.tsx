@@ -243,16 +243,18 @@ export default function TeamPage() {
       {loading ? (
         <p className="text-muted-foreground">Loading team members...</p>
       ) : members.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <Users className="mb-2 size-12 text-muted-foreground" />
-          <p className="mb-2 font-medium">No team members yet</p>
-          <p className="mb-4 text-center text-muted-foreground text-sm">
-            Add team members manually or sync from HubSpot/Slack when available.
-          </p>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-1 size-4" />
-            Add Member
-          </Button>
+        <div className="flex flex-1 flex-col items-center justify-center py-16">
+          <div className="mx-auto flex max-w-md flex-col items-center text-center">
+            <Users className="mb-4 size-12 text-muted-foreground" />
+            <h2 className="mb-2 text-lg font-semibold">No team members yet</h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Add team members manually or sync from HubSpot or Slack when integrations are connected.
+            </p>
+            <Button onClick={handleCreate}>
+              <Plus className="mr-1 size-4" />
+              Add your first member
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="rounded-md border">

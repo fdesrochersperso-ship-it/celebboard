@@ -142,19 +142,19 @@ export default function CelebrationsPage() {
         {loading ? (
           <p className="text-muted-foreground">Loading templates...</p>
         ) : templates.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <PartyPopper className="mb-2 size-12 text-muted-foreground" />
-              <p className="mb-2 font-medium">No templates yet</p>
-              <p className="mb-4 text-center text-muted-foreground text-sm">
-                Create a template from a preset above or start from scratch.
+          <div className="flex flex-1 flex-col items-center justify-center py-16">
+            <div className="mx-auto flex max-w-md flex-col items-center text-center">
+              <PartyPopper className="mb-4 size-12 text-muted-foreground" />
+              <h2 className="mb-2 text-lg font-semibold">No celebration templates yet</h2>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Create a template from a preset above or start from scratch to celebrate deals and milestones.
               </p>
               <Button onClick={() => handleCreate()}>
                 <Plus className="mr-1 size-4" />
-                Create Template
+                Create your first template
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="space-y-6">
             {templates.map((template) => (

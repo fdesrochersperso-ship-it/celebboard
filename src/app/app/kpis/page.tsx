@@ -157,19 +157,19 @@ export default function KPIsPage() {
         {loading ? (
           <p className="text-muted-foreground">Loading KPIs...</p>
         ) : kpis.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <BarChart3 className="mb-2 size-12 text-muted-foreground" />
-              <p className="mb-2 font-medium">No KPIs yet</p>
-              <p className="mb-4 text-center text-muted-foreground text-sm">
-                Create a KPI from a preset above or define a custom metric.
+          <div className="flex flex-1 flex-col items-center justify-center py-16">
+            <div className="mx-auto flex max-w-md flex-col items-center text-center">
+              <BarChart3 className="mb-4 size-12 text-muted-foreground" />
+              <h2 className="mb-2 text-lg font-semibold">No KPIs defined yet</h2>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Create a KPI from a preset above or define a custom metric to display on your dashboard.
               </p>
               <Button onClick={() => handleCreate()}>
                 <Plus className="mr-1 size-4" />
-                Create KPI
+                Create your first KPI
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {kpis.map((kpi) => (

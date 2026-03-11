@@ -15,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { RotateCcw } from 'lucide-react'
+import Link from 'next/link'
+import { RotateCcw, Clock } from 'lucide-react'
 
 const PAGE_SIZE = 20
 
@@ -194,11 +195,17 @@ export default function HistoryPage() {
       {loading ? (
         <p className="text-muted-foreground">Loading celebrations...</p>
       ) : celebrations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <p className="mb-2 font-medium">No celebrations yet</p>
-          <p className="text-center text-muted-foreground text-sm">
-            Celebrations will appear here when they are created from webhooks or the test endpoint.
-          </p>
+        <div className="flex flex-1 flex-col items-center justify-center py-16">
+          <div className="mx-auto flex max-w-md flex-col items-center text-center">
+            <Clock className="mb-4 size-12 text-muted-foreground" />
+            <h2 className="mb-2 text-lg font-semibold">No celebration history yet</h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Celebrations will appear here when they are created from webhooks, integrations, or the test endpoint.
+            </p>
+            <Button asChild>
+              <Link href="/app/integrations">Connect integrations</Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>
