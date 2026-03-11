@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2026-03-01 (Integration logo placement)
+**Last updated:** 2026-03-11 (HubSpot OAuth callback for Vercel)
 
 ## What's Built (Current Capabilities)
 
@@ -13,7 +13,7 @@
 
 ### Admin App (/app)
 
-- Integrations: Add/connect HubSpot, Slack, GA4, generic webhook (credentials stored)
+- Integrations: Add/connect HubSpot, Slack, GA4, generic webhook (credentials stored); HubSpot OAuth redirect URI auto-derived from VERCEL_URL on Vercel
 - Celebrations: Templates and triggers with field mapping and conditions
 - KPIs: Definitions with manual, integration, or celebration_aggregate; leaderboard (top 3), goal/pace (PaceKPICard)
 - Team: Team member management, bulk upload, external_ids for CRM mapping

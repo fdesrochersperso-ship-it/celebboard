@@ -97,21 +97,36 @@ export function verifyState(state: string): string | null {
 }
 
 // -----------------------------------------------------------------------------
+// Redirect URI (OAuth callback URL)
+// -----------------------------------------------------------------------------
+
+function getHubSpotRedirectUri(): string {
+  // Explicit override (e.g. custom domain, or local dev)
+  if (process.env.HUBSPOT_REDIRECT_URI) {
+    return process.env.HUBSPOT_REDIRECT_URI
+  }
+  // Vercel sets VERCEL_URL automatically (e.g. "your-app.vercel.app")
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api/integrations/hubspot/callback`
+  }
+  // Local development fallback
+  return 'http://localhost:3000/api/integrations/hubspot/callback'
+}
+
+// -----------------------------------------------------------------------------
 // 1. getHubSpotAuthUrl
 // -----------------------------------------------------------------------------
 
 export function getHubSpotAuthUrl(orgId: string): string {
   const clientId = process.env.HUBSPOT_CLIENT_ID
-  const redirectUri = process.env.HUBSPOT_REDIRECT_URI
-
-  if (!clientId || !redirectUri) {
-    throw new Error('HUBSPOT_CLIENT_ID and HUBSPOT_REDIRECT_URI must be set')
+  if (!clientId) {
+    throw new Error('HUBSPOT_CLIENT_ID must be set')
   }
 
   const state = signState(orgId)
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: redirectUri,
+    redirect_uri: getHubSpotRedirectUri(),
     scope: SCOPES,
     state,
   })
@@ -126,17 +141,16 @@ export function getHubSpotAuthUrl(orgId: string): string {
 export async function exchangeCodeForTokens(code: string): Promise<HubSpotTokens> {
   const clientId = process.env.HUBSPOT_CLIENT_ID
   const clientSecret = process.env.HUBSPOT_CLIENT_SECRET
-  const redirectUri = process.env.HUBSPOT_REDIRECT_URI
 
-  if (!clientId || !clientSecret || !redirectUri) {
-    throw new Error('HUBSPOT_CLIENT_ID, HUBSPOT_CLIENT_SECRET, and HUBSPOT_REDIRECT_URI must be set')
+  if (!clientId || !clientSecret) {
+    throw new Error('HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET must be set')
   }
 
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: clientId,
     client_secret: clientSecret,
-    redirect_uri: redirectUri,
+    redirect_uri: getHubSpotRedirectUri(),
     code,
   })
 

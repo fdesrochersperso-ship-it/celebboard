@@ -44,6 +44,7 @@ In your app settings, go to the **Auth** tab:
    https://celebboard.vercel.app/api/integrations/hubspot/callback
    https://app.celebboard.com/api/integrations/hubspot/callback
    ```
+   > **Vercel**: When deployed on Vercel, the redirect URI is auto-derived from `VERCEL_URL`. You do not need to set `HUBSPOT_REDIRECT_URI` in Vercel env vars — just ensure your production callback URL (e.g. `https://your-app.vercel.app/api/integrations/hubspot/callback`) is listed above. For custom domains, set `HUBSPOT_REDIRECT_URI` explicitly.
 
 2. **Required Scopes** — these are the permissions CelebBoard needs:
    ```
@@ -105,8 +106,9 @@ HUBSPOT_APP_ID=123456
 HUBSPOT_WEBHOOK_SECRET=your-app-client-secret  
 # (HubSpot uses your Client Secret to sign webhook payloads)
 
-# OAuth redirect (match what you set in Step 4)
-HUBSPOT_REDIRECT_URI=http://localhost:3000/api/integrations/hubspot/callback
+# OAuth redirect (optional on Vercel — auto-derived from VERCEL_URL)
+# For local dev, set to localhost. For custom domains, set explicitly.
+# HUBSPOT_REDIRECT_URI=http://localhost:3000/api/integrations/hubspot/callback
 ```
 
 ---
