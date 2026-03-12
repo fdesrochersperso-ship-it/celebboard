@@ -1,6 +1,6 @@
 # CelebBoard — Project Status
 
-**Last updated:** 2026-03-11 (HubSpot OAuth callback for Vercel)
+**Last updated:** 2026-03-12 (Admin panel validation pass)
 
 ## What's Built (Current Capabilities)
 
@@ -15,7 +15,7 @@
 
 - Integrations: Add/connect HubSpot, Slack, GA4, generic webhook (credentials stored); HubSpot OAuth redirect URI auto-derived from VERCEL_URL on Vercel
 - Celebrations: Templates and triggers with field mapping and conditions
-- KPIs: Definitions with manual, integration, or celebration_aggregate; leaderboard (top 3), goal/pace (PaceKPICard)
+- KPIs: Definitions with manual, integration, or celebration_aggregate; leaderboard (top 3), goal/pace (PaceKPICard); **KPI builder redesign** (CELEBRATION-BUILDER-REDESIGN-SPEC Part 3): full-page form at `/app/kpis/new` and `/app/kpis/[id]`; KpiForm with KPI Identity (label, name, format, currency), Data Source cards (Integration/Celebrations/Manual), Display Options, TV preview; PropertySelector for number-only aggregate field; ConditionBuilder for filters; structured query_config JSON; card listing with Active toggle, Refresh Now, Delete; POST/PUT/DELETE/PATCH toggle API routes
 - Team: Team member management, bulk upload, external_ids for CRM mapping
 - Display: Settings (theme, feed rotation), preview, display URL
 - History: Celebration log with status filter (pending/displayed/skipped)
@@ -39,7 +39,10 @@
   - Supports conditions, field mapping, template rendering
   - Works for hubspot, slack, generic_webhook types (any JSON)
   - No integration-specific verification (HubSpot/Slack signatures)
-- **HubSpot connector**: `syncTeamMembers` — sync owners from HubSpot API
+- **HubSpot connector**: `syncTeamMembers` — sync owners from HubSpot API; schema discovery (`integration_schemas` table) — properties (deals/contacts/companies), pipelines, owners cached from HubSpot; `fetchAndCacheAllSchemas` on OAuth connect; GET/POST `/api/integrations/[id]/schema` for cached schemas and refresh
+- **Admin shared components** (CELEBRATION-BUILDER-REDESIGN-SPEC Part 4): `PropertySelector` (searchable combobox), `ConditionRow` + `ConditionBuilder` (type-aware: number `between`, date `within last` with days/weeks/months), `TemplateTextEditor` (Insert Field + `{{field}}`), `VisualStylePicker`, `SoundPicker`, `FieldMappingTable`; `useIntegrationSchema` TanStack Query hook; shadcn Command + Popover
+- **Celebration wizard** (CELEBRATION-BUILDER-REDESIGN-SPEC Part 2): `/app/celebrations/new` full-page wizard; Step 1 (trigger): integration + object type dropdowns, flat condition builder, starter templates; Step 2 (design): auto-generated name, TemplateTextEditor, VisualStylePicker, SoundPicker, duration, photos/counter toggles, FieldMappingTable; Step 3 (preview): CelebrationPreview (16:9 TV-style container, confetti/fireworks/champagne CSS animations, sample data resolution, Replay/Unmute, Try different data), summary card, Save & Activate / Save as Draft; POST /api/celebrations unified create; PUT /api/celebrations/[id] update
+- **Celebrations list page redesign**: Card grid (not table); Quick Start presets (Deal Won, New Client, Big Deal, Custom) linking to `/new?starter=`; each card: name, Active/Inactive toggle (optimistic, PATCH /api/celebrations/[id]/toggle), trigger conditions in plain English (`conditionsToText`), visual style · sound · duration, stats (last fired, total); Edit → `/celebrations/[id]`, Duplicate → `/new` pre-filled, overflow menu (Delete with AlertDialog, View History); empty/loading states; DELETE /api/celebrations/[id]; edit page `/celebrations/[id]` pre-populates wizard, uses PUT on save
 - **Slack connector**: `syncTeamMembers` — sync users from Slack API
 - No GA4 connector logic
 

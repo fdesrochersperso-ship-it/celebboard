@@ -1,0 +1,320 @@
+# CelebBoard — Product Roadmap to Commercialization
+
+**Timeline:** 8 weeks to first paying customer
+**Team:** Backend Dev (BD) · Marketing/Frontend (MF)
+**Date:** March 2026
+
+---
+
+## Launch Definition
+
+A customer can: sign up → connect HubSpot via OAuth → see their live CRM data on a TV → celebrations fire automatically when deals close. The marketing site drives inbound with comparison pages and SEO content. Onboarding is white-glove (no Stripe, no self-serve setup wizard).
+
+---
+
+## Epics Overview
+
+| # | Epic | Owner | Weeks | Why It's Launch-Critical |
+|---|------|-------|-------|--------------------------|
+| 1 | HubSpot Integration (end-to-end) | BD | 1-2 | Can't sell the product without the core CRM integration working |
+| 2 | KPI Engine | BD | 3-4 | TV dashboard shows live numbers, not mock data |
+| 3 | GA4 Integration | BD | 3-4 | Third integration option; broadens value prop beyond sales |
+| 4 | Generic Webhook Hardening | BD | 3 | The "connect anything" escape valve for non-HubSpot customers |
+| 5 | Production Reliability | BD | 5-7 | TV runs 24/7 — can't silently break |
+| 6 | Admin UX for Customers | BD + MF | 5-6 | White-glove is faster when the admin isn't confusing |
+| 7 | TV Display Redesign | MF | 2-5 | The display IS the product — it has to look incredible |
+| 8 | Celebration Customization | MF + BD | 4-5 | Customers want their celebrations to feel like theirs |
+| 9 | Comparison Pages & SEO Content | MF | 3-7 | Primary inbound lead generation channel |
+| 10 | Launch Prep | Both | 7-8 | Security, testing, onboarding script, marketplace listings |
+
+---
+
+## Epic 1: HubSpot Integration (End-to-End)
+**Owner:** BD · **Weeks 1-2** · **Priority: 🔴 Critical**
+
+The entire product hinges on this. A customer connects HubSpot, and from that moment, everything should just work — team members sync, deal data flows, celebrations fire, KPIs show real numbers.
+
+**Stories:**
+
+- **Fix OAuth flow** — The current OAuth has three known bugs (empty credentials on callback, user-org membership mismatch on authorize, lingering quotes-scope error). OAuth must work cleanly: admin clicks Connect → redirects to HubSpot → comes back with valid tokens stored.
+
+- **Schema discovery & caching** — After connecting, fetch the customer's HubSpot schema (deal properties, pipelines, stages, owners) and cache it. The admin UI needs this to render dynamic dropdowns so customers map their own CRM fields without typing raw property names.
+
+- **Owner sync** — Automatically pull HubSpot owners into team_members with their hubspot_owner_id in external_ids. This is how celebrations resolve "who closed the deal" → show their photo.
+
+- **Webhook signature verification** — Verify HubSpot's v3 signature header before processing any webhook. Reject replays older than 5 minutes.
+
+- **Enrich-on-event** — HubSpot webhooks only send object IDs. On each webhook, fetch the full deal object (properties + associated company) from HubSpot before evaluating trigger conditions. This is how we get deal name, amount, company name, etc.
+
+- **Token refresh** — Handle expired access tokens gracefully everywhere (schema fetch, owner sync, webhook enrichment, KPI queries). Refresh and retry once; surface errors to admin if refresh fails.
+
+**Done when:** An admin connects HubSpot, their team members appear automatically, and changing a deal stage in HubSpot fires a celebration on the TV display with the correct deal name, amount, company, and team member photo.
+
+---
+
+## Epic 2: KPI Engine
+**Owner:** BD · **Weeks 3-4** · **Priority: 🔴 Critical**
+
+KPI cards on the TV dashboard currently show mock data or stale cached values. They need to show real, auto-refreshing numbers from connected integrations.
+
+**Stories:**
+
+- **HubSpot KPI fetcher** — Query the HubSpot Search API to compute deal aggregations (sum of amounts, count of deals) filtered by pipeline, stage, and date range. Handle date macros (THIS_QUARTER, THIS_MONTH, etc.) and pagination.
+
+- **Background refresh engine** — A cron job (Vercel cron or pg_cron) that iterates all active integration-sourced KPI definitions and refreshes their cached_value based on their refresh_seconds interval.
+
+- **Display reads real data** — The TV display's KPI cards and chart component read from cached_value instead of MOCK_DATA. Handle null/loading/error states gracefully.
+
+- **Celebration aggregate KPIs** — KPIs with source_type='celebration_aggregate' compute their value from the celebrations table (sum or count, filtered by template and time period). These power the running counter feature.
+
+**Done when:** KPI cards on the TV display show real numbers from HubSpot that auto-refresh every 5 minutes. The chart shows real trend data, not mock data.
+
+---
+
+## Epic 3: GA4 Integration
+**Owner:** BD · **Weeks 3-4** · **Priority: 🟡 High**
+
+GA4 adds a non-sales data source — active users, pageviews, custom events. Broadens the value prop to marketing and product teams.
+
+**Stories:**
+
+- **GA4 OAuth flow** — Google OAuth2 with Analytics readonly scope. After auth, fetch available GA4 properties and let admin select which one to connect.
+
+- **GA4 data fetcher** — Query the GA4 Data API (both standard reports and realtime). Support configurable metrics, dimensions, and date ranges. Not just "active users" — any GA4 metric the customer wants.
+
+- **Register in KPI engine** — GA4 KPIs refresh via the same cron as HubSpot KPIs.
+
+**Done when:** An admin connects GA4, selects a property, creates a KPI definition for a GA4 metric, and it appears live on the TV display.
+
+---
+
+## Epic 4: Generic Webhook Hardening
+**Owner:** BD · **Week 3** · **Priority: 🟡 High**
+
+The generic webhook is CelebBoard's "connect anything" feature. It works today but needs to be production-grade.
+
+**Stories:**
+
+- **Signature verification** — If the integration has a webhook_secret, verify the X-Webhook-Secret header. Reject mismatches with 401.
+
+- **Rate limiting** — Cap at 100 requests/minute per org. Return 429 with Retry-After header when exceeded.
+
+- **Webhook logging** — Store the last N webhook attempts per integration (request headers, body, response, errors) so admins can debug failed triggers.
+
+- **Admin webhook log viewer** — A simple table in the integration detail page showing recent webhook attempts with success/failure status.
+
+**Done when:** Generic webhooks verify secrets, enforce rate limits, and admins can see a log of recent webhook attempts to debug issues.
+
+---
+
+## Epic 5: Production Reliability
+**Owner:** BD · **Weeks 5-7** · **Priority: 🟡 High**
+
+The TV display runs 24/7. The webhook pipeline processes real customer data. Both need to be bulletproof before we onboard a paying customer.
+
+**Stories:**
+
+- **Database migrations in repo** — Commit all CREATE TABLE statements to supabase/migrations/ as the single source of truth. No more schema defined only in the Supabase Dashboard.
+
+- **Error tracking (Sentry)** — Capture errors from API routes, webhook handlers, and the TV display client. Tag errors with org_id for grouping.
+
+- **Realtime connection hardening** — Exponential backoff on disconnect, heartbeat monitoring, auto-resubscribe on channel error, catch-up on missed celebrations after reconnect.
+
+- **24-hour soak test** — Leave the TV display running for 24+ hours and verify no memory leaks, no disconnects, no visual degradation.
+
+- **Webhook test button** — "Send Test Event" in the admin that fires a sample celebration through the real pipeline. Essential for white-glove onboarding.
+
+- **API rate limiting middleware** — Global rate limit layer on all webhook endpoints beyond the per-org limit.
+
+**Done when:** The TV display survives 24+ hours unattended, Sentry catches errors with org context, and there's a test button in the admin to verify the pipeline works.
+
+---
+
+## Epic 6: Admin UX for Customers
+**Owner:** MF + BD · **Weeks 5-6** · **Priority: 🟡 High**
+
+The admin panel works for development but needs polish for a paying customer. White-glove onboarding is faster when the admin is intuitive.
+
+**Stories:**
+
+- **Dynamic field dropdowns** — Trigger and KPI configuration use dropdowns populated from the customer's live HubSpot schema (deal properties, pipelines, stages) instead of raw text inputs.
+
+- **Empty states with CTAs** — Every admin page needs a meaningful empty state that guides the user to the next action (not a blank page or "No data").
+
+- **Integration connection flow** — Clear UX: OAuth button → redirect → success state → "Configure" CTA. Status indicators for connected/disconnected/error.
+
+- **Template builder preview** — Live preview panel showing the celebration as it will appear on the TV, updating as the admin changes settings.
+
+- **Display preview & URL management** — Inline iframe showing the org's actual display page. Copy display URL button. QR code download for the TV URL. Regenerate token.
+
+- **Org settings** — Timezone, logo upload, display name.
+
+**Done when:** A non-technical admin can navigate the admin panel, understand what each page does, configure a celebration trigger using dropdowns (not raw field names), and preview how it will look on TV.
+
+---
+
+## Epic 7: TV Display Redesign
+**Owner:** MF · **Weeks 2-5** · **Priority: 🔴 Critical**
+
+The TV display is the product. It needs to go from "functional prototype" to "makes people stop and stare." Design in Figma first, then build.
+
+**Stories:**
+
+- **Figma: Dashboard idle state (3 themes)** — 1920×1080 frames for dark, light, and vibrant themes. New KPI cards with visual depth, leaderboard with prominent photos, recent wins feed, content carousel, running counter, header. Define color tokens, typography scale, and spacing system.
+
+- **Figma: Celebration overlay** — Full-screen takeover with dramatic entrance. Three particle visual styles (confetti, fireworks, champagne). GIF integration in 4 positions. Staggered content entrance animations. Amount count-up. Component library frame with all tokens and specs.
+
+- **Build dashboard layout from Figma** — Complete layout rebuild with new grid, cards, themes. CSS custom properties for all 3 themes. Ambient animations (subtle glow shifts, transitions, breathing effects) that make the screen feel alive without being distracting.
+
+- **Build running counter** — Persistent number that animates up when celebrations fire. Smooth count-up, +delta flyout, milestone flash effects (e.g., golden burst when crossing $500K). Idle breathing animation.
+
+- **Build celebration overlay** — Three particle systems (confetti with 5 shapes, fireworks with burst patterns, champagne with rising bubbles). GIF integration in 4 positions. Staggered content entrance. Amount count-up and slot-machine animation options. Preload GIFs on template fetch.
+
+- **Ambient dashboard animations** — Subtle idle motion: card border glow shifts, leaderboard rank slide transitions, feed crossfade, connection status pulse, optional background grain. All CSS-only, GPU-friendly. Respect prefers-reduced-motion.
+
+**Done when:** The TV display looks like it was designed by a product design team, not generated by a dev. All 3 themes work. Celebrations are visually dramatic. The screen never feels frozen during idle.
+
+---
+
+## Epic 8: Celebration Customization
+**Owner:** MF + BD · **Weeks 4-5** · **Priority: 🟡 High**
+
+Customers want celebrations that feel like theirs — their GIFs, their colors, their style.
+
+**Stories:**
+
+- **GIF upload & storage** (BD) — Upload endpoint → Supabase Storage. Template stores gif_url and gif_position.
+
+- **Counter increment config** (BD) — On celebration INSERT, recompute the linked aggregate KPI and broadcast the update via Realtime so the counter animates.
+
+- **Template visual settings in admin** (MF) — New fields on the template editor: visual style picker, GIF upload + position, animation style selectors (title entrance, amount animation), confetti colors and density, sound volume, counter increment toggle. Live preview.
+
+**Done when:** An admin can create a template with fireworks + a custom GIF + slot-machine amount animation, and when that celebration fires, the TV display renders it exactly as configured.
+
+---
+
+## Epic 9: Comparison Pages & SEO Content
+**Owner:** MF · **Weeks 3-7** · **Priority: 🔴 Critical**
+
+Comparison pages are the highest-intent content CelebBoard can publish. Someone searching "Geckoboard alternative" is ready to buy.
+
+**Stories:**
+
+- **Comparison page template** — Reusable component with: hero, side-by-side feature table, what competitor does well, where it falls short, how CelebBoard differs, pricing comparison, who should choose what, FAQ with JSON-LD schema. Bilingual (EN + FR).
+
+- **7 comparison pages** (in priority order):
+  1. CelebBoard vs Geckoboard — "Data vs. Energy"
+  2. CelebBoard vs Hoopla — "The TV celebration platform Hoopla users have been searching for"
+  3. CelebBoard vs SalesScreen — "All the celebration. None of the complexity."
+  4. CelebBoard vs Spinify — "Your team doesn't need 20 game mechanics."
+  5. CelebBoard vs Plecto — "A dashboard your team actually watches."
+  6. CelebBoard vs Fugo — "Purpose-built for celebrations, not signage."
+  7. CelebBoard vs Ambition — "Enterprise features. Startup simplicity."
+
+- **Pillar page: "What is Team Celebration Software?"** — ~3,000 words, category-defining content. Primary SEO asset.
+
+- **3-4 blog posts** (bilingual .mdx):
+  - "7 Ways to Celebrate Sales Wins Without Gamification" (top-funnel)
+  - "The Real Cost of Sales Gamification Software" (mid-funnel)
+  - "Why Your Office TV Should Do More Than Show Charts" (top-funnel)
+  - "How to Set Up a Team Celebration Display in 10 Minutes" (tutorial)
+
+- **Integration landing page: /integrations/hubspot** — Feature page optimized for "HubSpot TV dashboard" keyword.
+
+- **Product screenshots & demo assets** — Capture polished screens from seeded admin + display. Process in Shots.so. Create 2-3 celebration demo GIFs/videos from demo org.
+
+- **Homepage refresh** — Replace placeholder mockups with real screenshots. Add comparison page links to nav. Working demo display link.
+
+- **SEO verification** — Structured data testing, hreflang validation, sitemap to GSC, OG images on all pages.
+
+**Done when:** 7 comparison pages + 1 pillar page + 3-4 blog posts + HubSpot integration page are live and indexed. Homepage shows real product screenshots and a demo link.
+
+---
+
+## Epic 10: Launch Prep
+**Owner:** Both · **Weeks 7-8** · **Priority: 🔴 Critical**
+
+Everything needed to confidently onboard the first paying customer.
+
+**Stories:**
+
+- **End-to-end integration test** (BD) — Fresh signup → connect HubSpot → configure trigger → fire test webhook → see celebration on display. Verify the full happy path.
+
+- **Stress test** (BD) — 50 rapid webhooks in 60 seconds. Verify queue, display, and DB handle it.
+
+- **Security review** (BD) — RLS on all tables, API routes audited for auth bypass, display token entropy check.
+
+- **Performance audit** (BD) — Lighthouse 90+ on marketing pages. Display page memory profiling. API response time baseline.
+
+- **Production deployment** (BD) — Env vars, DNS, Supabase production project, Vercel production config.
+
+- **API docs for generic webhook** (BD) — What to send, what headers, payload format, examples. Publishable page or PDF.
+
+- **White-glove onboarding script** (MF) — Step-by-step document: how to onboard a customer in 30 minutes. What to click, what to explain, common questions.
+
+- **Marketplace & review listings** (MF) — G2 profile, Capterra profile, HubSpot App Marketplace application.
+
+- **Launch announcement** (MF) — Product Hunt listing copy, LinkedIn posts, email to waitlist.
+
+- **Cross-browser/device testing** (MF) — Marketing on mobile/tablet, admin on Chrome/Firefox/Safari, display on Chrome/Edge.
+
+**Done when:** Confident that a real customer can be onboarded in 30 minutes, their TV display runs reliably, and the marketing site is ready for inbound traffic.
+
+---
+
+## Week-by-Week Sequencing
+
+| Week | Backend Dev | Marketing/Frontend |
+|------|-------------|--------------------|
+| **1** | Epic 1: HubSpot OAuth fix + schema discovery | Epic 6: Admin empty states + dynamic dropdowns + integration UX |
+| **2** | Epic 1: Owner sync + webhook verification + enrich-on-event + KPI fetcher | Epic 7: **Figma design sprint** (dashboard + overlay + component library) |
+| **3** | Epic 2: KPI refresh engine · Epic 4: Webhook hardening · Epic 3: GA4 OAuth | Epic 7: Build dashboard layout from Figma · Epic 9: Geckoboard + Hoopla comparison pages |
+| **4** | Epic 2: Display reads real data · Epic 3: GA4 fetcher · Epic 8: GIF storage + counter backend | Epic 7: Build celebration overlay · Epic 9: SalesScreen + Spinify comparison pages |
+| **5** | Epic 5: DB migrations + rate limiting + webhook test button · Epic 6: Display preview | Epic 7: Ambient animations · Epic 8: Template visual settings · Epic 9: Pillar page + Plecto/Fugo comparisons |
+| **6** | Epic 5: Error tracking (Sentry) · Epic 6: Org settings + display URL management | Epic 9: Ambition comparison + HubSpot integration page + homepage refresh + blog posts + SEO verification |
+| **7** | Epic 10: E2E test + stress test + Realtime hardening + 24h soak test | Epic 10: Onboarding script + G2/Capterra + blog posts + demo videos |
+| **8** | Epic 10: Security review + performance audit + production deploy + API docs | Epic 10: Final marketing polish + pricing page + launch announcement + cross-browser testing |
+
+---
+
+## Post-Launch Backlog
+
+| Epic | Priority | Notes |
+|------|----------|-------|
+| Stripe self-serve billing | High | Replace white-glove with self-checkout |
+| Slack integration (celebrations + feed) | High | Second CRM-adjacent integration |
+| Setup wizard | High | Replace white-glove for scale |
+| Vertical landing pages (/for/sales, /for/production, /for/services) | Medium | Expand SEO footprint |
+| Email digests (daily/weekly celebration summary) | Medium | Engagement + retention |
+| Custom sound upload | Medium | Celebration customization depth |
+| Blog content calendar months 3-6 | Medium | Sustained SEO investment |
+| Advanced display layouts (configurable widget positions) | Low | Power-user feature |
+| Multi-org support | Low | Enterprise feature |
+| SSO / SAML | Low | Enterprise feature |
+| White-label / custom domain | Low | Enterprise feature |
+
+---
+
+## Risk Register
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| HubSpot OAuth bugs persist past Week 1 | Blocks entire backend | Timebox to 3 days; fallback to manual API key entry |
+| GA4 Google Cloud Console complexity | Delays GA4 | GA4 is nice-to-have; can launch without it |
+| Figma design takes longer than 1 week | Delays display build | Start with dashboard only; overlay design can overlap with dashboard build |
+| Comparison pages don't rank quickly | Low inbound | Supplement with LinkedIn outreach and direct prospecting |
+| First customer's HubSpot has unexpected schema | Broken triggers | Robust error handling in field mapping; admin shows mapping health |
+| TV display crashes after hours | Erodes trust | Week 7 soak test; Sentry alerts; auto-recovery |
+
+---
+
+## Success Metrics (Week 8)
+
+- [ ] HubSpot OAuth connect in < 5 minutes
+- [ ] Celebration fires within 10 seconds of HubSpot deal stage change
+- [ ] TV display runs 24+ hours without intervention
+- [ ] KPIs refresh from live HubSpot data every 5 minutes
+- [ ] 7 comparison pages indexed by Google
+- [ ] Marketing site scores 90+ Lighthouse
+- [ ] White-glove onboarding takes < 30 minutes
+- [ ] TV display makes people stop and look

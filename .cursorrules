@@ -1,5 +1,8 @@
 # CelebBoard — Multi-Tenant Celebration Dashboard SaaS
 
+## Reference Documents
+- Read CELEBRATION-BUILDER-REDESIGN-SPEC.md before working on any celebration builder, KPI builder, or admin panel redesign tasks. It contains the full UX spec, data architecture, and component specs.
+
 ## Project Overview
 CelebBoard is a multi-tenant SaaS platform where businesses connect their CRM, Slack, GA4, 
 and other systems to display real-time celebrations and KPIs on office TV dashboards.

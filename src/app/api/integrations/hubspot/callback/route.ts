@@ -5,7 +5,7 @@ import {
   exchangeCodeForTokens,
   getTokenInfo,
 } from '@/lib/connectors/hubspot/auth'
-import { syncHubSpotSchema } from '@/lib/connectors/hubspot/schema'
+import { fetchAndCacheAllSchemas } from '@/lib/connectors/hubspot'
 import { syncHubSpotOwners } from '@/lib/connectors/hubspot/owners'
 import { type NextRequest } from 'next/server'
 
@@ -138,9 +138,9 @@ export async function GET(request: NextRequest) {
         credentials: (integrationRecord.credentials ?? {}) as Record<string, unknown>,
       }
       try {
-        await syncHubSpotSchema(integrationForSync, orgId, supabase)
+        await fetchAndCacheAllSchemas(integrationRecord.id, orgId, supabase)
       } catch (schemaErr) {
-        console.error('HubSpot schema sync error:', schemaErr)
+        console.error('HubSpot schema cache error:', schemaErr)
       }
       try {
         const ownersResult = await syncHubSpotOwners(

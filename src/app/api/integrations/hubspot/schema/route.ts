@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createServiceClient } from '@/lib/supabase-server'
-import { getSchemaForOrg } from '@/lib/connectors/hubspot/schema'
-import { syncHubSpotSchema } from '@/lib/connectors/hubspot/schema'
+import {
+  fetchAndCacheAllSchemas,
+  getCachedSchemasForOrg,
+} from '@/lib/connectors/hubspot/schema-cache'
 import { type NextRequest } from 'next/server'
 
 async function validateOrgAccess(
@@ -77,8 +79,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const objects = await getSchemaForOrg(orgId, integration.id, supabase)
-    return NextResponse.json({ objects })
+    const schemas = await getCachedSchemasForOrg(orgId, integration.id, supabase)
+    return NextResponse.json({ schemas })
   } catch (err) {
     console.error('HubSpot schema GET error:', err)
     return NextResponse.json(
@@ -127,7 +129,7 @@ export async function POST(request: NextRequest) {
       has_refresh_token: !!creds?.refresh_token,
     })
 
-    await syncHubSpotSchema(integration, orgId, supabase)
+    await fetchAndCacheAllSchemas(integration.id, orgId, supabase)
     return NextResponse.json({
       success: true,
       message: 'Schema refreshed',

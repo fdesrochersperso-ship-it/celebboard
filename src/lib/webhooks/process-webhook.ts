@@ -2,7 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type Condition = {
   field: string
-  op: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains' | 'not_contains'
+  op?: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains' | 'not_contains' | 'is_any_of' | 'is_none_of'
+  operator?: string
   value: unknown
 }
 
@@ -22,14 +23,21 @@ export function evaluateConditions(
 ): boolean {
   if (!Array.isArray(conditions) || conditions.length === 0) return true
 
+  const OP_ALIASES: Record<string, string> = {
+    equals: 'eq',
+    not_equals: 'neq',
+  }
+
   for (const cond of conditions) {
     const actual = getValueByPath(payload, cond.field)
     const expected = cond.value
+    const rawOp = (cond.op ?? cond.operator ?? 'eq') as string
+    const op = OP_ALIASES[rawOp] ?? rawOp
 
     const actualStr = String(actual ?? '')
     const expectedStr = String(expected ?? '')
 
-    switch (cond.op) {
+    switch (op) {
       case 'eq':
         if (actual !== expected) return false
         break
@@ -66,6 +74,16 @@ export function evaluateConditions(
       case 'not_contains':
         if (actualStr.toLowerCase().includes(expectedStr.toLowerCase())) return false
         break
+      case 'is_any_of': {
+        const arr = Array.isArray(expected) ? expected : [expected]
+        if (!arr.some((v) => String(actual) === String(v))) return false
+        break
+      }
+      case 'is_none_of': {
+        const arr = Array.isArray(expected) ? expected : [expected]
+        if (arr.some((v) => String(actual) === String(v))) return false
+        break
+      }
       default:
         return false
     }

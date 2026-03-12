@@ -30,9 +30,11 @@ const SOUND_MAP: Record<string, string> = {
   restaurant: RINGTONE_OPTIONS[4].url,
   arcade: RINGTONE_OPTIONS[5].url,
   level_up: RINGTONE_OPTIONS[6].url,
+  drumroll: RINGTONE_OPTIONS[6].url,
   bonus: RINGTONE_OPTIONS[7].url,
   celebration: RINGTONE_OPTIONS[8].url,
   notification: RINGTONE_OPTIONS[9].url,
+  applause: RINGTONE_OPTIONS[20].url,
   none: '',
 };
 
