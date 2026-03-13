@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCelebrationWizardStore } from '@/stores/celebration-wizard'
 import { WizardLayout } from '@/components/admin/celebration-wizard/wizard-layout'
@@ -9,7 +9,7 @@ import { StepDesign } from '@/components/admin/celebration-wizard/step-design'
 import { StepPreview } from '@/components/admin/celebration-wizard/step-preview'
 import type { StarterTemplate } from '@/stores/celebration-wizard'
 
-export default function NewCelebrationPage() {
+function NewCelebrationContent() {
   const searchParams = useSearchParams()
   const currentStep = useCelebrationWizardStore((s) => s.currentStep)
   const reset = useCelebrationWizardStore((s) => s.reset)
@@ -39,5 +39,13 @@ export default function NewCelebrationPage() {
         {currentStep === 3 && <StepPreview />}
       </WizardLayout>
     </div>
+  )
+}
+
+export default function NewCelebrationPage() {
+  return (
+    <Suspense fallback={<div><h1 className="mb-2 text-2xl font-semibold">Create Celebration</h1><p className="text-muted-foreground">Loading...</p></div>}>
+      <NewCelebrationContent />
+    </Suspense>
   )
 }
