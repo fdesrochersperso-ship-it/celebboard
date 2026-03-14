@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Plug, PartyPopper, BarChart3, Users, Monitor, History, LogOut } from 'lucide-react'
+import { LayoutDashboard, Plug, PartyPopper, BarChart3, Users, Monitor, History, LogOut, Sparkles } from 'lucide-react'
 
 const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -68,48 +68,61 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="flex w-56 flex-col border-r border-border bg-card">
-        <div className="flex h-14 items-center border-b border-border px-4">
-          <h2 className="truncate text-sm font-semibold text-foreground">
-            {loading ? 'Loading...' : orgName ?? 'CelebBoard'}
-          </h2>
-        </div>
+    <div className="app-shell relative min-h-screen overflow-hidden bg-background">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_22%)]" />
+      <div className="relative flex min-h-screen">
+        <aside className="flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/90 backdrop-blur-xl">
+          <div className="border-b border-sidebar-border px-4 py-4">
+            <Link href="/app" className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl gradient-primary shadow-card">
+                <Sparkles className="size-5 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {loading ? 'Loading...' : orgName ?? 'CelebBoard'}
+                </p>
+                <p className="text-xs text-muted-foreground">Admin workspace</p>
+              </div>
+            </Link>
+          </div>
 
-        <nav className="flex-1 space-y-0.5 p-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link key={item.href} href={item.href}>
-                <span
-                  className={cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  <item.icon className="size-4 shrink-0" />
-                  {item.label}
-                </span>
-              </Link>
-            )
-          })}
-        </nav>
+          <nav className="flex-1 space-y-1 p-3">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link key={item.href} href={item.href}>
+                  <span
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                        : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground'
+                    )}
+                  >
+                    <item.icon className="size-4 shrink-0" />
+                    {item.label}
+                  </span>
+                </Link>
+              )
+            })}
+          </nav>
 
-        <div className="border-t border-border p-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
-            onClick={handleSignOut}
-          >
-            <LogOut className="size-4" />
-            Sign out
-          </Button>
-        </div>
-      </aside>
+          <div className="border-t border-sidebar-border p-3">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground"
+              onClick={handleSignOut}
+            >
+              <LogOut className="size-4" />
+              Sign out
+            </Button>
+          </div>
+        </aside>
 
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto">
+          <div className="mx-auto max-w-7xl p-6 lg:p-8">{children}</div>
+        </main>
+      </div>
     </div>
   )
 }

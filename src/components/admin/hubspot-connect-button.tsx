@@ -75,6 +75,25 @@ export function HubSpotConnectButton({
     }
   }, [searchParams])
 
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (!error) return
+
+    const errorMessages: Record<string, string> = {
+      missing_hubspot_config: 'HubSpot OAuth is not configured. Add HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET to your local env.',
+      missing_org_id: 'Could not start HubSpot connect because the organization ID is missing.',
+      unauthorized: 'You need to be signed in before connecting HubSpot.',
+      forbidden: 'You do not have access to connect HubSpot for this organization.',
+      connection_failed: 'HubSpot connection failed before redirect. Check your HubSpot env configuration and try again.',
+    }
+
+    toast.error(errorMessages[error] ?? 'HubSpot connection could not be started.')
+
+    const url = new URL(window.location.href)
+    url.searchParams.delete('error')
+    window.history.replaceState({}, '', url.toString())
+  }, [searchParams])
+
   const handleRefreshSchema = async () => {
     setRefreshing(true)
     try {
@@ -124,12 +143,11 @@ export function HubSpotConnectButton({
           </p>
 
           {!isConnected ? (
-            <a
-              href={`/api/integrations/hubspot/authorize?org_id=${orgId}`}
-              className="mt-4 inline-block"
-            >
-              <Button>Connect HubSpot</Button>
-            </a>
+            <Button asChild className="mt-4">
+              <a href={`/api/integrations/hubspot/authorize?org_id=${orgId}`}>
+                Connect HubSpot
+              </a>
+            </Button>
           ) : (
             <div className="mt-4 space-y-3">
               {hubDomain && (
