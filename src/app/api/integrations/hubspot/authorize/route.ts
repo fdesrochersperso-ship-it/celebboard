@@ -6,6 +6,12 @@ import { type NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
+    if (!process.env.HUBSPOT_CLIENT_ID || !process.env.HUBSPOT_CLIENT_SECRET) {
+      return NextResponse.redirect(
+        new URL('/app/integrations?error=missing_hubspot_config', request.url)
+      )
+    }
+
     const orgId = request.nextUrl.searchParams.get('org_id')
     if (!orgId) {
       return NextResponse.redirect(

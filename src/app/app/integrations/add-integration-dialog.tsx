@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase-clients'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, ExternalLink } from 'lucide-react'
 
 const INTEGRATION_TYPES = [
   { value: 'hubspot', label: 'HubSpot' },
@@ -30,6 +30,49 @@ const INTEGRATION_TYPES = [
 ] as const
 
 type IntegrationType = (typeof INTEGRATION_TYPES)[number]['value']
+
+const HOW_IT_WORKS: Record<
+  IntegrationType,
+  {
+    summary: string
+    steps: string[]
+    note?: string
+  }
+> = {
+  hubspot: {
+    summary: 'CelebBoard connects to your HubSpot portal through OAuth, then syncs the account into your workspace.',
+    steps: [
+      'Start the HubSpot OAuth flow from this modal.',
+      'Approve access in HubSpot and return to CelebBoard.',
+      'CelebBoard saves the connection, syncs owners, and prepares HubSpot for celebrations and KPIs.',
+    ],
+  },
+  slack: {
+    summary: 'Slack uses app credentials so CelebBoard can sync members and associate Slack activity with your team.',
+    steps: [
+      'Create or reuse a Slack app and copy its bot token and signing secret.',
+      'Save the integration with those credentials.',
+      'Run team sync so Slack users map into CelebBoard team members.',
+    ],
+  },
+  ga4: {
+    summary: 'GA4 stores analytics access details in your workspace so those metrics can power KPI cards.',
+    steps: [
+      'Add the GA4 property ID and service account credentials.',
+      'Save the integration to attach GA4 to this workspace.',
+      'Use the saved connection when building KPI cards that rely on analytics data.',
+    ],
+    note: 'GA4 credential storage is ready now. Full GA4-backed KPI refresh behavior is still catching up on the backend.',
+  },
+  generic_webhook: {
+    summary: 'Generic Webhook gives you a shared endpoint for custom events from any system that can send JSON.',
+    steps: [
+      'Choose a display name and keep the generated webhook secret.',
+      'Save the integration to activate the endpoint for this workspace.',
+      'Send POST requests to the webhook URL with X-Webhook-Secret so CelebBoard can process the payload.',
+    ],
+  },
+}
 
 function generateWebhookSecret(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -48,7 +91,6 @@ type Props = {
 export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, initialType }: Props) {
   const [type, setType] = useState<IntegrationType>(initialType ?? 'hubspot')
   const [name, setName] = useState('')
-  const [hubspotToken, setHubspotToken] = useState('')
   const [slackBotToken, setSlackBotToken] = useState('')
   const [slackSigningSecret, setSlackSigningSecret] = useState('')
   const [ga4PropertyId, setGa4PropertyId] = useState('')
@@ -58,6 +100,8 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const selectedType = INTEGRATION_TYPES.find((item) => item.value === type)
+  const howItWorks = HOW_IT_WORKS[type]
 
   const webhookUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/api/webhooks/${orgId}/${type}`
@@ -67,7 +111,6 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
     if (!next) {
       setName('')
       setType('hubspot')
-      setHubspotToken('')
       setSlackBotToken('')
       setSlackSigningSecret('')
       setGa4PropertyId('')
@@ -75,6 +118,7 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
       setGa4PrivateKey('')
       setWebhookSecret('')
       setError('')
+      setCopied(false)
     } else {
       const nextType = initialType ?? 'hubspot'
       setType(nextType)
@@ -86,20 +130,28 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
   }
 
   const handleTypeChange = (value: string) => {
-    setType(value as IntegrationType)
-    if (value === 'generic_webhook') {
+    const nextType = value as IntegrationType
+    setType(nextType)
+    setError('')
+    setCopied(false)
+    if (nextType === 'generic_webhook') {
       setWebhookSecret(generateWebhookSecret())
+    } else {
+      setWebhookSecret('')
     }
   }
 
   useEffect(() => {
     if (open) {
-      if (initialType) setType(initialType)
-      if (type === 'generic_webhook' && !webhookSecret) {
-        setWebhookSecret(generateWebhookSecret())
-      }
+      setType(initialType ?? 'hubspot')
     }
-  }, [open, initialType, type, webhookSecret])
+  }, [open, initialType])
+
+  useEffect(() => {
+    if (open && type === 'generic_webhook' && !webhookSecret) {
+      setWebhookSecret(generateWebhookSecret())
+    }
+  }, [open, type, webhookSecret])
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(webhookUrl)
@@ -107,10 +159,12 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleHubSpotConnect = () => {
+    window.location.assign(`/api/integrations/hubspot/authorize?org_id=${orgId}`)
+  }
+
   const getCredentials = (): Record<string, string> => {
     switch (type) {
-      case 'hubspot':
-        return { access_token: hubspotToken }
       case 'slack':
         return { bot_token: slackBotToken, signing_secret: slackSigningSecret }
       case 'ga4':
@@ -134,10 +188,6 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
       return
     }
 
-    if (type === 'hubspot' && !hubspotToken.trim()) {
-      setError('API access token is required')
-      return
-    }
     if (type === 'slack' && (!slackBotToken.trim() || !slackSigningSecret.trim())) {
       setError('Bot token and signing secret are required')
       return
@@ -181,8 +231,8 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add Integration</DialogTitle>
-          <DialogDescription>Connect an external service to power celebrations and KPIs.</DialogDescription>
+          <DialogTitle>Connect Integration</DialogTitle>
+          <DialogDescription>Choose a source and complete the setup for your workspace.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -202,26 +252,52 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Display Name</Label>
-            <Input
-              id="name"
-              placeholder={INTEGRATION_TYPES.find((t) => t.value === type)?.label ?? 'My Integration'}
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-            />
+          <div className="rounded-lg border bg-muted/40 p-4">
+            <p className="text-sm font-medium">
+              How {selectedType?.label ?? 'this integration'} works
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{howItWorks.summary}</p>
+            <ol className="mt-4 space-y-2">
+              {howItWorks.steps.map((step, index) => (
+                <li key={step} className="flex items-start gap-3 text-sm">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-background text-xs font-medium text-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="text-foreground/90">{step}</span>
+                </li>
+              ))}
+            </ol>
+            {howItWorks.note ? (
+              <p className="mt-4 rounded-md bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+                {howItWorks.note}
+              </p>
+            ) : null}
           </div>
 
-          {type === 'hubspot' && (
+          {type !== 'hubspot' && (
             <div className="space-y-2">
-              <Label htmlFor="hubspot-token">API Access Token</Label>
+              <Label htmlFor="name">Display Name</Label>
               <Input
-                id="hubspot-token"
-                type="password"
-                placeholder="pat-na1-..."
-                value={hubspotToken}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHubspotToken(e.target.value)}
+                id="name"
+                placeholder={INTEGRATION_TYPES.find((t) => t.value === type)?.label ?? 'My Integration'}
+                value={name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
               />
+            </div>
+          )}
+
+          {type === 'hubspot' && (
+            <div className="rounded-lg border bg-muted/40 p-4">
+              <p className="text-sm font-medium">Start HubSpot OAuth</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                You will be redirected to HubSpot, approve access, and return here with the integration connected.
+              </p>
+              <div className="mt-4">
+                <Button type="button" onClick={handleHubSpotConnect}>
+                  Continue with HubSpot
+                  <ExternalLink className="size-4" />
+                </Button>
+              </div>
             </div>
           )}
 
@@ -318,7 +394,9 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
           <div className="space-y-2">
             <Label>Webhook URL</Label>
             <p className="text-muted-foreground text-sm">
-              Configure this URL in your external service to send events.
+              {type === 'hubspot'
+                ? 'HubSpot events return through OAuth, but this is still the route the app will use for webhook payloads.'
+                : 'Configure this URL in your external service to send events.'}
             </p>
             <div className="flex gap-2">
               <Input readOnly value={webhookUrl} className="font-mono text-sm" />
@@ -335,9 +413,11 @@ export function AddIntegrationDialog({ open, onOpenChange, orgId, onSuccess, ini
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? 'Saving...' : 'Save'}
-          </Button>
+          {type !== 'hubspot' ? (
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? 'Saving...' : 'Save'}
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
